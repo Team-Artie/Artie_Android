@@ -2,11 +2,13 @@ package com.yapp.gallery.screen
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.yapp.gallery.SplashScreen
 import com.yapp.gallery.common.theme.GalleryTheme
 import com.yapp.gallery.home.screen.home.HomeActivity
@@ -19,6 +21,9 @@ class SplashActivity : ComponentActivity() {
     private val viewModel by viewModels<SplashViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        installSplashScreen()
+
         setContent {
             GalleryTheme {
                 SplashScreen()
