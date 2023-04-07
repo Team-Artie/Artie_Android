@@ -6,7 +6,7 @@ class HomeContract {
     sealed class HomeState : ViewModelContract.State{
         object Initial : HomeState()
         data class Connected(val idToken : String) : HomeState()
-        object Disconnected : HomeState()
+        object Disconnected : HomeState() 
     }
 
     sealed class HomeEvent : ViewModelContract.Event{
