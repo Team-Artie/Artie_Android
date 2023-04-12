@@ -11,6 +11,7 @@ class ProfileContract {
     }
 
     sealed class ProfileEvent : ViewModelContract.Event{
+        data class OnLoad(val user: User) : ProfileEvent()
         object OnNicknameClick : ProfileEvent()
         object OnNoticeClick : ProfileEvent()
         object OnLegacyClick : ProfileEvent()

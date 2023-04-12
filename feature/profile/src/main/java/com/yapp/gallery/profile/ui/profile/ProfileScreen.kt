@@ -91,11 +91,11 @@ fun ProfileScreen(
     ProfileScaffold(
         profileState = profileState,
         editedNickname = editedNicknameData.value,
-        onManageClick = { viewModel.setEvent(ProfileEvent.OnManageClick) },
-        onNicknameClick = { viewModel.setEvent(ProfileEvent.OnNicknameClick) },
-        onNoticeClick = { viewModel.setEvent(ProfileEvent.OnNoticeClick) },
-        onLegacyClick = { viewModel.setEvent(ProfileEvent.OnLegacyClick) },
-        onSignOutClick = { viewModel.setEvent(ProfileEvent.OnSignOutClick) },
+        onManageClick = { viewModel.sendEvent(ProfileEvent.OnManageClick) },
+        onNicknameClick = { viewModel.sendEvent(ProfileEvent.OnNicknameClick) },
+        onNoticeClick = { viewModel.sendEvent(ProfileEvent.OnNoticeClick) },
+        onLegacyClick = { viewModel.sendEvent(ProfileEvent.OnLegacyClick) },
+        onSignOutClick = { viewModel.sendEvent(ProfileEvent.OnSignOutClick) },
         onLogoutClick = { logoutDialogShown.value = true },
         popBackStack = popBackStack,
         scaffoldState = scaffoldState
@@ -106,7 +106,7 @@ fun ProfileScreen(
         ConfirmDialog(
             title = stringResource(id = R.string.logout_dialog_title),
             onDismissRequest = { logoutDialogShown.value = false },
-            onConfirm = { viewModel.setEvent(ProfileEvent.OnLogout) }
+            onConfirm = { viewModel.sendEvent(ProfileEvent.OnLogout) }
         )
     }
 }

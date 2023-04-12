@@ -30,7 +30,7 @@ class ProfileViewModel @Inject constructor(
     private val deleteBothUseCase: DeleteBothUseCase,
     private val deleteLoginInfoUseCase: DeleteLoginInfoUseCase
 ) : BaseStateViewModel<ProfileState, ProfileEvent, ProfileSideEffect>() {
-    override val _viewState: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.Initial)
+    override val initialState: ProfileState = ProfileState.Initial
 
     private var _errorChannel = Channel<UiText>()
     val errors = _errorChannel.receiveAsFlow()
@@ -42,11 +42,10 @@ class ProfileViewModel @Inject constructor(
     private fun getUser(){
         getUserUseCase()
             .catch {
-                setViewState(ProfileState.Error(it.message))
                 _errorChannel.send(UiText.StringResource(R.string.profile_load_error))
             }
             .onEach {
-                setViewState(ProfileState.Success(it))
+                sendEvent(ProfileEvent.OnLoad(it))
             }
             .launchIn(viewModelScope)
     }
@@ -92,8 +91,11 @@ class ProfileViewModel @Inject constructor(
         sendSideEffect(ProfileSideEffect.NavigateToLogin)
     }
 
-    override fun handleEvents(event: ProfileEvent) {
-        when(event){
+    override fun reduceState(current: ProfileState, event: ProfileEvent): ProfileState {
+        when (event) {
+            is ProfileEvent.OnLoad -> {
+                return ProfileState.Success(event.user)
+            }
             is ProfileEvent.OnManageClick -> {
                 sendSideEffect(ProfileSideEffect.NavigateToManage)
             }
@@ -113,5 +115,6 @@ class ProfileViewModel @Inject constructor(
                 removeInfo()
             }
         }
+        return current
     }
 }

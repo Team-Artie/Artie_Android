@@ -15,7 +15,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getRefreshedTokenUseCase: GetRefreshedTokenUseCase
 ) : BaseStateViewModel<HomeState, HomeEvent, HomeSideEffect>() {
-    override val _viewState: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.Initial)
+    override val initialState: HomeState = HomeState.Initial
 
 //    private var _homeSideEffect = Channel<NavigatePayload>()
 //    val homeSideEffect = _homeSideEffect.receiveAsFlow()
@@ -32,10 +32,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { getRefreshedTokenUseCase() }
                 .onSuccess {
-                    setViewState(HomeState.Connected(it))
+                    sendEvent(HomeEvent.OnConnect(it))
                 }
                 .onFailure {
-                    setViewState(HomeState.Disconnected)
+                    sendEvent(HomeEvent.OnLoadAgain)
                 }
         }
     }
@@ -56,10 +56,21 @@ class HomeViewModel @Inject constructor(
         Log.e("homeSideEffect", action)
     }
 
-    override fun handleEvents(event: HomeEvent) {
-       when(event){
-           is HomeEvent.OnLoadAgain -> loadWithRefreshedToken()
-           is HomeEvent.OnWebViewClick -> handleWebViewBridge(event.action, event.payload)
-       }
+    override fun reduceState(current: HomeState, event: HomeEvent): HomeState {
+        return when(event){
+            is HomeEvent.OnConnect -> {
+                HomeState.Connected(event.idToken)
+            }
+            is HomeEvent.OnLoadAgain -> {
+                current
+            }
+            is HomeEvent.OnWebViewClick -> {
+                handleWebViewBridge(event.action, event.payload)
+                current
+            }
+            is HomeEvent.OnDisconnect -> {
+                HomeState.Disconnected
+            }
+        }
     }
 }

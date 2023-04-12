@@ -60,7 +60,7 @@ fun HomeRoute(
         webViewClient = WebViewUtils.webViewClient
         webChromeClient = WebViewUtils.webChromeClient
         addJavascriptInterface(
-            NavigateJsObject { action, payload -> viewModel.setEvent(HomeEvent.OnWebViewClick(action, payload)) }
+            NavigateJsObject { action, payload -> viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload)) }
             , "android")
         settings.run {
             setBackgroundColor(0)
@@ -75,7 +75,7 @@ fun HomeRoute(
     HomeScreen(
         homeState = homeState,
         webView = webView,
-        onReload = { viewModel.setEvent(HomeEvent.OnLoadAgain) }
+        onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) }
     )
 }
 

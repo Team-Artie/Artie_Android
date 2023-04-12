@@ -83,9 +83,9 @@ internal fun CategoryManageRoute(
 
     // 카테고리 생성 다이얼로그
     if (categoryCreateDialogShown.value) {
-        CategoryCreateDialog(onCreateCategory = { viewModel.setEvent(CategoryManageEvent.OnAddClick(it)) },
+        CategoryCreateDialog(onCreateCategory = { viewModel.sendEvent(CategoryManageEvent.OnAddClick(it)) },
             onDismissRequest = { categoryCreateDialogShown.value = false },
-            checkCategory = { viewModel.setEvent(CategoryManageEvent.CheckAddable(it)) },
+            checkCategory = { viewModel.sendEvent(CategoryManageEvent.CheckAddable(it)) },
             categoryState = categoryState
         )
     }
@@ -96,12 +96,12 @@ internal fun CategoryManageRoute(
         categoryCreateDialogShown = categoryCreateDialogShown,
         categoryList = viewModel.categoryList,
         categoryPostStateList = viewModel.categoryPostStateList,
-        onReorder = { from, to -> viewModel.setEvent(CategoryManageEvent.OnReorderCategory(from, to)) },
-        onEditCategory = { category, name -> viewModel.setEvent(CategoryManageEvent.OnEditClick(category, name)) },
-        onExpandCategory = { position -> viewModel.setEvent(CategoryManageEvent.OnExpandClick(position)) },
-        onCheckEditable = { origin, edited -> viewModel.setEvent(CategoryManageEvent.CheckEditable(origin, edited)) },
-        onDeleteCategory = { category -> viewModel.setEvent(CategoryManageEvent.OnDeleteClick(category)) },
-        onLoadError = { viewModel.setEvent(CategoryManageEvent.OnLoadError(it)) },
+        onReorder = { from, to -> viewModel.sendEvent(CategoryManageEvent.OnReorderCategory(from, to)) },
+        onEditCategory = { category, name -> viewModel.sendEvent(CategoryManageEvent.OnEditClick(category, name)) },
+        onExpandCategory = { position -> viewModel.sendEvent(CategoryManageEvent.OnExpandClick(position)) },
+        onCheckEditable = { origin, edited -> viewModel.sendEvent(CategoryManageEvent.CheckEditable(origin, edited)) },
+        onDeleteCategory = { category -> viewModel.sendEvent(CategoryManageEvent.OnDeleteClick(category)) },
+        onLoadError = { viewModel.sendEvent(CategoryManageEvent.OnExpandLoadError(it)) },
         snackState = snackState,
         scope = scope,
         popBackStack = popBackStack
@@ -492,7 +492,7 @@ private fun CategoryPostPagingView(
                     items(posts){post ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(end = 6.dp)
+                            modifier = Modifier.padding(start = 20.dp, end = 6.dp)
                         ) {
                             AsyncImage(
                                 model = post?.mainImage,

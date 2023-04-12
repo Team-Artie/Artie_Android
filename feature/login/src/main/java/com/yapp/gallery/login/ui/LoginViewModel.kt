@@ -21,55 +21,45 @@ class LoginViewModel @Inject constructor(
     private val createUserUseCase: CreateUserUseCase,
     private val setLoginInfoUseCase: SetLoginInfoUseCase,
 ) : BaseStateViewModel<LoginState, LoginEvent, LoginSideEffect>() {
-    override val _viewState: MutableStateFlow<LoginState> = MutableStateFlow(LoginState.Initial)
 
-    private val _loginType : MutableStateFlow<LoginType> = MutableStateFlow(LoginType.None)
-
-    val isLoading = _viewState.map {
-        it is LoginState.Loading || it is LoginState.LoginSuccess || it is LoginState.TokenSuccess
-    }.stateIn(viewModelScope, SharingStarted.Lazily, false)
-
+    override val initialState: LoginState = LoginState.Initial
     private fun postKakaoLogin(accessToken: String) {
-        setViewState(LoginState.Loading)
         tokenKakaoLoginUseCase(accessToken)
             .onEach {
-                setViewState(LoginState.TokenSuccess(it))
-                _loginType.value = LoginType.Kakao
-                firebaseTokenLogin(it)
+                sendEvent(LoginEvent.OnTokenSuccess(it))
+                firebaseTokenLogin(it, LoginType.Kakao)
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                setViewState(LoginState.TokenError(it.message))
+                sendEvent(LoginEvent.OnLoginFailure(it.message))
             }
             .launchIn(viewModelScope)
     }
 
     private fun postNaverLogin(accessToken: String) {
-        setViewState(LoginState.Loading)
         tokenNaverLoginUseCase(accessToken)
             .onEach {
-                setViewState(LoginState.TokenSuccess(it))
-                _loginType.value = LoginType.Naver
-                firebaseTokenLogin(it)
+                sendEvent(LoginEvent.OnTokenSuccess(it))
+                firebaseTokenLogin(it, LoginType.Naver)
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                setViewState(LoginState.TokenError(it.message))
+                sendEvent(LoginEvent.OnLoginFailure(it.message))
             }
             .launchIn(viewModelScope)
     }
 
     // 카카오, 네이버 로그인
-    private fun firebaseTokenLogin(firebaseToken: String) {
+    private fun firebaseTokenLogin(firebaseToken: String, loginType: LoginType) {
         auth.signInWithCustomToken(firebaseToken)
             .addOnCompleteListener { task ->
                 task.result.user?.apply {
                     getIdToken(false).addOnCompleteListener { t ->
-                        setLoginInfo(uid, t.result?.token ?: "")
+                        setLoginInfo(uid, t.result?.token ?: "", loginType)
                     }
                 }
             }.addOnFailureListener {
-                setViewState(LoginState.LoginError(it.message))
+                sendEvent(LoginEvent.OnLoginFailure(it.message))
             }
     }
 
@@ -79,61 +69,74 @@ class LoginViewModel @Inject constructor(
         createUserUseCase(firebaseUserId)
             .onEach {
                 sendSideEffect(LoginSideEffect.NavigateToHome)
-                setViewState(LoginState.LoginSuccess(it))
+                sendEvent(LoginEvent.OnLoginSuccess(it))
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                setViewState(LoginState.LoginError(it.message))
+                sendEvent(LoginEvent.OnLoginFailure(it.message))
             }
             .launchIn(viewModelScope)
     }
 
-    private fun setLoginInfo(firebaseId: String, token : String){
-        setLoginInfoUseCase(getLoginTypeToString(), token)
+    private fun setLoginInfo(firebaseId: String, token : String, loginType: LoginType) {
+        setLoginInfoUseCase(getLoginTypeToString(loginType), token)
             .onEach { createUser(firebaseId) }
             .launchIn(viewModelScope)
     }
 
-    override fun handleEvents(event: LoginEvent) {
-        when(event){
+    override fun reduceState(current: LoginState, event: LoginEvent): LoginState {
+       when (event) {
             is LoginEvent.OnGoogleLogin -> {
-                if (!isLoading.value) {
+                if (!getIsLoading()) {
                     sendSideEffect(LoginSideEffect.LaunchGoogleLauncher)
                 }
             }
             is LoginEvent.OnKakaoLogin -> {
-                if (!isLoading.value) {
+                if (!getIsLoading()) {
                     sendSideEffect(LoginSideEffect.LaunchKakaoLauncher)
                 }
             }
             is LoginEvent.OnNaverLogin -> {
-                if (!isLoading.value) {
+                if (!getIsLoading()) {
                     sendSideEffect(LoginSideEffect.LaunchNaverLauncher)
                 }
             }
             is LoginEvent.OnLoginFailure -> {
-                setViewState(LoginState.TokenError(event.message))
+                return LoginState.TokenError(event.message)
             }
             is LoginEvent.OnCreateGoogleUser -> {
-                setViewState(LoginState.Loading)
-                _loginType.value = LoginType.Google
-                setLoginInfo(event.firebaseId, event.idToken)
+                setLoginInfo(event.firebaseId, event.idToken, LoginType.Google)
+                return LoginState.Loading
             }
             is LoginEvent.OnCreateKakaoUser -> {
                 postKakaoLogin(event.accessToken)
+                return LoginState.Loading
             }
             is LoginEvent.OnCreateNaverUser -> {
                 postNaverLogin(event.accessToken)
+                return LoginState.Loading
+            }
+            is LoginEvent.OnLoginSuccess -> {
+                return LoginState.LoginSuccess(event.id)
+            }
+            is LoginEvent.OnTokenSuccess -> {
+                return LoginState.TokenSuccess(event.token)
             }
         }
+        return current
     }
 
-    private fun getLoginTypeToString() : String{
-        return when(_loginType.value){
+    private fun getIsLoading(): Boolean = viewState.value is LoginState.Loading
+            || viewState.value is LoginState.TokenSuccess || viewState.value is LoginState.LoginSuccess
+
+    private fun getLoginTypeToString(loginType: LoginType) : String{
+        return when(loginType){
             LoginType.Google -> "google"
             LoginType.Kakao -> "kakao"
             LoginType.Naver -> "naver"
             LoginType.None -> "none"
         }
     }
+
+
 }

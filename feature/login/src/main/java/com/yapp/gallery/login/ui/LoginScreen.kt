@@ -31,13 +31,13 @@ import com.yapp.gallery.login.ui.LoginContract.*
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     LoginScaffold(
-        isLoading = isLoading,
-        onGoogleLogin = { viewModel.setEvent(LoginEvent.OnGoogleLogin) },
-        onKakaoLogin = { viewModel.setEvent(LoginEvent.OnKakaoLogin) },
-        onNaverLogin = { viewModel.setEvent(LoginEvent.OnNaverLogin) }
+        isLoading = (viewState is LoginState.Loading || viewState is LoginState.TokenSuccess || viewState is LoginState.LoginSuccess),
+        onGoogleLogin = { viewModel.sendEvent(LoginEvent.OnGoogleLogin) },
+        onKakaoLogin = { viewModel.sendEvent(LoginEvent.OnKakaoLogin) },
+        onNaverLogin = { viewModel.sendEvent(LoginEvent.OnNaverLogin) }
     )
 }
 

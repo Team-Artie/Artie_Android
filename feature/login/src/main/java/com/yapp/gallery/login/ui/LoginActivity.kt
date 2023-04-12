@@ -83,7 +83,7 @@ class LoginActivity : ComponentActivity() {
                     val account = GoogleSignIn.getSignedInAccountFromIntent(it.data)
                     firebaseAuthWithGoogle(account.result)
                 } else {
-                    viewModel.setEvent(LoginEvent.OnLoginFailure("구글 로그인 실패"))
+                    viewModel.sendEvent(LoginEvent.OnLoginFailure("구글 로그인 실패"))
                 }
             }
 
@@ -92,11 +92,11 @@ class LoginActivity : ComponentActivity() {
                 when (result.resultCode) {
                     RESULT_OK -> {
                         NaverIdLoginSDK.getAccessToken()?.let {
-                            viewModel.setEvent(LoginEvent.OnCreateNaverUser(it))
+                            viewModel.sendEvent(LoginEvent.OnCreateNaverUser(it))
                         }
                     }
                     else -> {
-                        viewModel.setEvent(LoginEvent.OnLoginFailure("네이버 로그인 실패"))
+                        viewModel.sendEvent(LoginEvent.OnLoginFailure("네이버 로그인 실패"))
                     }
                 }
             }
@@ -114,11 +114,11 @@ class LoginActivity : ComponentActivity() {
             if (task.isSuccessful) {
                 task.result.user?.apply {
                     getIdToken(false).addOnCompleteListener { t ->
-                        uid.let { viewModel.setEvent(LoginEvent.OnCreateGoogleUser(it, t.result.token?: "")) }
+                        uid.let { viewModel.sendEvent(LoginEvent.OnCreateGoogleUser(it, t.result.token?: "")) }
                     }
                 }
             } else {
-                viewModel.setEvent(LoginEvent.OnLoginFailure("구글 로그인 실패"))
+                viewModel.sendEvent(LoginEvent.OnLoginFailure("구글 로그인 실패"))
             }
         }
     }
@@ -131,11 +131,11 @@ class LoginActivity : ComponentActivity() {
     private val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
             Timber.e(error, "카카오계정으로 로그인 실패")
-            viewModel.setEvent(LoginEvent.OnLoginFailure("카카오 로그인 실패"))
+            viewModel.sendEvent(LoginEvent.OnLoginFailure("카카오 로그인 실패"))
         } else if (token != null) {
             Timber.i("카카오계정으로 로그인 성공 " + token.accessToken)
 
-            viewModel.setEvent(LoginEvent.OnCreateKakaoUser(token.accessToken))
+            viewModel.sendEvent(LoginEvent.OnCreateKakaoUser(token.accessToken))
         }
     }
 
@@ -156,7 +156,7 @@ class LoginActivity : ComponentActivity() {
                     kakaoClient.loginWithKakaoAccount(this, callback = kakaoCallback)
                 } else if (token != null) {
                     Timber.i("카카오톡으로 로그인 성공 " + token.accessToken)
-                    viewModel.setEvent(LoginEvent.OnCreateKakaoUser(token.accessToken))
+                    viewModel.sendEvent(LoginEvent.OnCreateKakaoUser(token.accessToken))
                 }
             }
         } else {

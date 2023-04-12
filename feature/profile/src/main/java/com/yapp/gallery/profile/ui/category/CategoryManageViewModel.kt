@@ -31,8 +31,7 @@ class CategoryManageViewModel @Inject constructor(
     private val changeSequenceUseCase: EditCategorySequenceUseCase,
     private val getCategoryPostUseCase: GetCategoryPostUseCase
 ) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageSideEffect>() {
-
-    override val _viewState: MutableStateFlow<CategoryManageState> = MutableStateFlow(CategoryManageState.Initial)
+    override val initialState: CategoryManageState = CategoryManageState.Initial
 
     // 카테고리 리스트 상태
     private var _categoryList = mutableStateListOf<CategoryItem>()
@@ -61,7 +60,7 @@ class CategoryManageViewModel @Inject constructor(
     private fun getCategoryList(){
         getCategoryListUseCase()
             .catch {
-                setViewState(CategoryManageState.Error)
+                sendEvent(CategoryManageEvent.OnLoadError(it.message.toString()))
             }
             .onEach {
                 _categoryList.addAll(it)
@@ -71,7 +70,7 @@ class CategoryManageViewModel @Inject constructor(
                         CategoryPostState.Initial(getCategoryPostUseCase(category.id).cachedIn(viewModelScope))
                     )
                 }
-                setViewState(CategoryManageState.Success)
+                sendEvent(CategoryManageEvent.OnLoadSuccess(it))
             }
             .launchIn(viewModelScope)
     }
@@ -111,7 +110,7 @@ class CategoryManageViewModel @Inject constructor(
                 if (it){
                     _categoryList.remove(category)
                     if (_categoryList.isEmpty())
-                        setViewState(CategoryManageState.Empty)
+                        sendEvent(CategoryManageEvent.OnEmpty)
                 } else
                     _errorChannel.send(UiText.StringResource(R.string.category_delete_erorr))
             }
@@ -127,7 +126,6 @@ class CategoryManageViewModel @Inject constructor(
                 _categoryList.add(CategoryItem(it, categoryName, categoryList.size, 0).also { c ->
                     _categoryPostStateList.add(CategoryPostState.Initial(getCategoryPostUseCase(c.id).cachedIn(viewModelScope)))
                 })
-                setViewState(CategoryManageState.Success)
             }
             .launchIn(viewModelScope)
     }
@@ -200,17 +198,42 @@ class CategoryManageViewModel @Inject constructor(
     }
 
 
-
-    override fun handleEvents(event: CategoryManageEvent) {
-        when(event){
-            is CategoryManageEvent.CheckEditable -> checkEditable(event.origin, event.edited)
-            is CategoryManageEvent.CheckAddable -> checkCategory(event.category)
-            is CategoryManageEvent.OnAddClick -> createCategory(event.category)
-            is CategoryManageEvent.OnEditClick -> editCategory(event.categoryItem, event.edited)
-            is CategoryManageEvent.OnDeleteClick -> deleteCategory(event.categoryItem)
-            is CategoryManageEvent.OnExpandClick -> expandCategory(event.index)
-            is CategoryManageEvent.OnReorderCategory -> reorderItem(event.from, event.to)
-            is CategoryManageEvent.OnLoadError -> pagingLoadError(event.position)
+    override fun reduceState(current: CategoryManageState, event: CategoryManageEvent, ): CategoryManageState {
+        when (event) {
+            is CategoryManageEvent.OnAddClick -> {
+                createCategory(event.category)
+            }
+            is CategoryManageEvent.OnEditClick -> {
+                editCategory(event.categoryItem, event.edited)
+            }
+            is CategoryManageEvent.OnDeleteClick -> {
+                deleteCategory(event.categoryItem)
+            }
+            is CategoryManageEvent.OnExpandClick -> {
+                expandCategory(event.index)
+            }
+            is CategoryManageEvent.OnReorderCategory -> {
+                reorderItem(event.from, event.to)
+            }
+            is CategoryManageEvent.OnLoadError -> {
+                return CategoryManageState.Failure(event.msg)
+            }
+            is CategoryManageEvent.CheckAddable -> {
+                checkCategory(event.category)
+            }
+            is CategoryManageEvent.CheckEditable -> {
+                checkEditable(event.origin, event.edited)
+            }
+            is CategoryManageEvent.OnEmpty -> {
+                return CategoryManageState.Empty
+            }
+            is CategoryManageEvent.OnExpandLoadError -> {
+                pagingLoadError(event.position)
+            }
+            is CategoryManageEvent.OnLoadSuccess -> {
+                return CategoryManageState.Success(event.categoryList)
+            }
         }
+        return current
     }
 }

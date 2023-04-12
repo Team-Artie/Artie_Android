@@ -16,6 +16,8 @@ class LoginContract {
         object OnGoogleLogin : LoginEvent()
         object OnKakaoLogin : LoginEvent()
         object OnNaverLogin : LoginEvent()
+        data class OnTokenSuccess(val token: String) : LoginEvent()
+        data class OnLoginSuccess(val id: Long) : LoginEvent()
         data class OnLoginFailure(val message: String?) : LoginEvent()
         data class OnCreateGoogleUser(val firebaseId: String, val idToken: String) : LoginEvent()
         data class OnCreateKakaoUser(val accessToken: String) : LoginEvent()

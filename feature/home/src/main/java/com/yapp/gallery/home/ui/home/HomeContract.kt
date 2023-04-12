@@ -10,6 +10,8 @@ class HomeContract {
     }
 
     sealed class HomeEvent : ViewModelContract.Event{
+        data class OnConnect(val idToken: String) : HomeEvent()
+        object OnDisconnect : HomeEvent()
         object OnLoadAgain : HomeEvent()
         data class OnWebViewClick (val action: String, val payload: String?) : HomeEvent()
     }
