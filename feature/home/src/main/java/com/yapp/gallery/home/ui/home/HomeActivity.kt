@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
+import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.GalleryTheme
 import com.yapp.gallery.home.navigation.HomeNavHost
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
@@ -23,6 +24,8 @@ class HomeActivity : ComponentActivity() {
     @Inject lateinit var profileNavigator: ProfileNavigator
     @Inject lateinit var infoNavigator: ExhibitInfoNavigator
     @Inject lateinit var saverNavigator: SaverNavigator
+
+    @Inject lateinit var webViewProvider: WebViewProvider
 
     private lateinit var navController : NavHostController
 
@@ -57,7 +60,9 @@ class HomeActivity : ComponentActivity() {
                                 limitMessage = "사진은 최대 5장까지 선택 가능해요!"
                             )
                         )
-                    }, context = this
+                    },
+                    webViewProvider = webViewProvider,
+                    context = this
                 )
             }
         }

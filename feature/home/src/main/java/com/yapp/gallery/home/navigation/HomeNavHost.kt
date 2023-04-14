@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.record.ExhibitRecordScreen
@@ -20,6 +21,7 @@ fun HomeNavHost(
     profileNavigator: ProfileNavigator,
     cameraNavigator: CameraNavigator,
     infoNavigator: ExhibitInfoNavigator,
+    webViewProvider: WebViewProvider,
     context: Activity,
     navToImagePicker: (Long) -> Unit,
 ) {
@@ -40,7 +42,7 @@ fun HomeNavHost(
                         infoNavigator.navigateToInfo(context, it)
                     )
                 },
-                context = context
+                webViewProvider = webViewProvider
             )
         }
         composable("record") {
@@ -66,7 +68,7 @@ fun HomeNavHost(
         composable("calendar") {
             CalendarScreen(
                 popBackStack = { popBackStack(context, navHostController) },
-                context = context
+                webViewProvider = webViewProvider
             )
         }
     }

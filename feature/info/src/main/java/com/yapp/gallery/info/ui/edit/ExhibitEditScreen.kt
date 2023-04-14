@@ -184,6 +184,7 @@ fun ExhibitEditScreen(
                     ExhibitCategory(
                         categoryList = viewModel.categoryList,
                         focusManager = focusManager,
+                        focusRequester = focusRequester,
                         categorySelect = viewModel.categorySelect,
                         addCategory = { viewModel.addCategory(it)},
                         checkCategory = { viewModel.checkCategory(it)},

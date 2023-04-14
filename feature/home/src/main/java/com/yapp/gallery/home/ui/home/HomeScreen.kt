@@ -1,8 +1,5 @@
 package com.yapp.gallery.home.ui.home
 
-import android.app.Activity
-import android.view.ViewGroup
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -22,11 +19,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
-import com.yapp.gallery.common.util.WebViewUtils
-import com.yapp.gallery.common.util.WebViewUtils.cookieManager
-import com.yapp.gallery.common.util.webview.NavigateJsObject
 import com.yapp.gallery.home.R
 import kotlinx.coroutines.flow.collectLatest
 
@@ -36,7 +31,7 @@ fun HomeRoute(
     navigateToProfile: () -> Unit,
     navigateToCalendar: () -> Unit,
     navigateToInfo: (Long) -> Unit,
-    context: Activity,
+    webViewProvider: WebViewProvider,
     viewModel: HomeViewModel = hiltViewModel()
 ){
     val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -52,24 +47,8 @@ fun HomeRoute(
         }
     }
 
-    val webView = WebView(context).apply {
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        webViewClient = WebViewUtils.webViewClient
-        webChromeClient = WebViewUtils.webChromeClient
-        addJavascriptInterface(
-            NavigateJsObject { action, payload -> viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload)) }
-            , "android")
-        settings.run {
-            setBackgroundColor(0)
-            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            cookieManager.setAcceptCookie(true)
-            cookieManager.setAcceptThirdPartyCookies(this@apply, true)
-            javaScriptEnabled = true
-            javaScriptCanOpenWindowsAutomatically = false
-        }
+    val webView = webViewProvider.getWebView { action, payload ->
+        viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
     }
 
     HomeScreen(

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.util.WebViewUtils
 import com.yapp.gallery.common.util.webview.NavigateJsObject
@@ -30,7 +32,7 @@ import com.yapp.gallery.home.R
 @Composable
 fun CalendarScreen(
     popBackStack: () -> Unit,
-    context: Activity,
+    webViewProvider: WebViewProvider,
     viewModel: CalendarViewModel = hiltViewModel()
 ){
     LaunchedEffect(viewModel.calendarSideEffect){
@@ -41,27 +43,10 @@ fun CalendarScreen(
             }
         }
     }
-
-    val webView = WebView(context).apply {
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-
-        addJavascriptInterface(NavigateJsObject { action, payload ->
-            viewModel.setSideEffect(action, payload)
-        }, "android")
-        webViewClient = WebViewUtils.webViewClient
-        webChromeClient = WebViewUtils.webChromeClient
-        settings.run {
-            setBackgroundColor(0)
-            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            WebViewUtils.cookieManager.setAcceptCookie(true)
-            WebViewUtils.cookieManager.setAcceptThirdPartyCookies(this@apply, true)
-            javaScriptEnabled = true
-            javaScriptCanOpenWindowsAutomatically = true
-        }
+    val webView = webViewProvider.getWebView { action, payload ->
+        viewModel.setSideEffect(action, payload)
     }
+
 
     CalendarWebView(
         webView = webView, 

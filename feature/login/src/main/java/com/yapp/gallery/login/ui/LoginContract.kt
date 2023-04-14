@@ -7,7 +7,6 @@ class LoginContract {
         object Initial : LoginState()
         object Loading : LoginState()
         data class TokenSuccess(val token: String) : LoginState()
-        data class TokenError(val message: String?) : LoginState()
         data class LoginSuccess(val id: Long) : LoginState()
         data class LoginError(val message: String?) : LoginState()
     }
@@ -16,9 +15,8 @@ class LoginContract {
         object OnGoogleLogin : LoginEvent()
         object OnKakaoLogin : LoginEvent()
         object OnNaverLogin : LoginEvent()
-        data class OnTokenSuccess(val token: String) : LoginEvent()
-        data class OnLoginSuccess(val id: Long) : LoginEvent()
         data class OnLoginFailure(val message: String?) : LoginEvent()
+        data class OnTokenSuccess(val token: String) : LoginEvent()
         data class OnCreateGoogleUser(val firebaseId: String, val idToken: String) : LoginEvent()
         data class OnCreateKakaoUser(val accessToken: String) : LoginEvent()
         data class OnCreateNaverUser(val accessToken: String) : LoginEvent()

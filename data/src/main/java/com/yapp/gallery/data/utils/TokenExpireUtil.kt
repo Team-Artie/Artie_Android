@@ -11,7 +11,5 @@ internal fun getTokenExpiredTime() : String {
 internal fun isTokenExpired(comparedTime: String) : Boolean{
     val currentTime = System.currentTimeMillis()
     val expiredTime = comparedTime.toLong()
-    Log.e("expiredTime", expiredTime.toString())
-    Log.e("currentTime", currentTime.toString())
     return currentTime > expiredTime
 }

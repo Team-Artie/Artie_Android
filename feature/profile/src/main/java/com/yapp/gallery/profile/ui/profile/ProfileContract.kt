@@ -1,17 +1,16 @@
 package com.yapp.gallery.profile.ui.profile
 
 import com.yapp.gallery.common.base.ViewModelContract
+import com.yapp.gallery.common.model.UiText
 import com.yapp.gallery.domain.entity.profile.User
 
 class ProfileContract {
     sealed class ProfileState : ViewModelContract.State{
         object Initial : ProfileState()
         data class Success(val user: User) : ProfileState()
-        data class Error(val message: String?) : ProfileState()
     }
 
     sealed class ProfileEvent : ViewModelContract.Event{
-        data class OnLoad(val user: User) : ProfileEvent()
         object OnNicknameClick : ProfileEvent()
         object OnNoticeClick : ProfileEvent()
         object OnLegacyClick : ProfileEvent()
@@ -27,5 +26,6 @@ class ProfileContract {
         object NavigateToNotice: ProfileSideEffect()
         object NavigateToLegacy: ProfileSideEffect()
         object NavigateToSignOut: ProfileSideEffect()
+        data class ShowSnackbar(val message: UiText) : ProfileSideEffect()
     }
 }

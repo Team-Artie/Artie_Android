@@ -30,9 +30,7 @@ class CategoryManageViewModel @Inject constructor(
     private val createCategoryUseCase: CreateCategoryUseCase,
     private val changeSequenceUseCase: EditCategorySequenceUseCase,
     private val getCategoryPostUseCase: GetCategoryPostUseCase
-) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageSideEffect>() {
-    override val initialState: CategoryManageState = CategoryManageState.Initial
-
+) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageSideEffect>(CategoryManageState.Initial) {
     // 카테고리 리스트 상태
     private var _categoryList = mutableStateListOf<CategoryItem>()
     val categoryList : List<CategoryItem>
@@ -60,7 +58,7 @@ class CategoryManageViewModel @Inject constructor(
     private fun getCategoryList(){
         getCategoryListUseCase()
             .catch {
-                sendEvent(CategoryManageEvent.OnLoadError(it.message.toString()))
+                updateState { CategoryManageState.Failure(it.message) }
             }
             .onEach {
                 _categoryList.addAll(it)
@@ -70,7 +68,7 @@ class CategoryManageViewModel @Inject constructor(
                         CategoryPostState.Initial(getCategoryPostUseCase(category.id).cachedIn(viewModelScope))
                     )
                 }
-                sendEvent(CategoryManageEvent.OnLoadSuccess(it))
+                updateState { CategoryManageState.Success(it) }
             }
             .launchIn(viewModelScope)
     }
@@ -109,8 +107,9 @@ class CategoryManageViewModel @Inject constructor(
             .onEach {
                 if (it){
                     _categoryList.remove(category)
+                    _categoryPostStateList.removeAt(category.sequence - 1)
                     if (_categoryList.isEmpty())
-                        sendEvent(CategoryManageEvent.OnEmpty)
+                        updateState { CategoryManageState.Empty }
                 } else
                     _errorChannel.send(UiText.StringResource(R.string.category_delete_erorr))
             }
@@ -198,8 +197,8 @@ class CategoryManageViewModel @Inject constructor(
     }
 
 
-    override fun reduceState(current: CategoryManageState, event: CategoryManageEvent, ): CategoryManageState {
-        when (event) {
+    override fun handleEvents(event: CategoryManageEvent) {
+        when (event){
             is CategoryManageEvent.OnAddClick -> {
                 createCategory(event.category)
             }
@@ -215,25 +214,15 @@ class CategoryManageViewModel @Inject constructor(
             is CategoryManageEvent.OnReorderCategory -> {
                 reorderItem(event.from, event.to)
             }
-            is CategoryManageEvent.OnLoadError -> {
-                return CategoryManageState.Failure(event.msg)
-            }
             is CategoryManageEvent.CheckAddable -> {
                 checkCategory(event.category)
             }
             is CategoryManageEvent.CheckEditable -> {
                 checkEditable(event.origin, event.edited)
             }
-            is CategoryManageEvent.OnEmpty -> {
-                return CategoryManageState.Empty
-            }
             is CategoryManageEvent.OnExpandLoadError -> {
                 pagingLoadError(event.position)
             }
-            is CategoryManageEvent.OnLoadSuccess -> {
-                return CategoryManageState.Success(event.categoryList)
-            }
         }
-        return current
     }
 }

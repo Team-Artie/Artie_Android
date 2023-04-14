@@ -13,8 +13,6 @@ class CategoryManageContract {
     }
 
     sealed class CategoryManageEvent : ViewModelContract.Event{
-        data class OnLoadSuccess(val categoryList: List<CategoryItem>) : CategoryManageEvent()
-        data class OnLoadError(val msg: String?) : CategoryManageEvent()
         data class OnExpandClick(val index: Int) : CategoryManageEvent()
         data class OnAddClick(val category: String) : CategoryManageEvent()
         data class OnDeleteClick(val categoryItem : CategoryItem) : CategoryManageEvent()
@@ -23,7 +21,6 @@ class CategoryManageContract {
         data class CheckAddable(val category: String) : CategoryManageEvent()
         data class OnReorderCategory(val from: Int, val to: Int) : CategoryManageEvent()
         data class OnExpandLoadError(val position: Int) : CategoryManageEvent()
-        object OnEmpty : CategoryManageEvent()
     }
 
     sealed class CategoryManageSideEffect : ViewModelContract.SideEffect{

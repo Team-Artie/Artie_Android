@@ -15,7 +15,6 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         val token = runBlocking { getIdTokenUseCase() }
-        Log.e("getIdTokenUseCase", token.toString())
         val authRequest = if (token.isEmpty()){
             originalRequest.newBuilder()
                 .build()

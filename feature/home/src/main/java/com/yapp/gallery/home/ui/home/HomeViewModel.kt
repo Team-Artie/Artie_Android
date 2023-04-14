@@ -1,11 +1,15 @@
 package com.yapp.gallery.home.ui.home
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.base.BaseStateViewModel
+import com.yapp.gallery.common.provider.ConnectionProvider
 import com.yapp.gallery.domain.usecase.auth.GetRefreshedTokenUseCase
+import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -13,30 +17,38 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getRefreshedTokenUseCase: GetRefreshedTokenUseCase
-) : BaseStateViewModel<HomeState, HomeEvent, HomeSideEffect>() {
-    override val initialState: HomeState = HomeState.Initial
-
-//    private var _homeSideEffect = Channel<NavigatePayload>()
-//    val homeSideEffect = _homeSideEffect.receiveAsFlow()
-//
-//    private val _homeState = MutableStateFlow<WebViewState>(WebViewState.Initial)
-//    val homeState : StateFlow<WebViewState>
-//        get() = _homeState
-
+    private val getValidTokenUseCase: GetValidTokenUseCase,
+    private val connectionProvider: ConnectionProvider,
+    private val savedStateHandle: SavedStateHandle
+) : BaseStateViewModel<HomeState, HomeEvent, HomeSideEffect>(HomeState.Initial) {
     init {
-        loadWithRefreshedToken()
+        initLoad()
     }
 
-    private fun loadWithRefreshedToken(){
-        viewModelScope.launch {
-            runCatching { getRefreshedTokenUseCase() }
-                .onSuccess {
-                    sendEvent(HomeEvent.OnConnect(it))
+    private fun initLoad(){
+        connectionProvider.getConnectionFlow()
+            .onEach {
+                if (it) {
+                    loadWithValidToken()
+                } else {
+                    updateState { HomeState.Disconnected }
                 }
-                .onFailure {
-                    sendEvent(HomeEvent.OnLoadAgain)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadWithValidToken(){
+        savedStateHandle.get<String>("accessToken")?.let {
+           updateState { HomeState.Connected(it) }
+        } ?: run {
+            getValidTokenUseCase()
+                .catch {
+                    updateState { HomeState.Disconnected }
                 }
+                .onEach {
+                    updateState { HomeState.Connected(it) }
+                }
+                .launchIn(viewModelScope)
         }
     }
 
@@ -56,20 +68,13 @@ class HomeViewModel @Inject constructor(
         Log.e("homeSideEffect", action)
     }
 
-    override fun reduceState(current: HomeState, event: HomeEvent): HomeState {
-        return when(event){
-            is HomeEvent.OnConnect -> {
-                HomeState.Connected(event.idToken)
-            }
-            is HomeEvent.OnLoadAgain -> {
-                current
+    override fun handleEvents(event: HomeEvent) {
+        when(event){
+            is HomeEvent.OnLoadAgain ->{
+                loadWithValidToken()
             }
             is HomeEvent.OnWebViewClick -> {
                 handleWebViewBridge(event.action, event.payload)
-                current
-            }
-            is HomeEvent.OnDisconnect -> {
-                HomeState.Disconnected
             }
         }
     }

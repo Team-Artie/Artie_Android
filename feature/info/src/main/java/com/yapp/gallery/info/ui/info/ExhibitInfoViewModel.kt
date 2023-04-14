@@ -45,6 +45,7 @@ class ExhibitInfoViewModel @Inject constructor(
     fun setInfoSideEffect(action: String, payload: String?){
         viewModelScope.launch {
             _infoSideEffect.send(NavigatePayload(action, payload))
+            Log.e("setInfoSideEffect", "action: $action, payload: $payload")
         }
     }
 }

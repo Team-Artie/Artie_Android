@@ -49,11 +49,6 @@ fun ProfileScreen(
     val logoutDialogShown = remember { mutableStateOf(false) }
     val scaffoldState = rememberScaffoldState()
 
-    LaunchedEffect(viewModel.errors) {
-        viewModel.errors.collectLatest {
-            scaffoldState.snackbarHostState.showSnackbar(it.asString(context))
-        }
-    }
 
     LaunchedEffect(viewModel.sideEffect) {
         viewModel.sideEffect.collectLatest {
@@ -82,6 +77,11 @@ fun ProfileScreen(
 
                 is ProfileSideEffect.NavigateToSignOut -> {
                     navigateToSignOut()
+                }
+                is ProfileSideEffect.ShowSnackbar -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = it.message.asString(context)
+                    )
                 }
             }
         }

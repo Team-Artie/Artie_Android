@@ -18,17 +18,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +63,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CategoryManageRoute(
     popBackStack: () -> Unit,
@@ -82,6 +88,7 @@ internal fun CategoryManageRoute(
     }
 
     // 카테고리 생성 다이얼로그
+
     if (categoryCreateDialogShown.value) {
         CategoryCreateDialog(onCreateCategory = { viewModel.sendEvent(CategoryManageEvent.OnAddClick(it)) },
             onDismissRequest = { categoryCreateDialogShown.value = false },
@@ -401,7 +408,7 @@ private fun CategoryListTile(
             if (data.loadState.refresh is LoadState.Error){
                 onLoadError(index)
             }
-            CategoryPostPagingView(posts = data)
+            CategoryPostPagingView(posts = data, modifier = Modifier.padding(start = 46.dp, end = 20.dp))
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -472,6 +479,7 @@ private fun CategoryEmptyView(
 @Composable
 private fun CategoryPostPagingView(
     posts : LazyPagingItems<PostContent>,
+    modifier: Modifier = Modifier
 ){
     Spacer(modifier = Modifier.height(24.dp))
     when(posts.loadState.refresh){
@@ -488,11 +496,12 @@ private fun CategoryPostPagingView(
                 CategoryPostEmpty()
             }
             else {
-                LazyRow{
+                LazyRow(
+                    modifier = modifier
+                ){
                     items(posts){post ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(start = 20.dp, end = 6.dp)
                         ) {
                             AsyncImage(
                                 model = post?.mainImage,
@@ -500,7 +509,7 @@ private fun CategoryPostPagingView(
                                 placeholder = painterResource(id = R.drawable.bg_image_placeholder),
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .size(80.dp)
+                                    .size(100.dp)
                                     .clip(RoundedCornerShape(4.5.dp)),
                                 contentScale = ContentScale.Crop
                             )
@@ -508,12 +517,14 @@ private fun CategoryPostPagingView(
 
                             post?.name?.let {
                                 Text(
-                                    text = it, style = MaterialTheme.typography.h4.copy(
+                                    text = it, textAlign = TextAlign.Center, style = MaterialTheme.typography.h4.copy(
                                         fontWeight = FontWeight.Medium, color = color_gray300
-                                    )
+                                    ), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier
+                                        .width(100.dp)
                                 )
                             }
                         }
+                        Spacer(modifier = Modifier.width(6.dp))
                     }
                 }
             }
