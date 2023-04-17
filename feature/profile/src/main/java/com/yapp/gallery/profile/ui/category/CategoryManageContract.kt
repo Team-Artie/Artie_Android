@@ -23,6 +23,12 @@ class CategoryManageContract {
         data class OnExpandLoadError(val position: Int) : CategoryManageEvent()
     }
 
+    sealed class CategoryManageReduce : ViewModelContract.Reduce {
+        data class CategoryListLoaded(val categoryList: List<CategoryItem>) : CategoryManageReduce()
+        object CategoryListEmpty : CategoryManageReduce()
+        data class CategoryListLoadError(val msg: String?) : CategoryManageReduce()
+    }
+
     sealed class CategoryManageSideEffect : ViewModelContract.SideEffect{
     }
 }

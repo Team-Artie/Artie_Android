@@ -14,7 +14,6 @@ import com.yapp.gallery.domain.usecase.record.DeleteBothUseCase
 import com.yapp.gallery.profile.R
 import com.yapp.gallery.profile.ui.profile.ProfileContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -29,7 +28,7 @@ class ProfileViewModel @Inject constructor(
     private val getLoginTypeUseCase: GetLoginTypeUseCase,
     private val deleteBothUseCase: DeleteBothUseCase,
     private val deleteLoginInfoUseCase: DeleteLoginInfoUseCase
-) : BaseStateViewModel<ProfileState, ProfileEvent, ProfileSideEffect>(ProfileState.Initial) {
+) : BaseStateViewModel<ProfileState, ProfileEvent, ProfileReduce, ProfileSideEffect>(ProfileState.Initial) {
     init {
         getUser()
     }
@@ -40,7 +39,7 @@ class ProfileViewModel @Inject constructor(
                 sendSideEffect(ProfileSideEffect.ShowSnackbar(UiText.StringResource(R.string.profile_load_error)))
             }
             .onEach {
-                updateState { ProfileState.Success(it) }
+                updateState(ProfileReduce.UserLoaded(it))
             }
             .launchIn(viewModelScope)
     }
@@ -105,6 +104,14 @@ class ProfileViewModel @Inject constructor(
             }
             is ProfileEvent.OnLogout -> {
                 removeInfo()
+            }
+        }
+    }
+
+    override fun reduceState(state: ProfileState, reduce: ProfileReduce): ProfileState {
+        return when (reduce) {
+            is ProfileReduce.UserLoaded -> {
+                ProfileState.Success(reduce.user)
             }
         }
     }

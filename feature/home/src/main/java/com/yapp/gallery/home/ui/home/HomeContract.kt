@@ -14,6 +14,11 @@ class HomeContract {
         data class OnWebViewClick (val action: String, val payload: String?) : HomeEvent()
     }
 
+    sealed class HomeReduce : ViewModelContract.Reduce{
+        data class Connected(val idToken: String) : HomeReduce()
+        object Disconnected : HomeReduce()
+    }
+
     sealed class HomeSideEffect : ViewModelContract.SideEffect{
         object NavigateToCalendar : HomeSideEffect()
         object NavigateToRecord : HomeSideEffect()

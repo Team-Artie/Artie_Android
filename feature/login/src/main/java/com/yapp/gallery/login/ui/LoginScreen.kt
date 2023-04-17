@@ -34,7 +34,7 @@ fun LoginScreen(
     val viewState by viewModel.viewState.collectAsStateWithLifecycle()
 
     LoginScaffold(
-        isLoading = (viewState is LoginState.Loading || viewState is LoginState.TokenSuccess || viewState is LoginState.LoginSuccess),
+        isLoading = (viewState is LoginState.TokenSuccess || viewState is LoginState.LoginSuccess),
         onGoogleLogin = { viewModel.sendEvent(LoginEvent.OnGoogleLogin) },
         onKakaoLogin = { viewModel.sendEvent(LoginEvent.OnKakaoLogin) },
         onNaverLogin = { viewModel.sendEvent(LoginEvent.OnNaverLogin) }

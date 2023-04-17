@@ -19,6 +19,10 @@ class ProfileContract {
         object OnLogout : ProfileEvent()
     }
 
+    sealed class ProfileReduce : ViewModelContract.Reduce{
+        data class UserLoaded(val user: User) : ProfileReduce()
+    }
+
     sealed class ProfileSideEffect : ViewModelContract.SideEffect{
         object NavigateToLogin : ProfileSideEffect()
         object NavigateToManage: ProfileSideEffect()

@@ -20,16 +20,16 @@ class LoginViewModel @Inject constructor(
     private val tokenNaverLoginUseCase: PostNaverLoginUseCase,
     private val createUserUseCase: CreateUserUseCase,
     private val setLoginInfoUseCase: SetLoginInfoUseCase,
-) : BaseStateViewModel<LoginState, LoginEvent, LoginSideEffect>(LoginState.Initial) {
+) : BaseStateViewModel<LoginState, LoginEvent, LoginReduce, LoginSideEffect>(LoginState.Initial) {
     private fun postKakaoLogin(accessToken: String) {
         tokenKakaoLoginUseCase(accessToken)
             .onEach {
-                sendEvent(LoginEvent.OnTokenSuccess(it))
+                updateState(LoginReduce.TokenSuccess(it))
                 firebaseTokenLogin(it, LoginType.Kakao)
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                updateState { LoginState.LoginError(it.message) }
+                updateState(LoginReduce.LoginError(it.message))
             }
             .launchIn(viewModelScope)
     }
@@ -37,12 +37,12 @@ class LoginViewModel @Inject constructor(
     private fun postNaverLogin(accessToken: String) {
         tokenNaverLoginUseCase(accessToken)
             .onEach {
-                sendEvent(LoginEvent.OnTokenSuccess(it))
+                updateState(LoginReduce.TokenSuccess(it))
                 firebaseTokenLogin(it, LoginType.Naver)
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                updateState { LoginState.LoginError(it.message) }
+                updateState(LoginReduce.LoginError(it.message))
             }
             .launchIn(viewModelScope)
     }
@@ -57,7 +57,7 @@ class LoginViewModel @Inject constructor(
                     }
                 }
             }.addOnFailureListener {
-                updateState { LoginState.LoginError(it.message) }
+                updateState(LoginReduce.LoginError(it.message))
             }
     }
 
@@ -67,11 +67,11 @@ class LoginViewModel @Inject constructor(
         createUserUseCase(firebaseUserId)
             .onEach {
                 sendSideEffect(LoginSideEffect.NavigateToHome)
-                updateState { LoginState.LoginSuccess(it) }
+                updateState(LoginReduce.LoginSuccess(it))
             }
             .catch {
                 Timber.e("Login 오류 : ${it.message}")
-                updateState { LoginState.LoginError(it.message) }
+                updateState(LoginReduce.LoginError(it.message))
             }
             .launchIn(viewModelScope)
     }
@@ -112,10 +112,10 @@ class LoginViewModel @Inject constructor(
                 }
             }
             is LoginEvent.OnLoginFailure -> {
-                updateState { LoginState.LoginError(event.message) }
+                updateState(LoginReduce.LoginError(event.message))
             }
             is LoginEvent.OnCreateGoogleUser -> {
-                updateState { LoginState.Loading }
+                updateState(LoginReduce.TokenSuccess(event.idToken))
                 setLoginInfo(event.firebaseId, event.idToken, LoginType.Google)
             }
             is LoginEvent.OnCreateKakaoUser -> {
@@ -124,11 +124,14 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.OnCreateNaverUser -> {
                 postNaverLogin(event.accessToken)
             }
-            is LoginEvent.OnTokenSuccess -> {
-                sendEvent(LoginEvent.OnTokenSuccess(event.token))
-            }
         }
     }
 
-
+    override fun reduceState(state: LoginState, reduce: LoginReduce): LoginState {
+        return when(reduce){
+            is LoginReduce.TokenSuccess -> LoginState.TokenSuccess(reduce.token)
+            is LoginReduce.LoginSuccess -> LoginState.LoginSuccess(reduce.id)
+            is LoginReduce.LoginError -> LoginState.LoginError(reduce.message)
+        }
+    }
 }

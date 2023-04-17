@@ -5,13 +5,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.provider.ConnectionProvider
-import com.yapp.gallery.domain.usecase.auth.GetRefreshedTokenUseCase
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -20,7 +17,7 @@ class HomeViewModel @Inject constructor(
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
     private val savedStateHandle: SavedStateHandle
-) : BaseStateViewModel<HomeState, HomeEvent, HomeSideEffect>(HomeState.Initial) {
+) : BaseStateViewModel<HomeState, HomeEvent, HomeReduce, HomeSideEffect>(HomeState.Initial) {
     init {
         initLoad()
     }
@@ -31,7 +28,7 @@ class HomeViewModel @Inject constructor(
                 if (it) {
                     loadWithValidToken()
                 } else {
-                    updateState { HomeState.Disconnected }
+                    updateState(HomeReduce.Disconnected)
                 }
             }
             .launchIn(viewModelScope)
@@ -39,14 +36,14 @@ class HomeViewModel @Inject constructor(
 
     private fun loadWithValidToken(){
         savedStateHandle.get<String>("accessToken")?.let {
-           updateState { HomeState.Connected(it) }
+           updateState(HomeReduce.Connected(it))
         } ?: run {
             getValidTokenUseCase()
                 .catch {
-                    updateState { HomeState.Disconnected }
+                    updateState(HomeReduce.Disconnected)
                 }
                 .onEach {
-                    updateState { HomeState.Connected(it) }
+                    updateState(HomeReduce.Connected(it))
                 }
                 .launchIn(viewModelScope)
         }
@@ -78,4 +75,16 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    override fun reduceState(state: HomeState, reduce: HomeReduce): HomeState {
+        return when(reduce){
+            is HomeReduce.Connected -> {
+                HomeState.Connected(reduce.idToken)
+            }
+            is HomeReduce.Disconnected -> {
+                HomeState.Disconnected
+            }
+        }
+    }
+
 }

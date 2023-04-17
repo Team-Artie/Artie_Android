@@ -6,22 +6,27 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelContract.Event, SE : ViewModelContract.SideEffect>(
-    initialState: S,
-) : ViewModel() {
+abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelContract.Event,
+        R : ViewModelContract.Reduce, SE : ViewModelContract.SideEffect>(initialState: S) : ViewModel()
+{
     private val _viewState = MutableStateFlow(initialState)
-    val viewState : StateFlow<S> = _viewState.asStateFlow()
+    val viewState: StateFlow<S> = _viewState.asStateFlow()
 
     private val currentState : S get() = _viewState.value
 
-    protected val _events = MutableSharedFlow<E>()
+    private val _events = MutableSharedFlow<E>()
+    private val _reduce = MutableSharedFlow<R>()
 
-    private val _sideEffect : Channel<SE> =Channel()
+    private val _sideEffect: Channel<SE> = Channel()
     val sideEffect = _sideEffect.receiveAsFlow()
 
     init {
         _events.onEach(::handleEvents)
             .launchIn(viewModelScope)
+
+        _reduce.onEach {
+            _viewState.value = reduceState(currentState, it)
+        }.launchIn(viewModelScope)
     }
 
     protected fun sendSideEffect(effect: SE){
@@ -30,16 +35,19 @@ abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelCont
         }
     }
 
-    protected fun updateState(reduce: S.() -> S) {
-        val newState = currentState.reduce()
-        _viewState.update { newState }
-    }
-
 
     fun sendEvent(event: E) {
         viewModelScope.launch {
             _events.emit(event)
         }
     }
+
+    protected fun updateState(reduce: R){
+        viewModelScope.launch {
+            _reduce.emit(reduce)
+        }
+    }
+
     abstract fun handleEvents(event: E)
+    abstract fun reduceState(state: S, reduce: R) : S
 }

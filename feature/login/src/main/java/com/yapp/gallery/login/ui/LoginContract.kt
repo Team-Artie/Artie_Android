@@ -5,7 +5,6 @@ import com.yapp.gallery.common.base.ViewModelContract
 class LoginContract {
     sealed class LoginState : ViewModelContract.State{
         object Initial : LoginState()
-        object Loading : LoginState()
         data class TokenSuccess(val token: String) : LoginState()
         data class LoginSuccess(val id: Long) : LoginState()
         data class LoginError(val message: String?) : LoginState()
@@ -16,10 +15,15 @@ class LoginContract {
         object OnKakaoLogin : LoginEvent()
         object OnNaverLogin : LoginEvent()
         data class OnLoginFailure(val message: String?) : LoginEvent()
-        data class OnTokenSuccess(val token: String) : LoginEvent()
         data class OnCreateGoogleUser(val firebaseId: String, val idToken: String) : LoginEvent()
         data class OnCreateKakaoUser(val accessToken: String) : LoginEvent()
         data class OnCreateNaverUser(val accessToken: String) : LoginEvent()
+    }
+
+    sealed class LoginReduce : ViewModelContract.Reduce{
+        data class TokenSuccess(val token: String) : LoginReduce()
+        data class LoginSuccess(val id: Long) : LoginReduce()
+        data class LoginError(val message: String?) : LoginReduce()
     }
 
     sealed class LoginSideEffect : ViewModelContract.SideEffect{

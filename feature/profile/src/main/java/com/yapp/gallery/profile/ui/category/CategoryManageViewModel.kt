@@ -30,7 +30,8 @@ class CategoryManageViewModel @Inject constructor(
     private val createCategoryUseCase: CreateCategoryUseCase,
     private val changeSequenceUseCase: EditCategorySequenceUseCase,
     private val getCategoryPostUseCase: GetCategoryPostUseCase
-) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageSideEffect>(CategoryManageState.Initial) {
+) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageReduce, CategoryManageSideEffect>(CategoryManageState.Initial) {
+    // Todo : 상태값 정리
     // 카테고리 리스트 상태
     private var _categoryList = mutableStateListOf<CategoryItem>()
     val categoryList : List<CategoryItem>
@@ -58,7 +59,7 @@ class CategoryManageViewModel @Inject constructor(
     private fun getCategoryList(){
         getCategoryListUseCase()
             .catch {
-                updateState { CategoryManageState.Failure(it.message) }
+                updateState(CategoryManageReduce.CategoryListLoadError(it.message.toString()))
             }
             .onEach {
                 _categoryList.addAll(it)
@@ -68,7 +69,7 @@ class CategoryManageViewModel @Inject constructor(
                         CategoryPostState.Initial(getCategoryPostUseCase(category.id).cachedIn(viewModelScope))
                     )
                 }
-                updateState { CategoryManageState.Success(it) }
+                updateState(CategoryManageReduce.CategoryListLoaded(it))
             }
             .launchIn(viewModelScope)
     }
@@ -109,7 +110,7 @@ class CategoryManageViewModel @Inject constructor(
                     _categoryList.remove(category)
                     _categoryPostStateList.removeAt(category.sequence - 1)
                     if (_categoryList.isEmpty())
-                        updateState { CategoryManageState.Empty }
+                        updateState(CategoryManageReduce.CategoryListEmpty)
                 } else
                     _errorChannel.send(UiText.StringResource(R.string.category_delete_erorr))
             }
@@ -125,6 +126,8 @@ class CategoryManageViewModel @Inject constructor(
                 _categoryList.add(CategoryItem(it, categoryName, categoryList.size, 0).also { c ->
                     _categoryPostStateList.add(CategoryPostState.Initial(getCategoryPostUseCase(c.id).cachedIn(viewModelScope)))
                 })
+                if (_categoryList.size == 1)
+                    updateState(CategoryManageReduce.CategoryListLoaded(_categoryList))
             }
             .launchIn(viewModelScope)
     }
@@ -223,6 +226,22 @@ class CategoryManageViewModel @Inject constructor(
             is CategoryManageEvent.OnExpandLoadError -> {
                 pagingLoadError(event.position)
             }
+        }
+    }
+
+    override fun reduceState(
+        state: CategoryManageState,
+        reduce: CategoryManageReduce,
+    ): CategoryManageState {
+        return when (reduce) {
+            is CategoryManageReduce.CategoryListLoaded ->
+                CategoryManageState.Success(reduce.categoryList)
+
+            is CategoryManageReduce.CategoryListEmpty ->
+                CategoryManageState.Empty
+
+            is CategoryManageReduce.CategoryListLoadError ->
+                CategoryManageState.Failure(reduce.msg)
         }
     }
 }
