@@ -11,8 +11,11 @@ class ExhibitInfoNavigatorImpl @Inject constructor() : ExhibitInfoNavigator {
         return Intent(context, ExhibitInfoActivity::class.java)
     }
 
-    override fun navigateToInfo(context: Context, exhibitId: Long): Intent {
-        return Intent(context, ExhibitInfoActivity::class.java).putExtra("exhibitId", exhibitId)
+    override fun navigateToInfo(context: Context, exhibitId: Long, idToken: String?): Intent {
+        return Intent(context, ExhibitInfoActivity::class.java).apply {
+            putExtra("exhibitId", exhibitId)
+            putExtra("accessToken", idToken)
+        }
     }
 
 }

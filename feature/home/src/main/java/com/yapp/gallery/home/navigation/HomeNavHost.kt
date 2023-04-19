@@ -36,13 +36,14 @@ fun HomeNavHost(
                     )
                 },
                 navigateToCalendar = { navHostController.navigate("calendar") },
-                navigateToInfo = {
+                navigateToInfo = { id, token ->
                     navigateToScreen(
                         context,
-                        infoNavigator.navigateToInfo(context, it)
+                        infoNavigator.navigateToInfo(context, id, token)
                     )
                 },
-                webViewProvider = webViewProvider
+                webViewProvider = webViewProvider,
+                context = context
             )
         }
         composable("record") {

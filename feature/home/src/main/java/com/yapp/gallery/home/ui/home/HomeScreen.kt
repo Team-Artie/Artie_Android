@@ -1,5 +1,6 @@
 package com.yapp.gallery.home.ui.home
 
+import android.app.Activity
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -19,10 +20,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.home.R
+import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -30,10 +34,12 @@ fun HomeRoute(
     navigateToRecord: () -> Unit,
     navigateToProfile: () -> Unit,
     navigateToCalendar: () -> Unit,
-    navigateToInfo: (Long) -> Unit,
+    navigateToInfo: (Long, String?) -> Unit,
     webViewProvider: WebViewProvider,
-    viewModel: HomeViewModel = hiltViewModel()
+    context: Activity
 ){
+    val viewModel = homeViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
+
     val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel.sideEffect){
@@ -42,7 +48,7 @@ fun HomeRoute(
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
                 is HomeSideEffect.NavigateToCalendar -> navigateToCalendar()
-                is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId)
+                is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId, it.idToken)
             }
         }
     }
@@ -122,4 +128,14 @@ private fun HomeDisconnectedScreen(
             )
         )
     }
+}
+
+@Composable
+fun homeViewModel(context: Activity, accessToken: String?) : HomeViewModel {
+    val factory = EntryPointAccessors.fromActivity(
+        context,
+        HomeViewModelFactoryProvider::class.java
+    ).homeViewModelFactory()
+
+    return viewModel(factory = HomeViewModel.provideFactory(factory, accessToken))
 }

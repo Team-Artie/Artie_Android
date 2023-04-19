@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
+import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.GalleryTheme
 import com.yapp.gallery.info.navigation.ExhibitInfoNavHost
 import com.yapp.gallery.navigation.home.HomeNavigator
@@ -22,6 +23,9 @@ class ExhibitInfoActivity : ComponentActivity() {
     @Inject
     lateinit var saverNavigator: SaverNavigator
 
+    @Inject
+    lateinit var webViewProvider: WebViewProvider
+
     private val exhibitId by lazy {
         intent.getLongExtra("exhibitId", 1)
     }
@@ -38,6 +42,7 @@ class ExhibitInfoActivity : ComponentActivity() {
             GalleryTheme {
                 ExhibitInfoNavHost(
                     exhibitId = exhibitId,
+                    webViewProvider = webViewProvider,
                     cameraNavigator = cameraNavigator, homeNavigator = homeNavigator,
                     navToImgPicker = {
                         imagePicker.launch(

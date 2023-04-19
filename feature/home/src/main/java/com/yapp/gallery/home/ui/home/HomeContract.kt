@@ -23,6 +23,6 @@ class HomeContract {
         object NavigateToCalendar : HomeSideEffect()
         object NavigateToRecord : HomeSideEffect()
         object NavigateToProfile : HomeSideEffect()
-        data class NavigateToInfo(val postId: Long) : HomeSideEffect()
+        data class NavigateToInfo(val postId: Long, val idToken: String?) : HomeSideEffect()
     }
 }

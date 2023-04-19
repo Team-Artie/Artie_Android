@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.util.webview.NavigatePayload
 import com.yapp.gallery.common.util.webview.WebViewState
 import com.yapp.gallery.domain.usecase.auth.GetRefreshedTokenUseCase
+import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -14,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val getRefreshedTokenUseCase: GetRefreshedTokenUseCase
+    private val getValidTokenUseCase: GetValidTokenUseCase
 ) : ViewModel() {
     private val _calendarSideEffect = Channel<NavigatePayload>()
     val calendarSideEffect = _calendarSideEffect.receiveAsFlow()
@@ -28,17 +29,10 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun getRefreshedToken(){
-        viewModelScope.launch {
-            runCatching { getRefreshedTokenUseCase() }
-                .onSuccess {
-                    Log.e("success", it)
-                    _calendarState.value = WebViewState.Connected(it)
-                }
-                .onFailure {
-                    Log.e("error", it.message.toString())
-                    _calendarState.value = WebViewState.Disconnected
-                }
-        }
+        getValidTokenUseCase()
+            .onEach { _calendarState.value = WebViewState.Connected(it) }
+            .catch { _calendarState.value = WebViewState.Disconnected }
+            .launchIn(viewModelScope)
     }
 
     fun setSideEffect(action: String, payload : String?){

@@ -57,6 +57,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
+    implementation libs.timber
     implementation libs.firebase.auth.ktx
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps

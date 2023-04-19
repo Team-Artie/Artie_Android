@@ -1,23 +1,31 @@
 package com.yapp.gallery.home.ui.home
 
-import android.util.Log
-import androidx.lifecycle.SavedStateHandle
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.provider.ConnectionProvider
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import com.yapp.gallery.home.ui.home.HomeContract.*
-import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
-import javax.inject.Inject
+import timber.log.Timber
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+class HomeViewModel @AssistedInject constructor(
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
-    private val savedStateHandle: SavedStateHandle
+    @Assisted private val accessToken: String?
 ) : BaseStateViewModel<HomeState, HomeEvent, HomeReduce, HomeSideEffect>(HomeState.Initial) {
+
+    @AssistedFactory
+    interface HomeFactory{
+        fun create(accessToken: String?) : HomeViewModel
+    }
+
     init {
         initLoad()
     }
@@ -35,8 +43,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadWithValidToken(){
-        savedStateHandle.get<String>("accessToken")?.let {
-           updateState(HomeReduce.Connected(it))
+        accessToken?.let {
+            updateState(HomeReduce.Connected(it))
+            Timber.e("accessToken Received: $it")
         } ?: run {
             getValidTokenUseCase()
                 .catch {
@@ -50,19 +59,20 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    private fun handleWebViewBridge(action: String, payload: String?){
-        when(action){
+    private fun handleWebViewBridge(action: String, payload: String?) {
+        when (action) {
             "NAVIGATE_TO_CALENDAR" -> sendSideEffect(HomeSideEffect.NavigateToCalendar)
             "NAVIGATE_TO_EDIT" -> sendSideEffect(HomeSideEffect.NavigateToRecord)
             "NAVIGATE_TO_MY" -> sendSideEffect(HomeSideEffect.NavigateToProfile)
             "NAVIGATE_TO_EXHIBITION_DETAIL" -> {
                 payload?.let { p ->
                     val exhibitId = JSONObject(p).getLong("id")
-                    sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId))
+                    val idToken = (viewState.value as? HomeState.Connected)?.idToken
+                    sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
                 }
             }
         }
-        Log.e("homeSideEffect", action)
+        Timber.tag("homeSideEffect").e(action)
     }
 
     override fun handleEvents(event: HomeEvent) {
@@ -83,6 +93,17 @@ class HomeViewModel @Inject constructor(
             }
             is HomeReduce.Disconnected -> {
                 HomeState.Disconnected
+            }
+        }
+    }
+
+    companion object{
+        fun provideFactory(
+            assistedFactory: HomeFactory,
+            accessToken: String?
+        ) : ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return assistedFactory.create(accessToken) as T
             }
         }
     }
