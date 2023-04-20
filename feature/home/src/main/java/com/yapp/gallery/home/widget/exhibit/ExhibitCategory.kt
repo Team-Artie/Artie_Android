@@ -32,11 +32,11 @@ import com.yapp.gallery.home.R
 fun ExhibitCategory(
     categoryList: List<CategoryItem>,
     focusManager: FocusManager,
-    focusRequester: FocusRequester,
-    categorySelect: MutableState<Long>,
+    categorySelect: Long,
     addCategory: (String) -> Unit,
     checkCategory: (String) -> Unit,
-    categoryState: BaseState<Boolean>
+    categoryState: BaseState<Boolean>,
+    setCategoryId: (Long) -> Unit
 ){
     // 카테고리 생성 다이얼로그
     val categoryDialogShown = remember { mutableStateOf(false) }
@@ -95,12 +95,8 @@ fun ExhibitCategory(
                 categoryList.forEach { item ->
                     Surface(
                         shape = RoundedCornerShape(71.dp),
-                        onClick = {
-                            if (categorySelect.value == item.id) categorySelect.value =
-                                -1
-                            else categorySelect.value = item.id
-                        },
-                        color = if (categorySelect.value == item.id) MaterialTheme.colors.secondary
+                        onClick = { setCategoryId(item.id)},
+                        color = if (categorySelect == item.id) MaterialTheme.colors.secondary
                         else MaterialTheme.colors.background,
                         border = BorderStroke(
                             1.dp,
@@ -111,9 +107,7 @@ fun ExhibitCategory(
                         Text(
                             text = item.name, style = MaterialTheme.typography.h4.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (categorySelect.value == item.id) Color(
-                                    0xFF282828
-                                )
+                                color = if (categorySelect == item.id) Color(0xFF282828)
                                 else MaterialTheme.colors.secondary
                             ),
                             modifier = Modifier.padding(

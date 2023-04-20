@@ -38,14 +38,11 @@ fun CategoryCreateDialog(
     onCreateCategory: (String) -> Unit,
     onDismissRequest: () -> Unit,
     checkCategory: (String) -> Unit,
-    categoryState: BaseState<Boolean>,
-    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
+    categoryState: BaseState<Boolean>
 ){
     val categoryName = rememberSaveable {
         mutableStateOf("")
     }
-    val focusManager = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
 
     Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(
@@ -82,17 +79,10 @@ fun CategoryCreateDialog(
                             checkCategory(it)
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester),
+                            .fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                            }
                         ),
                         placeholder = {
                             Text(

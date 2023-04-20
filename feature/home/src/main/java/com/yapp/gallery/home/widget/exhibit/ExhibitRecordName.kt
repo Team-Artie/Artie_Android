@@ -33,7 +33,8 @@ import com.yapp.gallery.home.R
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ExhibitRecordName(
-    name: MutableState<String>,
+    name: String,
+    setExhibitName: (String) -> Unit,
     focusRequester: FocusRequester,
     focusManager: FocusManager,
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
@@ -47,8 +48,8 @@ fun ExhibitRecordName(
         Spacer(modifier = Modifier.height(12.dp))
         BasicTextField(
             maxLines = 1,
-            value = name.value,
-            onValueChange = { if (it.length <= 20) name.value = it },
+            value = name,
+            onValueChange = { if (it.length <= 20) setExhibitName(it) },
             textStyle = MaterialTheme.typography.h3,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
@@ -65,7 +66,7 @@ fun ExhibitRecordName(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                 ) {
-                    if (name.value.isEmpty()) {
+                    if (name.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.exhibit_name_hint),
                             style = MaterialTheme.typography.h3.copy(color = color_gray700)

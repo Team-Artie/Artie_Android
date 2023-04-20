@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
-import com.yapp.gallery.home.ui.record.ExhibitRecordScreen
+import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -47,7 +47,7 @@ fun HomeNavHost(
             )
         }
         composable("record") {
-            ExhibitRecordScreen(
+            ExhibitRecordRoute(
                 navigateToCamera = { postId ->
                     navigateToScreen(
                         context = context,

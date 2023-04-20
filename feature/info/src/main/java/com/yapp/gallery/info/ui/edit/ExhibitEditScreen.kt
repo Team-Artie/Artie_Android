@@ -174,9 +174,10 @@ fun ExhibitEditScreen(
                     Spacer(modifier = Modifier.height(48.dp))
 
                     ExhibitRecordName(
-                        name = viewModel.exhibitName,
+                        name = viewModel.exhibitName.value,
                         focusManager = focusManager,
-                        focusRequester = focusRequester
+                        focusRequester = focusRequester,
+                        setExhibitName = { viewModel.exhibitName.value = it }
                     )
 
                     Spacer(modifier = Modifier.height(50.dp))
@@ -184,15 +185,15 @@ fun ExhibitEditScreen(
                     ExhibitCategory(
                         categoryList = viewModel.categoryList,
                         focusManager = focusManager,
-                        focusRequester = focusRequester,
-                        categorySelect = viewModel.categorySelect,
+                        categorySelect = viewModel.categorySelect.value,
                         addCategory = { viewModel.addCategory(it)},
                         checkCategory = { viewModel.checkCategory(it)},
-                        categoryState = categoryState
+                        categoryState = categoryState,
+                        setCategoryId = { viewModel.categorySelect.value = it },
                     )
 
                     ExhibitDate(
-                        exhibitDate = viewModel.exhibitDate,
+                        exhibitDate = viewModel.exhibitDate.value,
                         scope = scope,
                         focusManager = focusManager,
                         modalBottomSheetState = modalBottomSheetState
@@ -200,9 +201,10 @@ fun ExhibitEditScreen(
 
                     Spacer(modifier = Modifier.height(50.dp))
 
-                    ExhibitLink(exhibitLink = viewModel.exhibitLink,
+                    ExhibitLink(exhibitLink = viewModel.exhibitLink.value,
                         focusManager = focusManager,
-                        focusRequester = focusRequester
+                        focusRequester = focusRequester,
+                        setExhibitLink = { viewModel.exhibitLink.value = it }
                     )
                 }
                 // 하단 버튼

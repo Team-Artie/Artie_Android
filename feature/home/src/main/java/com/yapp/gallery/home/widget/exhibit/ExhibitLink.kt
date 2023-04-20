@@ -33,7 +33,8 @@ import com.yapp.gallery.home.R
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ExhibitLink(
-    exhibitLink: MutableState<String>,
+    exhibitLink: String,
+    setExhibitLink: (String) -> Unit,
     focusManager: FocusManager,
     focusRequester: FocusRequester,
     keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
@@ -47,8 +48,8 @@ fun ExhibitLink(
         Spacer(modifier = Modifier.height(12.dp))
         BasicTextField(
             maxLines = 1,
-            value = exhibitLink.value,
-            onValueChange = { exhibitLink.value = it },
+            value = exhibitLink,
+            onValueChange = setExhibitLink,
             textStyle = MaterialTheme.typography.h3,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
@@ -66,7 +67,7 @@ fun ExhibitLink(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                 ) {
-                    if (exhibitLink.value.isEmpty()) {
+                    if (exhibitLink.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.exhibit_link_hint),
                             style = MaterialTheme.typography.h3.copy(color = color_gray700)

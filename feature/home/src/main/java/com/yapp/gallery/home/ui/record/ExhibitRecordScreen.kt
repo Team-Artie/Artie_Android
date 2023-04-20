@@ -11,16 +11,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.yapp.gallery.common.model.BaseState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.common.theme.*
 import com.yapp.gallery.common.widget.CenterTopAppBar
 import com.yapp.gallery.common.widget.ConfirmDialog
@@ -31,105 +33,129 @@ import com.yapp.gallery.home.widget.exhibit.ExhibitCategory
 import com.yapp.gallery.home.widget.exhibit.ExhibitDate
 import com.yapp.gallery.home.widget.exhibit.ExhibitLink
 import com.yapp.gallery.home.widget.exhibit.ExhibitRecordName
+import com.yapp.gallery.home.ui.record.ExhibitRecordContract.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ExhibitRecordScreen(
+fun ExhibitRecordRoute(
     navigateToCamera: (Long) -> Unit,
     navigateToGallery: (Long) -> Unit,
     navigateToHome: () -> Unit,
     popBackStack: () -> Unit,
-    viewModel: ExhibitRecordViewModel = hiltViewModel(),
-) {
-    // 키보드 포커스
-    val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-
-    // 카테고리 State
-    val categoryState: BaseState<Boolean> by viewModel.categoryState.collectAsState()
-    val exhibitRecordState: ExhibitRecordState by viewModel.recordScreenState.collectAsState()
+    viewModel: ExhibitRecordViewModel = hiltViewModel()
+){
+    val recordState : ExhibitRecordState by viewModel.viewState.collectAsStateWithLifecycle()
 
     // Bottom Sheet State
     val modalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
 
-    // 스크롤 상태
-    val scrollState = rememberScrollState()
     // ScaffoldState
     val scaffoldState = rememberScaffoldState()
 
-    // 기록 방법 다이얼로그
-    val recordMenuDialogShown = remember { mutableStateOf(false) }
-    // 임시 저장 다이얼로그
-    val tempPostDialogShown = remember { mutableStateOf(false) }
-
-
-    // 스크린 상태
-    LaunchedEffect(viewModel.recordScreenState) {
-        viewModel.recordScreenState.collect {
-            when (it) {
-                is ExhibitRecordState.Response -> {
-                    tempPostDialogShown.value = true
-                }
-                is ExhibitRecordState.Delete -> {
-                    scope.launch {
-                        val res = scaffoldState.snackbarHostState.showSnackbar(
-                            message = "임시 보관된 전시를 삭제하였습니다.",
-                            actionLabel = "취소",
-                            duration = SnackbarDuration.Short
-                        )
-                        when (res) {
-                            SnackbarResult.Dismissed -> {
-                                viewModel.undoDelete(false)
-                            }
-                            SnackbarResult.ActionPerformed -> {
-                            }
+    LaunchedEffect(viewModel.sideEffect){
+        viewModel.sideEffect.collectLatest {
+            when(it){
+                is ExhibitRecordSideEffect.NavigateToCamera -> navigateToCamera(it.postId)
+                is ExhibitRecordSideEffect.NavigateToGallery -> navigateToGallery(it.postId)
+                is ExhibitRecordSideEffect.NavigateToHome -> navigateToHome()
+                is ExhibitRecordSideEffect.ShowSnackBar -> {
+                    val res = scaffoldState.snackbarHostState.showSnackbar(
+                        message = "임시 보관된 전시를 삭제하였습니다.",
+                        actionLabel = "취소",
+                        duration = SnackbarDuration.Short
+                    )
+                    when (res) {
+                        SnackbarResult.ActionPerformed -> {
+                            viewModel.sendEvent(ExhibitRecordEvent.OnDeleteCancel)
                         }
+                        else -> {}
                     }
                 }
-                is ExhibitRecordState.CreatedCamera -> {
-                    navigateToCamera(it.postId)
-                    recordMenuDialogShown.value = false
-                }
-                is ExhibitRecordState.CreatedAlbum -> {
-                    navigateToGallery(it.postId)
-                    recordMenuDialogShown.value = false
-                }
-                else -> {}
             }
         }
-
     }
 
     // 임시 포스트 다이얼로그
-    if (tempPostDialogShown.value) {
+    if (recordState.tempPostDialogShown) {
         ConfirmDialog(
             title = stringResource(id = R.string.temp_post_title),
             subTitle = stringResource(id = R.string.temp_post_guide),
             onDismissRequest = {
-                viewModel.setContinuousDelete(false)
-                tempPostDialogShown.value = false
+                viewModel.sendEvent(ExhibitRecordEvent.DeleteTempPost)
+//                tempPostDialogShown.value = false
             },
             onConfirm = {
-                viewModel.setContinuousDelete(true)
-                tempPostDialogShown.value = false
+                viewModel.sendEvent(ExhibitRecordEvent.ContinueTempPost)
+//                tempPostDialogShown.value = false
             },
             important = true
         )
     }
 
+    // 전시 기록 시작 다이얼로그
+    if (recordState.recordDialogShown) {
+        RecordMenuDialog(
+            onCameraClick = {
+                viewModel.sendEvent(ExhibitRecordEvent.OnCameraClick)
+                navigateToHome.invoke()
+            },
+            onGalleryClick = {
+                viewModel.sendEvent(ExhibitRecordEvent.OnGalleryClick)
+                navigateToHome.invoke()
+            },
+            onDismissRequest = { viewModel.sendEvent(ExhibitRecordEvent.OnCancelClick) }
+        )
+    }
+
+    ExhibitRecordScreen(
+        recordState = recordState,
+        setExhibitDate = {
+            viewModel.sendEvent(ExhibitRecordEvent.SetExhibitDate(it))
+            scope.launch { modalBottomSheetState.hide() }
+        },
+        setExhibitName = { viewModel.sendEvent(ExhibitRecordEvent.SetExhibitName(it)) },
+        setCategoryId = { viewModel.sendEvent(ExhibitRecordEvent.SetCategoryId(it)) },
+        setExhibitLink = { viewModel.sendEvent(ExhibitRecordEvent.SetExhibitLink(it)) },
+        addCategory = { viewModel.sendEvent(ExhibitRecordEvent.AddCategory(it)) },
+        checkCategory = { viewModel.sendEvent(ExhibitRecordEvent.CheckCategory(it)) },
+        onRecordClick = { viewModel.sendEvent(ExhibitRecordEvent.OnRecordClick) },
+        popBackStack = popBackStack,
+        scope = scope,
+        scaffoldState = scaffoldState,
+        modalBottomSheetState = modalBottomSheetState
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun ExhibitRecordScreen(
+    recordState: ExhibitRecordState,
+    addCategory: (String) -> Unit,
+    checkCategory: (String) -> Unit,
+    setExhibitDate: (String) -> Unit,
+    setExhibitName: (String) -> Unit,
+    setCategoryId: (Long) -> Unit,
+    setExhibitLink: (String) -> Unit,
+    onRecordClick: () -> Unit,
+    popBackStack: () -> Unit,
+    scope: CoroutineScope,
+    scaffoldState: ScaffoldState,
+    modalBottomSheetState : ModalBottomSheetState
+){
+    // 스크롤 상태
+    val scrollState = rememberScrollState()
+
     ModalBottomSheetLayout(
         sheetState = modalBottomSheetState,
         sheetContent = {
             Spacer(modifier = Modifier.height(1.dp))
-            DatePickerSheet(onDateSet = {
-                viewModel.exhibitDate.value = it
-                scope.launch {
-                    modalBottomSheetState.hide()
-                }
-            })
+            DatePickerSheet(onDateSet = setExhibitDate)
         },
         scrimColor = Color.Transparent,
         sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
@@ -179,39 +205,15 @@ fun ExhibitRecordScreen(
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                 ) {
-                    Spacer(modifier = Modifier.height(48.dp))
-
-                    ExhibitRecordName(
-                        name = viewModel.exhibitName,
-                        focusManager = focusManager,
-                        focusRequester = focusRequester
-                    )
-
-                    Spacer(modifier = Modifier.height(50.dp))
-
-                    ExhibitCategory(
-                        categoryList = viewModel.categoryList,
-                        focusManager = focusManager,
-                        focusRequester = focusRequester,
-                        categorySelect = viewModel.categorySelect,
-                        addCategory = { viewModel.addCategory(it) },
-                        checkCategory = { viewModel.checkCategory(it) },
-                        categoryState = categoryState
-                    )
-
-                    ExhibitDate(
-                        exhibitDate = viewModel.exhibitDate,
-                        scope = scope,
-                        focusManager = focusManager,
-                        modalBottomSheetState = modalBottomSheetState
-                    )
-
-                    Spacer(modifier = Modifier.height(50.dp))
-
-                    ExhibitLink(
-                        exhibitLink = viewModel.exhibitLink,
-                        focusManager = focusManager,
-                        focusRequester = focusRequester
+                    ExhibitRecordContent(
+                        setExhibitName = setExhibitName,
+                        addCategory = addCategory,
+                        checkCategory = checkCategory,
+                        setCategoryId = setCategoryId,
+                        setExhibitLink = setExhibitLink,
+                        recordState = recordState,
+                        modalBottomSheetState = modalBottomSheetState,
+                        scope = scope
                     )
                 }
                 // 하단 버튼
@@ -227,18 +229,14 @@ fun ExhibitRecordScreen(
                         .padding(horizontal = 20.dp)
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 53.dp),
-                    onClick = {
-                        recordMenuDialogShown.value = true
-                    },
-                    enabled = viewModel.exhibitName.value.isNotEmpty() &&
-                            viewModel.categorySelect.value != -1L &&
-                            viewModel.exhibitDate.value.isNotEmpty()
+                    onClick = onRecordClick,
+                    enabled = recordState.exhibitName.isNotEmpty() &&
+                            recordState.categorySelect != -1L &&
+                            recordState.exhibitDate.isNotEmpty()
                 ) {
                     Text(
-                        text = if (exhibitRecordState is ExhibitRecordState.Continuous) stringResource(
-                            id = R.string.exhibit_crate_continuous_btn
-                        )
-                        else stringResource(id = R.string.exhibit_create_btn),
+                        text = if (recordState.continuous) stringResource(id = R.string.exhibit_crate_continuous_btn)
+                            else stringResource(id = R.string.exhibit_create_btn),
                         modifier = Modifier.padding(vertical = 12.dp),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp,
@@ -248,21 +246,80 @@ fun ExhibitRecordScreen(
             }
 
         }
-
-        // 전시 기록 시작 다이얼로그
-        if (recordMenuDialogShown.value) {
-            RecordMenuDialog(
-                onCameraClick = {
-                    viewModel.createOrUpdateRecord(type = CreateType.CAMERA)
-                    navigateToHome.invoke()
-                },
-                onGalleryClick = {
-                    viewModel.createOrUpdateRecord(type = CreateType.ALBUM)
-                    navigateToHome.invoke()
-                },
-                onDismissRequest = { recordMenuDialogShown.value = false }
-            )
-        }
     }
+}
 
+@OptIn(ExperimentalMaterialApi::class)
+@Preview(showBackground = true)
+@Composable
+private fun ExhibitRecordScreenPreview(){
+    GalleryTheme {
+        ExhibitRecordScreen(
+            recordState = ExhibitRecordState(),
+            addCategory = {},
+            checkCategory = {},
+            setExhibitDate = {},
+            setExhibitName = {},
+            setCategoryId = {},
+            setExhibitLink = {},
+            onRecordClick = { /*TODO*/ },
+            popBackStack = { /*TODO*/ },
+            scope = rememberCoroutineScope(),
+            scaffoldState = rememberScaffoldState(),
+            modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+        )
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+@Composable
+private fun ExhibitRecordContent(
+    setExhibitName: (String) -> Unit,
+    addCategory: (String) -> Unit,
+    checkCategory: (String) -> Unit,
+    setCategoryId: (Long) -> Unit,
+    setExhibitLink: (String) -> Unit,
+    recordState: ExhibitRecordState,
+    modalBottomSheetState : ModalBottomSheetState,
+    scope: CoroutineScope,
+    focusManager: FocusManager = LocalFocusManager.current,
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    Spacer(modifier = Modifier.height(48.dp))
+
+    ExhibitRecordName(
+        name = recordState.exhibitName,
+        focusManager = focusManager,
+        focusRequester = focusRequester,
+        setExhibitName = setExhibitName
+    )
+
+    Spacer(modifier = Modifier.height(50.dp))
+
+    ExhibitCategory(
+        categoryList = recordState.categoryList,
+        focusManager = focusManager,
+        categorySelect = recordState.categorySelect,
+        addCategory = addCategory,
+        checkCategory = checkCategory,
+        setCategoryId = setCategoryId,
+        categoryState = recordState.categoryState
+    )
+
+    ExhibitDate(
+        exhibitDate = recordState.exhibitDate,
+        scope = scope,
+        focusManager = focusManager,
+        modalBottomSheetState = modalBottomSheetState
+    )
+
+    Spacer(modifier = Modifier.height(50.dp))
+
+    ExhibitLink(
+        exhibitLink = recordState.exhibitLink,
+        setExhibitLink = setExhibitLink,
+        focusManager = focusManager,
+        focusRequester = focusRequester
+    )
 }
