@@ -11,11 +11,13 @@ import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.NidOAuthLogin
 import com.navercorp.nid.oauth.OAuthLoginCallback
+import com.yapp.gallery.domain.usecase.auth.DeleteLoginInfoUseCase
 import com.yapp.gallery.domain.usecase.profile.SignOutUseCase
 import com.yapp.gallery.domain.usecase.record.DeleteBothUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +26,7 @@ import javax.inject.Inject
 class SignOutViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val deleteBothUseCase: DeleteBothUseCase,
-    private val sharedPreferences: SharedPreferences,
+    private val deleteLoginInfoUseCase: DeleteLoginInfoUseCase,
     private val googleSignInClient: GoogleSignInClient,
     private val kakaoClient: UserApiClient,
     private val auth: FirebaseAuth,
@@ -36,20 +38,14 @@ class SignOutViewModel @Inject constructor(
                 .catch {
                     signOutUseCase()
                         .collectLatest{
-                            sharedPreferences.edit().apply {
-                                remove("idToken").apply()
-                                remove("loginType").apply()
-                            }
+                            deleteLoginInfoUseCase().collect()
                             signOut(loginType)
                         }
                 }
                 .collect{
                     signOutUseCase()
                         .collectLatest{
-                            sharedPreferences.edit().apply {
-                                remove("idToken").apply()
-                                remove("loginType").apply()
-                            }
+                            deleteLoginInfoUseCase().collect()
                             signOut(loginType)
                         }
                 }

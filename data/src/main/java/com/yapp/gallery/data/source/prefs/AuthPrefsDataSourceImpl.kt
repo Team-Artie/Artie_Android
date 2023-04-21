@@ -38,6 +38,14 @@ class AuthPrefsDataSourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun setUserId(userId: Long) {
+        withContext(dispatcher){
+            dataStore.edit { preferences ->
+                preferences[DataStoreModule.userIdKey] = userId.toString()
+            }
+        }
+    }
+
     override suspend fun getLoginType(): String? =
         dataStore.data.map { preferences ->
             preferences[DataStoreModule.loginTypeKey] ?: ""
@@ -76,10 +84,17 @@ class AuthPrefsDataSourceImpl @Inject constructor(
             preferences[DataStoreModule.idTokenExpireKey] ?: ""
         }.flowOn(dispatcher)
 
+    override fun getUserId(): Flow<Long?> =
+        dataStore.data.map { preferences ->
+            preferences[DataStoreModule.userIdKey]?.toLong()
+        }.flowOn(dispatcher)
+
     override suspend fun deleteLoginInfo() {
         dataStore.edit { preferences ->
             preferences.remove(DataStoreModule.loginTypeKey)
             preferences.remove(DataStoreModule.idTokenKey)
+            preferences.remove(DataStoreModule.idTokenExpireKey)
+            preferences.remove(DataStoreModule.userIdKey)
         }
     }
 }

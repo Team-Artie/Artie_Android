@@ -1,5 +1,6 @@
 package com.yapp.gallery.data.repository
 
+import android.util.Log
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
 import com.yapp.gallery.data.source.prefs.AuthPrefsDataSource
 import com.yapp.gallery.data.utils.isTokenExpired
@@ -20,12 +21,23 @@ class AuthRepositoryImpl @Inject constructor(
         emit(authPrefsDataSource.setIdToken(idToken))
     }.flowOn(dispatcher)
 
+    override fun setUserId(userId: Long): Flow<Unit> = flow {
+        emit(authPrefsDataSource.setUserId(userId))
+        Log.d("AuthRepositoryImpl", "setUserId: $userId")
+    }.flowOn(dispatcher)
+
     override suspend fun getLoginType(): String? {
         return authPrefsDataSource.getLoginType()
     }
 
     override suspend fun getIdToken(): String {
         return authPrefsDataSource.getIdToken().firstOrNull() ?: ""
+    }
+
+    override fun getUserId(): Flow<Long> {
+        return authPrefsDataSource.getUserId().map {
+            it ?: throw Exception("User Id is null")
+        }
     }
 
     override suspend fun getRefreshedToken(): String {
@@ -37,6 +49,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun deleteLoginInfo(): Flow<Unit> = flow {
         emit(authPrefsDataSource.deleteLoginInfo())
+        Log.e("AuthRepositoryImpl", "deleteCompleted")
     }.flowOn(dispatcher)
 
     // 유효한 토큰 가져오기

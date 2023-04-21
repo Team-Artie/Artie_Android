@@ -10,6 +10,7 @@ import com.yapp.gallery.domain.usecase.login.PostNaverLoginUseCase
 import com.yapp.gallery.login.ui.LoginContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -53,7 +54,7 @@ class LoginViewModel @Inject constructor(
             .addOnCompleteListener { task ->
                 task.result.user?.apply {
                     getIdToken(false).addOnCompleteListener { t ->
-                        setLoginInfo(uid, t.result?.token ?: "", loginType)
+                        createUser(uid, t.result?.token ?: "", loginType)
                     }
                 }
             }.addOnFailureListener {
@@ -63,23 +64,19 @@ class LoginViewModel @Inject constructor(
 
 
 
-    private fun createUser(firebaseUserId: String) {
-        createUserUseCase(firebaseUserId)
-            .onEach {
-                sendSideEffect(LoginSideEffect.NavigateToHome)
-                updateState(LoginReduce.LoginSuccess(it))
-            }
-            .catch {
-                Timber.e("Login 오류 : ${it.message}")
-                updateState(LoginReduce.LoginError(it.message))
-            }
-            .launchIn(viewModelScope)
-    }
-
-    private fun setLoginInfo(firebaseId: String, token : String, loginType: LoginType) {
-        setLoginInfoUseCase(getLoginTypeToString(loginType), token)
-            .onEach { createUser(firebaseId) }
-            .launchIn(viewModelScope)
+    private fun createUser(firebaseId: String, token : String, loginType: LoginType) {
+        viewModelScope.launch {
+            createUserUseCase(firebaseId)
+                .catch {
+                    Timber.e("Login 오류 : ${it.message}")
+                    updateState(LoginReduce.LoginError(it.message))
+                }
+                .collectLatest {
+                    setLoginInfoUseCase(getLoginTypeToString(loginType), token, it).collect()
+                    sendSideEffect(LoginSideEffect.NavigateToHome)
+                    updateState(LoginReduce.LoginSuccess(it))
+                }
+        }
     }
 
 
@@ -116,7 +113,7 @@ class LoginViewModel @Inject constructor(
             }
             is LoginEvent.OnCreateGoogleUser -> {
                 updateState(LoginReduce.TokenSuccess(event.idToken))
-                setLoginInfo(event.firebaseId, event.idToken, LoginType.Google)
+                createUser(event.firebaseId, event.idToken, LoginType.Google)
             }
             is LoginEvent.OnCreateKakaoUser -> {
                 postKakaoLogin(event.accessToken)

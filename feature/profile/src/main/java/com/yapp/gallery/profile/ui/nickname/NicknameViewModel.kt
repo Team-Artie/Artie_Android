@@ -5,19 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yapp.gallery.domain.usecase.auth.GetUserIdUseCase
 import com.yapp.gallery.domain.usecase.profile.UpdateNicknameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class NicknameViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    getUserIdUseCase: GetUserIdUseCase,
     private val updateNicknameUseCase: UpdateNicknameUseCase,
-    sharedPreferences: SharedPreferences
 ) : ViewModel(){
-    private val userId = sharedPreferences.getLong("uid", 2)
+    private var userId : Long? = null
     private val originNickname = savedStateHandle["nickname"] ?: ""
 
     val nickname = mutableStateOf(originNickname)
@@ -25,6 +27,15 @@ class NicknameViewModel @Inject constructor(
     private val _nicknameState = MutableStateFlow<NicknameState>(NicknameState.None)
     val nicknameState : StateFlow<NicknameState>
         get() = _nicknameState
+
+    init {
+        getUserIdUseCase()
+            .catch { Timber.e("userId is null") }
+            .onEach {
+                userId = it
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun changeNickname(editedName: String){
         nickname.value = editedName
@@ -38,12 +49,11 @@ class NicknameViewModel @Inject constructor(
     }
 
     fun updateNickname(){
-        viewModelScope.launch {
-            updateNicknameUseCase(userId, nickname.value)
-                .catch {
-                }
-                .collectLatest {
-                }
+        userId?.let {id ->
+            updateNicknameUseCase(id, nickname.value)
+                .catch {  }
+                .onEach {  }
+                .launchIn(viewModelScope)
         }
     }
 }

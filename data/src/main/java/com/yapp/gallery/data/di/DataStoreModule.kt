@@ -18,6 +18,7 @@ object DataStoreModule {
     val idTokenKey = stringPreferencesKey("idToken")
     val idTokenExpireKey = stringPreferencesKey("idTokenExpire")
     val loginTypeKey = stringPreferencesKey("loginType")
+    val userIdKey = stringPreferencesKey("userId")
 
     @Provides
     @Singleton
@@ -27,4 +28,5 @@ object DataStoreModule {
                 context.preferencesDataStoreFile("artiePreference")
             }
         )
+
 }
