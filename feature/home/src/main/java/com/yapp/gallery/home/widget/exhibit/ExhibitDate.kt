@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ExhibitDate(
-    exhibitDate : MutableState<String>,
+    exhibitDate : String,
     scope : CoroutineScope,
     focusManager: FocusManager,
     modalBottomSheetState : ModalBottomSheetState
@@ -51,7 +51,7 @@ fun ExhibitDate(
                     }
                 }
         ) {
-            if (exhibitDate.value.isEmpty()) {
+            if (exhibitDate.isEmpty()) {
                 Text(
                     text = stringResource(id = R.string.exhibit_date_hint),
                     fontFamily = pretendard,
@@ -62,7 +62,7 @@ fun ExhibitDate(
                 )
             } else {
                 Text(
-                    text = exhibitDate.value, fontFamily = pretendard, fontSize = 16.sp,
+                    text = exhibitDate, fontFamily = pretendard, fontSize = 16.sp,
                     maxLines = 1, modifier = Modifier.weight(1f),
                     color = color_white
                 )

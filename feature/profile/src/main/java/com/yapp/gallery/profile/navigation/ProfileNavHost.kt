@@ -3,7 +3,6 @@ package com.yapp.gallery.profile.navigation
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -12,20 +11,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yapp.gallery.profile.screen.category.CategoryManageScreen
-import com.yapp.gallery.profile.screen.legacy.LegacyScreen
-import com.yapp.gallery.profile.screen.nickname.NicknameScreen
-import com.yapp.gallery.profile.screen.notice.NoticeDetailScreen
-import com.yapp.gallery.profile.screen.notice.NoticeScreen
-import com.yapp.gallery.profile.screen.profile.ProfileScreen
-import com.yapp.gallery.profile.screen.signout.SignOutCompleteScreen
-import com.yapp.gallery.profile.screen.signout.SignOutScreen
+import com.yapp.gallery.profile.ui.category.CategoryManageRoute
+import com.yapp.gallery.profile.ui.legacy.LegacyScreen
+import com.yapp.gallery.profile.ui.nickname.NicknameScreen
+import com.yapp.gallery.profile.ui.notice.NoticeDetailScreen
+import com.yapp.gallery.profile.ui.notice.NoticeScreen
+import com.yapp.gallery.profile.ui.profile.ProfileScreen
+import com.yapp.gallery.profile.ui.signout.SignOutCompleteScreen
+import com.yapp.gallery.profile.ui.signout.SignOutScreen
+import timber.log.Timber
 
 @Composable
 fun ProfileNavHost(
-    logout : () -> Unit,
     navigateToLogin : () -> Unit,
-    loginType: String,
     context: Activity
 ){
     val navHostController = rememberNavController()
@@ -38,13 +36,13 @@ fun ProfileNavHost(
                 navigateToNotice = { navHostController.navigate("notice")},
                 navigateToLegacy = { navHostController.navigate("legacy") },
                 navigateToSignOut = { navHostController.navigate("signOut")},
-                logout = { logout() },
+                navigateToLogin = { navigateToLogin() },
                 popBackStack = { popBackStack(context, navHostController) },
                 editedNicknameData = backStackEntry.savedStateHandle.getLiveData<String>("editedName")
             )
         }
         composable("manage"){
-            CategoryManageScreen(popBackStack = { popBackStack(context, navHostController) })
+            CategoryManageRoute(popBackStack = { popBackStack(context, navHostController) })
         }
         composable(
             route = "nickname?nickname={nickname}",
@@ -104,7 +102,6 @@ fun ProfileNavHost(
         composable("signOut"){
             SignOutScreen(
                 popBackStack = { popBackStack(context, navHostController) },
-                loginType = loginType,
                 signOut = {
                     navHostController.navigate("signOutComplete"){
                         launchSingleTop = true
@@ -122,12 +119,11 @@ fun ProfileNavHost(
 
 private fun popBackStack(
     context: Activity, navHostController: NavHostController
-){
-    Log.e("back", navHostController.backQueue.toString())
+) {
+    Timber.tag("back").e(navHostController.backQueue.toString())
     if (navHostController.previousBackStackEntry != null) {
         navHostController.popBackStack()
-    }
-    else{
+    } else {
         context.finish()
     }
 }

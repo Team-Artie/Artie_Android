@@ -56,8 +56,8 @@ interface ArtieSerivce {
     suspend fun getUserData() : User
 
     // 카테고리 별 전시 목록 조회
-    @GET("/post/category/{id}")
-    suspend fun getCategoryPost(@Path("id") id: Long, @Query("page") page: Int, @Query("size") size: Int) : CategoryPost
+    @GET("/post/home/{id}")
+    suspend fun getCategoryPost(@Path("id") id: Long, @Query("page") page: Int = 0, @Query("size") size: Int = 20) : CategoryPost
 
     // 공지사항 조회
     @GET("/notice")

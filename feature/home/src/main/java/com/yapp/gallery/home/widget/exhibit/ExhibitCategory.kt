@@ -8,9 +8,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,15 +27,16 @@ import com.yapp.gallery.common.widget.CategoryCreateDialog
 import com.yapp.gallery.domain.entity.home.CategoryItem
 import com.yapp.gallery.home.R
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ExhibitCategory(
     categoryList: List<CategoryItem>,
     focusManager: FocusManager,
-    categorySelect: MutableState<Long>,
+    categorySelect: Long,
     addCategory: (String) -> Unit,
     checkCategory: (String) -> Unit,
-    categoryState: BaseState<Boolean>
+    categoryState: BaseState<Boolean>,
+    setCategoryId: (Long) -> Unit
 ){
     // 카테고리 생성 다이얼로그
     val categoryDialogShown = remember { mutableStateOf(false) }
@@ -91,12 +95,8 @@ fun ExhibitCategory(
                 categoryList.forEach { item ->
                     Surface(
                         shape = RoundedCornerShape(71.dp),
-                        onClick = {
-                            if (categorySelect.value == item.id) categorySelect.value =
-                                -1
-                            else categorySelect.value = item.id
-                        },
-                        color = if (categorySelect.value == item.id) MaterialTheme.colors.secondary
+                        onClick = { setCategoryId(item.id)},
+                        color = if (categorySelect == item.id) MaterialTheme.colors.secondary
                         else MaterialTheme.colors.background,
                         border = BorderStroke(
                             1.dp,
@@ -107,9 +107,7 @@ fun ExhibitCategory(
                         Text(
                             text = item.name, style = MaterialTheme.typography.h4.copy(
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (categorySelect.value == item.id) Color(
-                                    0xFF282828
-                                )
+                                color = if (categorySelect == item.id) Color(0xFF282828)
                                 else MaterialTheme.colors.secondary
                             ),
                             modifier = Modifier.padding(
@@ -135,7 +133,7 @@ fun ExhibitCategory(
             },
             onDismissRequest = { categoryDialogShown.value = false },
             categoryState = categoryState,
-            checkCategory = { checkCategory(it) }
+            checkCategory = { checkCategory(it) },
         )
     }
 }

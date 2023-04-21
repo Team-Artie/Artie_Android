@@ -2,7 +2,7 @@ package com.yapp.gallery.info.navigation
 
 import android.content.Context
 import android.content.Intent
-import com.yapp.gallery.info.screen.info.ExhibitInfoActivity
+import com.yapp.gallery.info.ui.info.ExhibitInfoActivity
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import javax.inject.Inject
 
@@ -11,8 +11,11 @@ class ExhibitInfoNavigatorImpl @Inject constructor() : ExhibitInfoNavigator {
         return Intent(context, ExhibitInfoActivity::class.java)
     }
 
-    override fun navigateToInfo(context: Context, exhibitId: Long): Intent {
-        return Intent(context, ExhibitInfoActivity::class.java).putExtra("exhibitId", exhibitId)
+    override fun navigateToInfo(context: Context, exhibitId: Long, idToken: String?): Intent {
+        return Intent(context, ExhibitInfoActivity::class.java).apply {
+            putExtra("exhibitId", exhibitId)
+            putExtra("accessToken", idToken)
+        }
     }
 
 }

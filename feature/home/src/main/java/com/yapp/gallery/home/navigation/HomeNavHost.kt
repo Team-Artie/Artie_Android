@@ -7,9 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.yapp.gallery.home.screen.calendar.CalendarScreen
-import com.yapp.gallery.home.screen.home.HomeScreen
-import com.yapp.gallery.home.screen.record.ExhibitRecordScreen
+import com.yapp.gallery.common.provider.WebViewProvider
+import com.yapp.gallery.home.ui.calendar.CalendarScreen
+import com.yapp.gallery.home.ui.home.HomeRoute
+import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -20,12 +21,13 @@ fun HomeNavHost(
     profileNavigator: ProfileNavigator,
     cameraNavigator: CameraNavigator,
     infoNavigator: ExhibitInfoNavigator,
+    webViewProvider: WebViewProvider,
     context: Activity,
     navToImagePicker: (Long) -> Unit,
 ) {
     NavHost(navController = navHostController, startDestination = "home") {
         composable("home") {
-            HomeScreen(
+            HomeRoute(
                 navigateToRecord = { navHostController.navigate("record") },
                 navigateToProfile = {
                     navigateToScreen(
@@ -34,16 +36,18 @@ fun HomeNavHost(
                     )
                 },
                 navigateToCalendar = { navHostController.navigate("calendar") },
-                navigateToInfo = {
+                navigateToInfo = { id, token ->
                     navigateToScreen(
                         context,
-                        infoNavigator.navigateToInfo(context, it)
+                        infoNavigator.navigateToInfo(context, id, token)
                     )
-                }
+                },
+                webViewProvider = webViewProvider,
+                context = context
             )
         }
         composable("record") {
-            ExhibitRecordScreen(
+            ExhibitRecordRoute(
                 navigateToCamera = { postId ->
                     navigateToScreen(
                         context = context,
@@ -64,7 +68,8 @@ fun HomeNavHost(
         }
         composable("calendar") {
             CalendarScreen(
-                popBackStack = { popBackStack(context, navHostController) }
+                popBackStack = { popBackStack(context, navHostController) },
+                webViewProvider = webViewProvider
             )
         }
     }

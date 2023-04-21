@@ -10,8 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yapp.gallery.info.screen.edit.ExhibitEditScreen
-import com.yapp.gallery.info.screen.info.ExhibitInfoScreen
+import com.yapp.gallery.common.provider.WebViewProvider
+import com.yapp.gallery.info.ui.edit.ExhibitEditScreen
+import com.yapp.gallery.info.ui.info.ExhibitInfoRoute
 import com.yapp.gallery.navigation.home.HomeNavigator
 import com.yapp.navigation.camera.CameraNavigator
 import org.json.JSONObject
@@ -20,6 +21,7 @@ import java.time.LocalDate
 @Composable
 fun ExhibitInfoNavHost(
     exhibitId: Long,
+    webViewProvider: WebViewProvider,
     cameraNavigator: CameraNavigator,
     homeNavigator: HomeNavigator,
     navToImgPicker: () -> Unit,
@@ -28,8 +30,9 @@ fun ExhibitInfoNavHost(
     val navHostController = rememberNavController()
     NavHost(navController = navHostController, startDestination = "info"){
         composable("info"){
-            ExhibitInfoScreen(
+            ExhibitInfoRoute(
                 exhibitId = exhibitId,
+                webViewProvider = webViewProvider,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
                 navigateToGallery = { navToImgPicker() },
                 navigateToCamera = { navigateToScreen(context, cameraNavigator.navigate(context))},

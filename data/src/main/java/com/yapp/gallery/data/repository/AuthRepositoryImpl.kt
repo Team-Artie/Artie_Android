@@ -1,25 +1,67 @@
 package com.yapp.gallery.data.repository
 
 import android.util.Log
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
+import com.yapp.gallery.data.source.prefs.AuthPrefsDataSource
+import com.yapp.gallery.data.utils.isTokenExpired
 import com.yapp.gallery.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
+    private val authPrefsDataSource: AuthPrefsDataSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
-    private val auth: FirebaseAuth
 ) : AuthRepository{
-    // Todo : callback flow로 바꿔보기?!
-    override fun getRefreshedToken(): Flow<String?> = flow {
-        val task = auth.currentUser!!.getIdToken(true)
-        emit(Tasks.await(task).token.also {
-            Log.e("token refresh", it.toString())
-        })
+    override fun setLoginType(loginType: String): Flow<Unit> = flow {
+        emit(authPrefsDataSource.setLoginType(loginType))
     }.flowOn(dispatcher)
+
+    override fun setIdToken(idToken: String): Flow<Unit> = flow {
+        emit(authPrefsDataSource.setIdToken(idToken))
+    }.flowOn(dispatcher)
+
+    override fun setUserId(userId: Long): Flow<Unit> = flow {
+        emit(authPrefsDataSource.setUserId(userId))
+        Log.d("AuthRepositoryImpl", "setUserId: $userId")
+    }.flowOn(dispatcher)
+
+    override suspend fun getLoginType(): String? {
+        return authPrefsDataSource.getLoginType()
+    }
+
+    override suspend fun getIdToken(): String {
+        return authPrefsDataSource.getIdToken().firstOrNull() ?: ""
+    }
+
+    override fun getUserId(): Flow<Long> {
+        return authPrefsDataSource.getUserId().map {
+            it ?: throw Exception("User Id is null")
+        }
+    }
+
+    override suspend fun getRefreshedToken(): String {
+        return authPrefsDataSource.getRefreshedToken().also {
+            // 리프레시 된 것 새로 저장
+            authPrefsDataSource.setIdToken(it)
+        }
+    }
+
+    override fun deleteLoginInfo(): Flow<Unit> = flow {
+        emit(authPrefsDataSource.deleteLoginInfo())
+        Log.e("AuthRepositoryImpl", "deleteCompleted")
+    }.flowOn(dispatcher)
+
+    // 유효한 토큰 가져오기
+    // 토큰 만료된 경우 자동으로 리프레시 토큰 가져옴
+    override fun getValidToken(): Flow<String> {
+        return authPrefsDataSource.getIdTokenExpiredTime().map {
+            if (it.isEmpty() || isTokenExpired(it)) {
+                getRefreshedToken()
+            } else {
+                getIdToken()
+            }
+        }.flowOn(dispatcher)
+    }
+
 }
