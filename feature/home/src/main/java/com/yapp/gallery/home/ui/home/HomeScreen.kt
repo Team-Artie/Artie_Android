@@ -71,6 +71,7 @@ private fun HomeScreen(
     onReload : () -> Unit
 ){
     val baseUrl = stringResource(id = R.string.home_base_url)
+//    val baseUrl = "https://21st-all-rounder-team-2-web-bobeenlee.vercel.app/test-token"
 
     Scaffold(
     ) { paddingValues ->
