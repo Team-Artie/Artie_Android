@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.common.provider.WebViewProvider
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.home.navigation.HomeNavHost
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
@@ -46,7 +46,7 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             navController = rememberNavController()
-            GalleryTheme {
+            ArtieTheme {
                 HomeNavHost(
                     navHostController = navController, profileNavigator = profileNavigator,
                     cameraNavigator = cameraNavigator, infoNavigator = infoNavigator,

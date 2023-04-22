@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -43,21 +44,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.camera.R
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import com.yapp.gallery.camera.ui.camera.CameraContract.*
 import com.yapp.gallery.camera.widget.PermissionRequestDialog
 import com.yapp.gallery.camera.widget.PermissionType
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.util.onCheckPermissions
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun CameraRoute(
+    navigateToResult: (ByteArray) -> Unit,
     popBackStack: () -> Unit,
     context: Activity,
     viewModel: CameraViewModel = hiltViewModel(),
@@ -100,11 +100,11 @@ fun CameraRoute(
         viewModel.sideEffect.collectLatest {
             when(it){
                 is CameraSideEffect.ImageCapture -> {
-                    moveToResultScreen(
+                    processCapture(
                         fileName = "yyyy-MM-dd-HH-mm-ss-SSS",
                         executor = ContextCompat.getMainExecutor(context),
                         outputDirectory = getFileOutput(context),
-                        onImageCapture = { uri -> viewModel.sendEvent(CameraEvent.OnImageCapture(uri))},
+                        onImageCapture = navigateToResult,
                         imageCapture = imageCapture
                     )
                 }
@@ -233,7 +233,7 @@ private fun CameraContent(
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                     bottom.linkTo(parent.bottom)
-                }
+                },
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_camera_capture),
@@ -275,7 +275,7 @@ private fun CameraContent(
 @Preview(showBackground = true)
 @Composable
 fun CameraContentPreview(){
-    GalleryTheme {
+    ArtieTheme {
         CameraContent(
             previewView = PreviewView(LocalContext.current),
             onClickCapture = { /*TODO*/ },
@@ -285,139 +285,43 @@ fun CameraContentPreview(){
     }
 }
 
-
-
-
-//@Composable
-//fun CameraView(
-//    outputDirectory: File,
-//    onImageCapture: (Uri) -> Unit,
-//    executor: Executor,
-//    onDismiss: () -> Unit
-//) {
-//    val lensFacing = CameraSelector.LENS_FACING_BACK
-//    val context = LocalContext.current
-//    val lifecycle = LocalLifecycleOwner.current
-//    val preview = CameraPreview.Builder().build()
-//    val previewView: PreviewView = remember { PreviewView(context) }
-//    val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
-//    val cameraSelector = CameraSelector.Builder()
-//        .requireLensFacing(lensFacing)
-//        .build()
-//
-//    LaunchedEffect(key1 = cameraSelector) {
-//        val cameraProvider = context.getCameraProvider()
-//
-//        cameraProvider.unbindAll()
-////        cameraProvider.bindToLifecycle(
-////            lifecycle,
-////            cameraSelector,
-////            preview,
-////            imageCapture
-////        )
-//        cameraProvider.bindToLifecycle(
-//            lifecycle,
-//            cameraSelector,
-//            preview,
-//            imageCapture
-//        )
-//
-//        preview.setSurfaceProvider(previewView.surfaceProvider)
-//    }
-//
-//    Box(contentAlignment = Alignment.BottomCenter) {
-//
-//        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
-//
-//        Box(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter)
-//                .alpha(0.7f)
-//                .background(Color.Black)
-//                .fillMaxWidth()
-//        ) {
-//            IconButton(
-//                modifier = Modifier
-//                    .align(Alignment.TopStart)
-//                    .padding(top = 27.dp),
-//                onClick = onDismiss
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.ArrowBack,
-//                    contentDescription = null,
-//                    tint = Color.White
-//                )
-//            }
-//        }
-//
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.Start,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Spacer(modifier = Modifier.weight(1f))
-//            IconButton(
-//                modifier = Modifier
-//                    .size(74.dp)
-//                    .weight(1f),
-//                onClick = {
-//                    moveToResultScreen(
-//                        fileName = "yyyy-MM-dd-HH-mm-ss-SSS",
-//                        outputDirectory,
-//                        imageCapture,
-//                        executor,
-//                        onImageCapture
-//                    )
-//                }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Sharp.Lens,
-//                    contentDescription = null,
-//                    modifier = Modifier.fillMaxSize(),
-//                    tint = Color.White
-//                )
-//            }
-//
-//            IconButton(
-//                modifier = Modifier
-//                    .size(53.dp)
-//                    .weight(1f),
-//                onClick = { /*TODO*/ },
-//            ) {
-//                Icon(
-//                    modifier = Modifier.size(50.dp),
-//                    imageVector = Icons.TwoTone.ChangeCircle,
-//                    contentDescription = null,
-//                    tint = Color.White
-//                )
-//            }
-//        }
-//    }
-//
-//}
-
-private fun moveToResultScreen(
+// TODO : 결과 화면에서 선택 저장 가능하게 하기
+private fun processCapture(
     fileName: String,
     outputDirectory: File,
     imageCapture: ImageCapture,
     executor: Executor,
-    onImageCapture: (Uri) -> Unit
+    onImageCapture: (ByteArray) -> Unit
 ) {
-    val file = File(
-        outputDirectory,
-        SimpleDateFormat(fileName, Locale.KOREAN).format(System.currentTimeMillis()) + ".jpg"
-    )
+//    val file = File(
+//        outputDirectory,
+//        SimpleDateFormat(fileName, Locale.KOREAN).format(System.currentTimeMillis()) + ".jpg"
+//    )
+//    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+    imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
+        override fun onCaptureSuccess(image: ImageProxy) {
+            super.onCaptureSuccess(image)
+            val buffer = image.planes[0].buffer
+            buffer.position(0)
+            val bytes = ByteArray(buffer.capacity())
+            buffer.get(bytes)
+            onImageCapture(bytes)
+            image.close()
+        }
 
-    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-        override fun onError(exception: ImageCaptureException) {}
-
-        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(file)
-            onImageCapture(savedUri)
+        override fun onError(exception: ImageCaptureException) {
+            super.onError(exception)
         }
     })
+//    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
+//        override fun onError(exception: ImageCaptureException) {}
+//
+//        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+//            val savedUri = Uri.fromFile(file)
+//            onImageCapture(savedUri)
+//        }
+//    })
 }
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =

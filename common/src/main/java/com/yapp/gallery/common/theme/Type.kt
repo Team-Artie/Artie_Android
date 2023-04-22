@@ -25,7 +25,7 @@ val typography = Typography(
     // H1/24
     h1 = TextStyle(
         fontSize = 24.sp,
-        color = color_white
+        color = color_white,
     ),
     // H2/18,
     h2 = TextStyle(
@@ -35,7 +35,7 @@ val typography = Typography(
     // H3/16
     h3 = TextStyle(
         fontSize = 16.sp,
-        color = color_white
+        color = color_white,
     ),
     // H4/14
     h4 = TextStyle(

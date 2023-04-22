@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.chargemap.compose.numberpicker.ListItemPicker
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_gray900
 import com.yapp.gallery.common.theme.color_mainGreen
 import com.yapp.gallery.common.theme.color_popUpBottom
@@ -172,7 +172,7 @@ fun calculateDayLimit(curYear: Int, curMonth: Int) : Int{
 @Preview(showBackground = true)
 @Composable
 fun DatePickerSheetPreview() {
-    GalleryTheme {
+    ArtieTheme {
         DatePickerSheet(onDateSet = {})
     }
 }

@@ -17,8 +17,6 @@ class CameraContract {
         object RequestPermission : CameraEvent()
         object OnClickCapture : CameraEvent()
         object OnClickRotate : CameraEvent()
-        data class OnImageCapture(val uri: Uri) : CameraEvent()
-        object SwitchCamera : CameraEvent()
     }
 
     sealed class CameraReduce : ViewModelContract.Reduce {
@@ -28,7 +26,7 @@ class CameraContract {
     }
 
     sealed class CameraSideEffect : ViewModelContract.SideEffect {
-        data class ImageCapture(val uri: Uri) : CameraSideEffect()
+        object ImageCapture : CameraSideEffect()
         object NavigateToAppSetting : CameraSideEffect()
     }
 }

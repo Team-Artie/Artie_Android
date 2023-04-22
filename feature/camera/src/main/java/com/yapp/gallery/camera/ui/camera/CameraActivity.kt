@@ -6,11 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.yapp.gallery.camera.navigation.CameraNavHost
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.navigator.saver.SaverNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -57,7 +55,7 @@ class CameraActivity : AppCompatActivity() {
             SideEffect {
                 systemUiController.setStatusBarColor(color = Color.Transparent)
             }
-            GalleryTheme {
+            ArtieTheme {
                 CameraNavHost(context = this)
             }
         }

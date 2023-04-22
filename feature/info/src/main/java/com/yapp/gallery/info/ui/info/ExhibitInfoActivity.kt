@@ -10,7 +10,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.common.provider.WebViewProvider
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.info.navigation.ExhibitInfoNavHost
 import com.yapp.gallery.navigation.home.HomeNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -50,7 +50,7 @@ class ExhibitInfoActivity : ComponentActivity() {
                 systemUiController.setStatusBarColor(color = Color.Transparent)
             }
 
-            GalleryTheme {
+            ArtieTheme {
                 ExhibitInfoNavHost(
                     exhibitId = exhibitId,
                     webViewProvider = webViewProvider,

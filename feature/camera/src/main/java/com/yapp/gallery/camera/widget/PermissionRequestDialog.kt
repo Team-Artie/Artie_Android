@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.yapp.gallery.camera.R
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.common.theme.color_gray400
 import com.yapp.gallery.common.theme.color_gray600
@@ -129,7 +129,7 @@ fun PermissionRequestDialog(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRequirePermissionDialog() {
-    GalleryTheme {
+    ArtieTheme {
         PermissionRequestDialog(type = PermissionType.CAMERA, onDismiss = {}, onConfirm = {})
     }
 }

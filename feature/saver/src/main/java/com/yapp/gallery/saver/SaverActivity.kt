@@ -4,7 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.saver.databinding.ActivitySaverBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,7 +29,7 @@ class SaverActivity : AppCompatActivity() {
 
         binding.composeView.setContent {
             if (!uris.isNullOrEmpty()) {
-                GalleryTheme {
+                ArtieTheme {
                     SaverView(
                         onRetryListener = {
                             finish()
@@ -45,7 +45,7 @@ class SaverActivity : AppCompatActivity() {
             }
 
             uri?.let {
-                GalleryTheme {
+                ArtieTheme {
                     SaverView(
                         uri = it,
                         onRetryListener = { finish() },

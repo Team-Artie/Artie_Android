@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_gray300
 import com.yapp.gallery.common.theme.color_mainBlue
 import com.yapp.gallery.common.theme.grey_d5d5d5
@@ -144,7 +144,7 @@ private fun LoginScaffold(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    GalleryTheme {
+    ArtieTheme {
         LoginScaffold(
             isLoading = false,
             onGoogleLogin = {  },

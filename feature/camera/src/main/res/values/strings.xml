@@ -4,4 +4,8 @@
     <string name="camera_permission_title">카메라 승인 권한이 필요해요</string>
     <string name="gallery_permission_title">갤러리 승인 권한이 필요해요</string>
     <string name="permission_content">해당 권한을 승인하지 않으면\n사진을 업로드할 수 없습니다.</string>
+
+    <string name="retry_camera_btn">다시 찍기</string>
+    <string name="retry_gallery_btn">다시 선택하기</string>
+    <string name="register_post_btn">작품 기록하기</string>
 </resources>

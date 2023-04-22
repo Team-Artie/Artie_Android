@@ -26,6 +26,7 @@ constraintLayout = "1.0.1"
 fragmentx = "1.5.5"
 material = "1.6.1"
 uiController = "0.28.0"
+pager = "0.30.0"
 
 # retrofit, okhttp
 retrofit = "2.9.0"
@@ -85,6 +86,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 
 accompanist-flowLayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref ="flowLayout"}
 accompanist-uiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref="uiController"}
+accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref="pager"}
 
 numberPicker = { module = "com.chargemap.compose:numberpicker", version.ref = "numberPicker"}
 imagePicker = { module = "com.github.nguyenhoanglam:ImagePicker", version.ref = "imagePicker"}

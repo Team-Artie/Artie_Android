@@ -250,7 +250,7 @@ private fun ExhibitRecordScreen(
 @Preview(showBackground = true)
 @Composable
 private fun ExhibitRecordScreenPreview(){
-    GalleryTheme {
+    ArtieTheme {
         ExhibitRecordScreen(
             recordState = ExhibitRecordState(),
             addCategory = {},

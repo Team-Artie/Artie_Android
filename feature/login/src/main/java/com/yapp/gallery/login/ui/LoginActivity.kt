@@ -19,7 +19,7 @@ import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.navigation.home.HomeNavigator
 import com.yapp.gallery.login.ui.LoginContract.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,7 +50,7 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         initResultLauncher()
         setContent {
-            GalleryTheme {
+            ArtieTheme {
                 LoginScreen(viewModel = viewModel)
             }
 

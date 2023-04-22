@@ -22,14 +22,8 @@ class CameraViewModel @Inject constructor(
             is CameraEvent.RequestPermission -> {
                 sendSideEffect(CameraSideEffect.NavigateToAppSetting)
             }
-            is CameraEvent.SwitchCamera -> {
-                // todo
-            }
             is CameraEvent.OnClickCapture -> {
-                // todo
-            }
-            is CameraEvent.OnImageCapture -> {
-                // todo
+                sendSideEffect(CameraSideEffect.ImageCapture)
             }
             is CameraEvent.OnClickRotate -> {
                 updateState(CameraReduce.SetCameraLensFacing)
