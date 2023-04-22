@@ -16,6 +16,9 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -27,11 +30,15 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -51,8 +58,12 @@ import com.yapp.gallery.camera.ui.camera.CameraContract.*
 import com.yapp.gallery.camera.widget.PermissionRequestDialog
 import com.yapp.gallery.camera.widget.PermissionType
 import com.yapp.gallery.common.theme.ArtieTheme
+import com.yapp.gallery.common.theme.color_gray500
+import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.util.onCheckPermissions
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -191,6 +202,13 @@ private fun CameraContent(
     onClickRotate: () -> Unit,
     popBackStack: () -> Unit
 ){
+    val cameraClickable = remember { mutableStateOf(true) }
+
+    LaunchedEffect(cameraClickable.value){
+        delay(3000)
+        cameraClickable.value = true
+    }
+
     Box(modifier = Modifier
         .fillMaxSize()
         .navigationBarsPadding()) {
@@ -228,7 +246,11 @@ private fun CameraContent(
             val (captureBtn, faceTurnBtn) = createRefs()
 
             IconButton(
-                onClick = onClickCapture,
+                onClick = {
+                    if (cameraClickable.value){
+                        cameraClickable.value = false
+                    }
+                },
                 modifier = Modifier.constrainAs(captureBtn) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
@@ -265,12 +287,43 @@ private fun CameraContent(
                     )
                 }
             }
-
-
         }
 
+        if (!cameraClickable.value){
+            CameraShutterFrame(onAnimationEnd = onClickCapture)
+        }
     }
 }
+
+@Composable
+private fun CameraShutterFrame(
+    onAnimationEnd : () -> Unit
+){
+    val alphaValue = remember { Animatable(initialValue = 1f) }
+
+    LaunchedEffect(Unit){
+        alphaValue.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 500)
+        )
+        alphaValue.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 500)
+        )
+    }
+
+    val bgColor by animateColorAsState(
+        if (alphaValue.value > 0.5f) color_gray500.copy(alpha = 0.4f) else Color.Transparent
+    )
+    Box(
+        modifier = Modifier.fillMaxSize().background(bgColor)
+            .onGloballyPositioned {
+                onAnimationEnd()
+            },
+    )
+}
+
+
 
 @Preview(showBackground = true)
 @Composable
