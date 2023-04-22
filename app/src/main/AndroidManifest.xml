@@ -47,12 +47,11 @@
         <activity android:name=".home.ui.home.HomeActivity"
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
-            android:taskAffinity="@string/home_activity_task_affinity"
             android:theme="@style/Theme.YAPPALLRounderTeam2.NoAnim"
             android:exported="true"/>
 
         <activity
-            android:name=".camera.CameraActivity"
+            android:name=".camera.ui.camera.CameraActivity"
             android:screenOrientation="portrait"
             android:exported="true"/>
 

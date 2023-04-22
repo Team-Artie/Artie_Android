@@ -2,7 +2,7 @@ package com.yapp.gallery.camera.navigation
 
 import android.content.Context
 import android.content.Intent
-import com.yapp.gallery.camera.CameraActivity
+import com.yapp.gallery.camera.ui.camera.CameraActivity
 import com.yapp.navigation.camera.CameraNavigator
 import javax.inject.Inject
 

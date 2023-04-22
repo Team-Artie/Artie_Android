@@ -57,13 +57,13 @@ fun HomeNavHost(
                 },
                 popBackStack = { popBackStack(context, navHostController) },
                 navigateToGallery = { postId -> navToImagePicker.invoke(postId) },
-                navigateToHome = {
-                    navHostController.navigate("home") {
-                        popUpTo(navHostController.graph.id) {
-                            inclusive = true
-                        }
-                    }
-                }
+//                navigateToHome = {
+//                    navHostController.navigate("home") {
+//                        popUpTo(navHostController.graph.id) {
+//                            inclusive = true
+//                        }
+//                    }
+//                }
             )
         }
         composable("calendar") {

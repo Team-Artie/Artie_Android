@@ -44,7 +44,6 @@ import kotlinx.coroutines.launch
 fun ExhibitRecordRoute(
     navigateToCamera: (Long) -> Unit,
     navigateToGallery: (Long) -> Unit,
-    navigateToHome: () -> Unit,
     popBackStack: () -> Unit,
     viewModel: ExhibitRecordViewModel = hiltViewModel()
 ){
@@ -63,7 +62,7 @@ fun ExhibitRecordRoute(
             when(it){
                 is ExhibitRecordSideEffect.NavigateToCamera -> navigateToCamera(it.postId)
                 is ExhibitRecordSideEffect.NavigateToGallery -> navigateToGallery(it.postId)
-                is ExhibitRecordSideEffect.NavigateToHome -> navigateToHome()
+//                is ExhibitRecordSideEffect.NavigateToHome -> navigateToHome()
                 is ExhibitRecordSideEffect.ShowSnackBar -> {
                     val res = scaffoldState.snackbarHostState.showSnackbar(
                         message = "임시 보관된 전시를 삭제하였습니다.",
@@ -103,11 +102,9 @@ fun ExhibitRecordRoute(
         RecordMenuDialog(
             onCameraClick = {
                 viewModel.sendEvent(ExhibitRecordEvent.OnCameraClick)
-                navigateToHome.invoke()
             },
             onGalleryClick = {
                 viewModel.sendEvent(ExhibitRecordEvent.OnGalleryClick)
-                navigateToHome.invoke()
             },
             onDismissRequest = { viewModel.sendEvent(ExhibitRecordEvent.OnCancelClick) }
         )

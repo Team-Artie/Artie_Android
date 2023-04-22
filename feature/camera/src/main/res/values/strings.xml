@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">YAPP_ALL_Rounder_Team-2</string>
+    <string name="app_name">Artie</string>
+
+    <string name="camera_permission_title">카메라 승인 권한이 필요해요</string>
+    <string name="gallery_permission_title">갤러리 승인 권한이 필요해요</string>
+    <string name="permission_content">해당 권한을 승인하지 않으면\n사진을 업로드할 수 없습니다.</string>
 </resources>

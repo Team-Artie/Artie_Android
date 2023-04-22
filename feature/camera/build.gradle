@@ -32,7 +32,6 @@ android {
     }
 
     buildFeatures {
-        dataBinding = true
         compose true
     }
 
@@ -56,6 +55,7 @@ dependencies {
     implementation libs.bundles.compose
     implementation libs.bundles.androidx
     implementation libs.bundles.hilt.deps
+    implementation libs.accompanist.uiController
     kapt libs.bundles.hilt.compilers
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
