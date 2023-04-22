@@ -127,6 +127,7 @@ fun CameraRoute(
         )
     }
 
+    // 권한 부여되었을 때
     if (cameraState.permissionGranted){
         CameraScreen(
             cameraState = cameraState,
@@ -200,13 +201,14 @@ private fun CameraContent(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .alpha(0.7f)
-                .background(Color.Black)
+                .background(color_popUpBottom)
                 .fillMaxWidth()
         ) {
             IconButton(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(top = 27.dp),
+                    .padding(top = 47.dp, start = 16.dp, bottom = 14.dp)
+                    .size(24.dp),
                 onClick = popBackStack
             ) {
                 Icon(
@@ -250,11 +252,16 @@ private fun CameraContent(
                     },
                 onClick = onClickRotate,
             ) {
-                Surface(modifier = Modifier.size(53.dp), shape = CircleShape, color = color_popUpBottom) {
+                Surface(
+                    modifier = Modifier.size(53.dp),
+                    shape = CircleShape,
+                    color = color_popUpBottom.copy(alpha = 0.7f)
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_turn),
                         contentDescription = "turn",
-                        modifier = Modifier.padding(11.dp)
+                        modifier = Modifier.padding(11.dp),
+                        tint = Color.White
                     )
                 }
             }

@@ -59,6 +59,7 @@ dependencies {
     implementation libs.timber
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
+    implementation libs.accompanist.uiController
     implementation libs.androidx.webview
     implementation libs.imagePicker
     kapt libs.bundles.hilt.compilers

@@ -60,14 +60,14 @@ fun ExhibitInfoRoute(
             }
         }
     }
-
-    // 전체 화면 및 상태바 투명화
-    LaunchedEffect(Unit){
-        context.window.setFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        )
-    }
+//
+//    // 전체 화면 및 상태바 투명화
+//    LaunchedEffect(Unit){
+//        context.window.setFlags(
+//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+//        )
+//    }
 
     // 웹뷰 정의
     val webView = webViewProvider.getWebView{ action, payload ->

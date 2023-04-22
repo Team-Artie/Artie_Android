@@ -21,8 +21,6 @@ class CameraActivity : AppCompatActivity() {
     @Inject
     lateinit var saverNavigator: SaverNavigator
 
-    private lateinit var navController : NavHostController
-
 //    private val permissionLaunch =
 //        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGrant ->
 //            if (isGrant) {
@@ -59,9 +57,8 @@ class CameraActivity : AppCompatActivity() {
             SideEffect {
                 systemUiController.setStatusBarColor(color = Color.Transparent)
             }
-            navController = rememberNavController()
             GalleryTheme {
-                CameraNavHost(navController = navController, context = this)
+                CameraNavHost(context = this)
             }
         }
     }
