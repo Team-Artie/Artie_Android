@@ -25,6 +25,8 @@ class ResultContract {
 
     sealed class ResultReduce : ViewModelContract.Reduce{
         data class SetLoadedData(val postId: Long, val imageData: ImageData?, val imageList: List<Uri>) : ResultReduce()
+        data class UpdateAuthorName(val name: String) : ResultReduce()
+        data class UpdatePostName(val name: String) : ResultReduce()
     }
 
     sealed class ResultSideEffect : ViewModelContract.SideEffect{

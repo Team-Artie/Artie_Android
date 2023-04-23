@@ -11,4 +11,13 @@
 
     <string name="gallery_limit_title">사진 최대 개수</string>
     <string name="gallery_limit_content">사진은 최대 5장 까지 선택이 가능합니다.\n추가 선택 시 5장만 선택됩니다.</string>
+
+    <string name="author_name">작가 이름</string>
+    <string name="author_name_hint">작가 이름을 적어주세요.</string>
+
+    <string name="post_name">작품명</string>
+    <string name="post_name_hint">작품명을 적어주세요.</string>
+
+    <string name="emotional_tag">감정태그 (최대 5개)</string>
+    <string name="emotional_tag_hint">#감정태그를 적어주세요.</string>
 </resources>

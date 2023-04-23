@@ -28,13 +28,13 @@ class ResultViewModel @AssistedInject constructor(
     override fun handleEvents(event: ResultEvent) {
         when(event){
             is ResultEvent.OnClickRegister -> {
-
+                sendSideEffect(ResultSideEffect.ShowBottomSheet)
             }
             is ResultEvent.SetAuthorName -> {
-
+                updateState(ResultReduce.UpdateAuthorName(event.name))
             }
             is ResultEvent.SetPostName -> {
-
+                updateState(ResultReduce.UpdatePostName(event.name))
             }
             is ResultEvent.SetTempTag -> {
 
@@ -49,6 +49,12 @@ class ResultViewModel @AssistedInject constructor(
                     captureData = reduce.imageData,
                     imageList = reduce.imageList,
                 )
+            }
+            is ResultReduce.UpdateAuthorName -> {
+                state.copy(authorName = reduce.name)
+            }
+            is ResultReduce.UpdatePostName -> {
+                state.copy(postName = reduce.name)
             }
         }
     }

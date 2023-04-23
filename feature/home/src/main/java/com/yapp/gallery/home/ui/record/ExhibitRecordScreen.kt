@@ -1,5 +1,6 @@
 package com.yapp.gallery.home.ui.record
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -193,6 +194,12 @@ private fun ExhibitRecordScreen(
                 )
             },
         ) { paddingValues ->
+            BackHandler(enabled = modalBottomSheetState.isVisible) {
+                scope.launch {
+                    modalBottomSheetState.hide()
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
