@@ -1,18 +1,15 @@
 package com.yapp.gallery.camera.navigation
 
 import android.app.Activity
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.core.os.bundleOf
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.yapp.gallery.camera.model.ImageData
 import com.yapp.gallery.camera.ui.camera.CameraRoute
+import com.yapp.gallery.camera.ui.gallery.GalleryRoute
 import com.yapp.gallery.camera.ui.result.ResultRoute
 
 @Composable
@@ -21,9 +18,10 @@ fun CameraNavHost(
     context: Activity,
 ) {
     var localByteArray = remember<ByteArray?> { null }
+    val localUriList = remember { mutableListOf<Uri>()}
 
     val startDestination = if (context.intent.hasExtra("gallery")) {
-        CameraRoute.Result.name
+        CameraRoute.Gallery.name
     } else {
         CameraRoute.Camera.name
     }
@@ -34,18 +32,38 @@ fun CameraNavHost(
                 navigateToResult = { byteArray ->
                     localByteArray = byteArray
                     navController.navigate(CameraRoute.Result.name) },
-                popBackStack = { popBackStack(context, navController) }, context = context)
+                popBackStack = { popBackStack(context, navController) },
+                context = context
+            )
         }
-        composable(CameraRoute.Result.name
-        ) {
-            ResultRoute(byteArray = localByteArray, context = context, popBackStack = { popBackStack(context, navController) })
+
+        composable(CameraRoute.Gallery.name){
+            GalleryRoute(
+                navigateToResult = { list ->
+                    localUriList.clear()
+                    localUriList.addAll(list)
+                    navController.navigate(CameraRoute.Result.name) },
+                popBackStack = { popBackStack(context, navController) },
+                context = context,
+            )
+        }
+
+        composable(CameraRoute.Result.name) {
+            ResultRoute(
+                byteArray = localByteArray,
+                context = context,
+                uriList = localUriList,
+                popBackStack = {
+                    popBackStack(context, navController) }
+            )
         }
     }
 }
 
-private fun popBackStack(
+fun popBackStack(
     context: Activity, navHostController: NavHostController
 ) {
+
     if (navHostController.previousBackStackEntry != null) {
         navHostController.popBackStack()
     } else {
@@ -54,5 +72,5 @@ private fun popBackStack(
 }
 
 enum class CameraRoute {
-    Camera, Result
+    Camera, Gallery, Result
 }

@@ -37,7 +37,6 @@ import com.yapp.gallery.common.theme.color_gray400
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.theme.color_white
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PermissionRequestDialog(
     type: PermissionType,

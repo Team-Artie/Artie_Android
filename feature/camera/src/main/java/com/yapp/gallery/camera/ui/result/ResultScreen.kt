@@ -1,6 +1,7 @@
 package com.yapp.gallery.camera.ui.result
 
 import android.app.Activity
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -68,11 +67,12 @@ import timber.log.Timber
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ResultRoute(
-    popBackStack: () -> Unit,
+    popBackStack: (Boolean) -> Unit,
     byteArray: ByteArray?,
+    uriList: List<Uri>?,
     context: Activity
 ){
-    val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray)
+    val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray, uriList = uriList)
     val resultState : ResultState by viewModel.viewState.collectAsStateWithLifecycle()
 
     // Bottom Sheet State
@@ -94,7 +94,9 @@ fun ResultRoute(
         resultState = resultState,
         modalBottomSheetState = modalBottomSheetState,
         onClickRegister = { viewModel.sendEvent(ResultEvent.OnClickRegister) },
-        popBackStack = popBackStack
+        popBackStack = {
+            popBackStack(resultState.imageList.isNotEmpty())
+        }
     )
 }
 
@@ -217,16 +219,22 @@ private fun ResultScreen(
 }
 
 @Composable
-fun resultViewModel(context : Activity, byteArray: ByteArray?) : ResultViewModel {
+fun resultViewModel(context : Activity, byteArray: ByteArray?, uriList: List<Uri>?) : ResultViewModel {
     val postId = context.intent.getLongExtra("postId", 0L)
-    val imageList = context.intent.getStringArrayExtra("imageList")?.map {it.toUri()}?.toList() ?: emptyList()
+
+//    val imageList = if (VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//        context.intent.getParcelableArrayExtra("imageList", Uri::class.java)?.toList() ?: emptyList()
+//    } else {
+//        context.intent.getParcelableArrayExtra("imageList")?.toList() ?: emptyList()
+//    }
+
     val factory = EntryPointAccessors.fromActivity(
         context,
         ResultViewModelFactoryProvider::class.java
     ).resultViewModelFactory()
 
-    Timber.e("postId : $postId, imageList : $imageList")
-    return viewModel(factory = ResultViewModel.provideFactory(factory, postId, byteArray, imageList))
+    Timber.e("postId : $postId, imageList : $uriList")
+    return viewModel(factory = ResultViewModel.provideFactory(factory, postId, byteArray, uriList ?: emptyList()))
 }
 
 @OptIn(ExperimentalMaterialApi::class)

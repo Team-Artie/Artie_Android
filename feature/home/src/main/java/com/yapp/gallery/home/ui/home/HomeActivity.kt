@@ -30,17 +30,19 @@ class HomeActivity : ComponentActivity() {
     private lateinit var navController : NavHostController
 
     private var backKeyPressedTime: Long = 0
-    private var postId: Long = 0
 
-    private val imagePicker = registerImagePicker {
-        if(it.isNotEmpty()) {
-            startActivity(saverNavigator.intentTo(context = this, uris = it.map { image -> image.uri })
-                .putExtra("postId", postId)
-            )
-
-            postId = 0
-        }
-    }
+//    private val imagePicker = registerImagePicker {imageList ->
+//        if(imageList.isNotEmpty()) {
+//            startActivity(
+//                cameraNavigator.navigateWithUris(
+//                    this,
+//                    postId,
+//                    imageList.map { it.uri }
+//                )
+//            )
+//            postId = 0
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,17 +52,6 @@ class HomeActivity : ComponentActivity() {
                 HomeNavHost(
                     navHostController = navController, profileNavigator = profileNavigator,
                     cameraNavigator = cameraNavigator, infoNavigator = infoNavigator,
-                    navToImagePicker = { postId ->
-                        this.postId = postId
-                        imagePicker.launch(
-                            ImagePickerConfig(
-                                isMultipleMode = true,
-                                maxSize = 5,
-                                doneTitle = "완료",
-                                limitMessage = "사진은 최대 5장까지 선택 가능해요!"
-                            )
-                        )
-                    },
                     webViewProvider = webViewProvider,
                     context = this
                 )

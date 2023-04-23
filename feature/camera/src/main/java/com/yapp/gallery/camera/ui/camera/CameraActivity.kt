@@ -7,45 +7,30 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
+import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.navigation.CameraNavHost
 import com.yapp.gallery.common.theme.ArtieTheme
+import com.yapp.navigation.camera.CameraNavigator
 import com.yapp.navigator.saver.SaverNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var saverNavigator: SaverNavigator
-
-//    private val permissionLaunch =
-//        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGrant ->
-//            if (isGrant) {
-//                binding.composeView.setContent {
-//                    GalleryTheme {
-//                        CameraView(
-//                            onImageCapture = {
-//                                val postId = intent.getLongExtra("postId", 0L)
+//    @Inject lateinit var cameraNavigator: CameraNavigator
 //
-//                                if (postId != 0L) {
-//                                    startActivity(
-//                                        saverNavigator.intentTo(this, it)
-//                                            .putExtra("postId", postId)
-//                                    )
-//                                }
-//                            },
-//                            onDismiss = { finish() },
-//                            outputDirectory = getFileOutput(),
-//                            executor = cameraExecutor
-//                        )
-//                    }
-//                }
-//            } else {
-//                // todo 퍼미션 거절 되었을 시 dialog 노출 후 화면 이탈 필요
-//            }
+//    private val imagePicker = registerImagePicker {imageList ->
+//        if(imageList.isNotEmpty()) {
+//            startActivity(
+//                cameraNavigator.navigateWithUris(
+//                    this,
+//                    intent.getLongExtra("postId", 0L),
+//                    imageList.map { it.uri }
+//                )
+//            )
 //        }
-
+//    }
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)

@@ -8,4 +8,7 @@
     <string name="retry_camera_btn">다시 찍기</string>
     <string name="retry_gallery_btn">다시 선택하기</string>
     <string name="register_post_btn">작품 기록하기</string>
+
+    <string name="gallery_limit_title">사진 최대 개수</string>
+    <string name="gallery_limit_content">사진은 최대 5장 까지 선택이 가능합니다.\n추가 선택 시 5장만 선택됩니다.</string>
 </resources>

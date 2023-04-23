@@ -62,7 +62,6 @@ fun ExhibitRecordRoute(
             when(it){
                 is ExhibitRecordSideEffect.NavigateToCamera -> navigateToCamera(it.postId)
                 is ExhibitRecordSideEffect.NavigateToGallery -> navigateToGallery(it.postId)
-//                is ExhibitRecordSideEffect.NavigateToHome -> navigateToHome()
                 is ExhibitRecordSideEffect.ShowSnackBar -> {
                     val res = scaffoldState.snackbarHostState.showSnackbar(
                         message = "임시 보관된 전시를 삭제하였습니다.",

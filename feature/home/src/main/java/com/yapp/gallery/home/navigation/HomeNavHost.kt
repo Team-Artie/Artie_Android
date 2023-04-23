@@ -23,7 +23,6 @@ fun HomeNavHost(
     infoNavigator: ExhibitInfoNavigator,
     webViewProvider: WebViewProvider,
     context: Activity,
-    navToImagePicker: (Long) -> Unit,
 ) {
     NavHost(navController = navHostController, startDestination = "home") {
         composable("home") {
@@ -56,14 +55,15 @@ fun HomeNavHost(
                     )
                 },
                 popBackStack = { popBackStack(context, navHostController) },
-                navigateToGallery = { postId -> navToImagePicker.invoke(postId) },
-//                navigateToHome = {
-//                    navHostController.navigate("home") {
-//                        popUpTo(navHostController.graph.id) {
-//                            inclusive = true
-//                        }
-//                    }
-//                }
+                navigateToGallery = { postId ->
+                    navigateToScreen(
+                        context = context,
+                        intent = cameraNavigator.navigate(context).apply {
+                            putExtra("postId", postId)
+                            putExtra("gallery", true)
+                        }
+                    )
+                }
             )
         }
         composable("calendar") {
