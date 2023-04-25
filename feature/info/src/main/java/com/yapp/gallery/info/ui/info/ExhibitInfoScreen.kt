@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.info.R
 import com.yapp.gallery.info.provider.InfoViewModelFactoryProvider
 import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
@@ -36,6 +37,7 @@ fun ExhibitInfoRoute(
     navigateToCamera: () -> Unit,
     navigateToGallery: () -> Unit,
     navigateToEdit: (String) -> Unit,
+    navigateToWebPage: (String) -> Unit,
     popBackStack: () -> Unit,
     context: Activity,
 ){
@@ -56,6 +58,9 @@ fun ExhibitInfoRoute(
                 }
                 is ExhibitInfoSideEffect.PopBackStack -> {
                     popBackStack()
+                }
+                is ExhibitInfoSideEffect.ShowWebPage -> {
+                    navigateToWebPage(it.url)
                 }
             }
         }
@@ -100,7 +105,7 @@ private fun ExhibitInfoScreen(
     infoState: ExhibitInfoState,
     onReload: () -> Unit,
 ){
-    val baseUrl = stringResource(id = R.string.exhibit_info_base_url)
+    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.exhibit_info_section)
 
     Scaffold(
     ) { paddingValues ->

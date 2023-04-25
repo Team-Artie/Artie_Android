@@ -69,6 +69,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,12 +81,14 @@ import com.yapp.gallery.camera.provider.ResultViewModelFactoryProvider
 import com.yapp.gallery.camera.ui.result.ResultContract.*
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_background
+import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_gray900
 import com.yapp.gallery.common.theme.color_mainGreen
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.theme.color_white
+import com.yapp.gallery.common.theme.pretendard
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -335,8 +338,30 @@ private fun ResultRegisterBottomSheet(
             focusManager = focusManger
         )
 
-        Box(modifier = Modifier.height(112.dp)){
+        Spacer(modifier = Modifier.height(112.dp))
 
+        // 하단 버튼
+        Button(
+            colors = ButtonDefaults.buttonColors(
+                disabledBackgroundColor = color_gray600,
+                disabledContentColor = color_gray900,
+                backgroundColor = color_mainGreen,
+                contentColor = color_black
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 53.dp),
+            onClick = {},
+            enabled = resultState.authorName.isNotEmpty() && resultState.postName.isNotEmpty() && resultState.tagList.isNotEmpty()
+        ) {
+            Text(
+                text = "완료",
+                modifier = Modifier.padding(vertical = 12.dp),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                fontFamily = pretendard
+            )
         }
 
 

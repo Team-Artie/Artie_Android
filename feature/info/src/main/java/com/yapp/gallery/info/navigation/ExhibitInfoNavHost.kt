@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,6 +37,7 @@ fun ExhibitInfoNavHost(
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
                 navigateToGallery = { navToImgPicker() },
                 navigateToCamera = { navigateToScreen(context, cameraNavigator.navigate(context))},
+                navigateToWebPage = { navigateToWebPage(context, it) },
                 popBackStack = { popBackStack(context, navHostController)},
                 context = context
             )
@@ -71,6 +73,8 @@ fun ExhibitInfoNavHost(
     }
 }
 
+
+
 private fun navigateToScreen(context: Context, intent: Intent){
     context.startActivity(intent)
 }
@@ -84,6 +88,10 @@ private fun popBackStack(
     else{
         context.finish()
     }
+}
+
+private fun navigateToWebPage(context: Activity, it: String) {
+    context.startActivity(Intent(Intent.ACTION_VIEW, it.toUri()))
 }
 
 private fun navigateWithPayload(

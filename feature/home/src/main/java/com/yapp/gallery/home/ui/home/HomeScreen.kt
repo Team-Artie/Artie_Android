@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
 import dagger.hilt.android.EntryPointAccessors
@@ -70,8 +71,7 @@ private fun HomeScreen(
     webView : WebView,
     onReload : () -> Unit
 ){
-    val baseUrl = stringResource(id = R.string.home_base_url)
-//    val baseUrl = "https://21st-all-rounder-team-2-web-bobeenlee.vercel.app/test-token"
+    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.home_section)
 
     Scaffold(
     ) { paddingValues ->

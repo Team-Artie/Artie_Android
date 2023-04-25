@@ -27,6 +27,7 @@ import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.util.WebViewUtils
 import com.yapp.gallery.common.util.webview.NavigateJsObject
 import com.yapp.gallery.common.util.webview.WebViewState
+import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 
 @Composable
@@ -62,7 +63,7 @@ private fun CalendarWebView(
     calendarState: WebViewState,
     onReload : () -> Unit
 ){
-    val baseUrl = stringResource(id = R.string.calendar_base_url)
+    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.calendar_section)
     Scaffold(
     ) { paddingValues ->
         Column(

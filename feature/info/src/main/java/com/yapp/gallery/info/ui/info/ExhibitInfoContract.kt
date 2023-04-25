@@ -24,5 +24,6 @@ class ExhibitInfoContract {
         object NavigateToCamera : ExhibitInfoSideEffect()
         object NavigateToGallery : ExhibitInfoSideEffect()
         object PopBackStack : ExhibitInfoSideEffect()
+        data class ShowWebPage(val url: String) : ExhibitInfoSideEffect()
     }
 }

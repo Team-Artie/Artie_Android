@@ -31,8 +31,8 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
-            // 2초간 스플래시 화면 보여주기
-            delay(2000)
+            // 1.5초간 스플래시 화면 보여주기
+            delay(1500)
             auth.currentUser?.let {
                 getValidTokenUseCase()
                     .catch {

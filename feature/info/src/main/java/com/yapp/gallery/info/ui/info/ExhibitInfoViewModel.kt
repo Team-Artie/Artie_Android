@@ -12,6 +12,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
+import org.json.JSONObject
 import timber.log.Timber
 
 class ExhibitInfoViewModel @AssistedInject constructor(
@@ -75,6 +76,15 @@ class ExhibitInfoViewModel @AssistedInject constructor(
                     }
                     "GO_BACK" -> {
                         sendSideEffect(ExhibitInfoSideEffect.PopBackStack)
+                    }
+                    "OPEN_NEW_WINDOW" -> {
+                        event.payload?.let {
+                            val json = JSONObject(it)
+                            val url = json.getString("url")
+                            if (url.startsWith("http://") || url.startsWith("https://")){
+                                sendSideEffect(ExhibitInfoSideEffect.ShowWebPage(url))
+                            }
+                        }
                     }
                     else -> {}
                 }
