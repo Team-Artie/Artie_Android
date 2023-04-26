@@ -11,60 +11,61 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.camera.R
-import java.io.File
-import java.util.concurrent.Executor
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-import com.yapp.gallery.camera.ui.camera.CameraContract.*
+import com.yapp.gallery.camera.ui.camera.CameraContract.CameraEvent
+import com.yapp.gallery.camera.ui.camera.CameraContract.CameraSideEffect
+import com.yapp.gallery.camera.ui.camera.CameraContract.CameraState
 import com.yapp.gallery.camera.widget.PermissionRequestDialog
 import com.yapp.gallery.camera.widget.PermissionType
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_gray500
-import com.yapp.gallery.common.theme.color_gray600
-import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.util.onCheckPermissions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import java.util.concurrent.Executor
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import androidx.camera.core.Preview as CameraPreview
 
 @Composable
 fun CameraRoute(
@@ -112,9 +113,7 @@ fun CameraRoute(
             when(it){
                 is CameraSideEffect.ImageCapture -> {
                     processCapture(
-                        fileName = "yyyy-MM-dd-HH-mm-ss-SSS",
                         executor = ContextCompat.getMainExecutor(context),
-                        outputDirectory = getFileOutput(context),
                         onImageCapture = navigateToResult,
                         imageCapture = imageCapture
                     )
@@ -340,18 +339,10 @@ fun CameraContentPreview(){
 
 // TODO : 결과 화면에서 선택 저장 가능하게 하기
 private fun processCapture(
-    fileName: String,
-    outputDirectory: File,
     imageCapture: ImageCapture,
     executor: Executor,
     onImageCapture: (ByteArray) -> Unit
 ) {
-//    val file = File(
-//        outputDirectory,
-//        SimpleDateFormat(fileName, Locale.KOREAN).format(System.currentTimeMillis()) + ".jpg"
-//    )
-//    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
-
     imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
         override fun onCaptureSuccess(image: ImageProxy) {
             super.onCaptureSuccess(image)
@@ -362,19 +353,7 @@ private fun processCapture(
             onImageCapture(bytes)
             image.close()
         }
-
-        override fun onError(exception: ImageCaptureException) {
-            super.onError(exception)
-        }
     })
-//    imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
-//        override fun onError(exception: ImageCaptureException) {}
-//
-//        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-//            val savedUri = Uri.fromFile(file)
-//            onImageCapture(savedUri)
-//        }
-//    })
 }
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
@@ -385,11 +364,3 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
             }, ContextCompat.getMainExecutor(this))
         }
     }
-
-private fun getFileOutput(context: Activity): File {
-    val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
-        File(it, context.resources.getString(R.string.app_name)).apply { mkdirs() }
-    }
-
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
-}

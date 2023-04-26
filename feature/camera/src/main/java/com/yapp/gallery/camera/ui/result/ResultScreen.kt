@@ -100,7 +100,7 @@ fun ResultRoute(
     byteArray: ByteArray?,
     imageList: List<ByteArray>,
     context: Activity,
-    navigateToHome: () -> Unit
+    navigateToInfo: (Long) -> Unit,
 ){
     val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray, imageList = imageList)
     val resultState : ResultState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -118,10 +118,10 @@ fun ResultRoute(
                 is ResultSideEffect.ShowToast -> {
                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
-                is ResultSideEffect.NavigateToHome -> {
+                is ResultSideEffect.NavigateToInfo -> {
                     // Todo : Info 화면으로 이동으로 변경
                     Toast.makeText(context, "작품이 등록되었습니다.", Toast.LENGTH_SHORT).show()
-                    navigateToHome()
+                    navigateToInfo(it.postId)
                 }
             }
         }

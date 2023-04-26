@@ -48,7 +48,7 @@ class ResultViewModel @AssistedInject constructor(
         Timber.e("throwable : $throwable")
         if (throwable is NullPointerException || throwable.cause is NullPointerException){
             // 전시 삭제 nullPointer -> 문제 없음
-            sendSideEffect(ResultSideEffect.NavigateToHome)
+            sendSideEffect(ResultSideEffect.NavigateToInfo(postId))
         } else {
             updateState(ResultReduce.UpdateRegisterState(ResultRegisterState.RegisterError("작품 등록에 실패하였습니다.")))
             sendSideEffect(ResultSideEffect.ShowToast("작품 등록에 실패하였습니다."))
@@ -73,7 +73,7 @@ class ResultViewModel @AssistedInject constructor(
             registerPostUseCase(postId, uriList, authorName, postName, tagList, skip)
                 .collectLatest {
                     deleteTempPostUseCase().collectLatest {
-                        sendSideEffect(ResultSideEffect.NavigateToHome)
+                        sendSideEffect(ResultSideEffect.NavigateToInfo(postId))
                     }
                 }
         }

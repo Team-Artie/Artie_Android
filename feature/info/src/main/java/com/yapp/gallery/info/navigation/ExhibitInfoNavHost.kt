@@ -3,6 +3,8 @@ package com.yapp.gallery.info.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
@@ -28,6 +30,13 @@ fun ExhibitInfoNavHost(
     context: Activity
 ){
     val navHostController = rememberNavController()
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        if (it.resultCode == Activity.RESULT_OK){
+            context.finish()
+        }
+    }
+
     NavHost(navController = navHostController, startDestination = "info"){
         composable("info"){
             ExhibitInfoRoute(
@@ -35,14 +44,11 @@ fun ExhibitInfoNavHost(
                 webViewProvider = webViewProvider,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
                 navigateToGallery = {
-                    navigateToScreen(context, cameraNavigator.navigate(context)
-                        .apply {
-                            putExtra("postId", exhibitId)
-                            putExtra("gallery", true)
-                        })
+                    cameraLauncher.launch(cameraNavigator.navigate(context)
+                        .putExtra("postId", exhibitId))
                 },
                 navigateToCamera = {
-                    navigateToScreen(context, cameraNavigator.navigate(context)
+                    cameraLauncher.launch(cameraNavigator.navigate(context)
                         .putExtra("postId", exhibitId))
                     },
                 navigateToWebPage = { navigateToWebPage(context, it) },

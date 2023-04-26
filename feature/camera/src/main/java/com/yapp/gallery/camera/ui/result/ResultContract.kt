@@ -43,7 +43,7 @@ class ResultContract {
     sealed class ResultSideEffect : ViewModelContract.SideEffect{
         object ShowBottomSheet : ResultSideEffect()
         data class ShowToast(val message: String) : ResultSideEffect()
-        object NavigateToHome : ResultSideEffect()
+        data class NavigateToInfo(val postId: Long) : ResultSideEffect()
     }
 
     sealed class ResultRegisterState{
