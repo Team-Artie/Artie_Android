@@ -25,7 +25,6 @@ fun ExhibitInfoNavHost(
     webViewProvider: WebViewProvider,
     cameraNavigator: CameraNavigator,
     homeNavigator: HomeNavigator,
-    navToImgPicker: () -> Unit,
     context: Activity
 ){
     val navHostController = rememberNavController()
@@ -35,8 +34,17 @@ fun ExhibitInfoNavHost(
                 exhibitId = exhibitId,
                 webViewProvider = webViewProvider,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
-                navigateToGallery = { navToImgPicker() },
-                navigateToCamera = { navigateToScreen(context, cameraNavigator.navigate(context))},
+                navigateToGallery = {
+                    navigateToScreen(context, cameraNavigator.navigate(context)
+                        .apply {
+                            putExtra("postId", exhibitId)
+                            putExtra("gallery", true)
+                        })
+                },
+                navigateToCamera = {
+                    navigateToScreen(context, cameraNavigator.navigate(context)
+                        .putExtra("postId", exhibitId))
+                    },
                 navigateToWebPage = { navigateToWebPage(context, it) },
                 popBackStack = { popBackStack(context, navHostController)},
                 context = context

@@ -13,6 +13,7 @@ class ResultContract {
         val tempTag: String = "",
         val tagList: List<String> = emptyList(),
         val registerDialogShown : Boolean = false,
+        val skip : Boolean = false,
         val registerState: ResultRegisterState = ResultRegisterState.RegisterInitial
     ) : ViewModelContract.State
 
@@ -23,7 +24,7 @@ class ResultContract {
         data class SetTempTag(val tag: String) : ResultEvent()
         object EnterTag : ResultEvent()
         data class OnDeleteTag(val tag: String) : ResultEvent()
-        object OnRegister : ResultEvent()
+        data class OnRegister(val skip: Boolean) : ResultEvent()
         object OnCancelRegister : ResultEvent()
         object OnConfirmRegister : ResultEvent()
     }
@@ -35,7 +36,7 @@ class ResultContract {
         data class UpdateTempTag(val tag: String) : ResultReduce()
         data class AddTempTag(val tag: String) : ResultReduce()
         data class DeleteTag(val tag: String) : ResultReduce()
-        data class UpdateRegisterDialogShown(val shown: Boolean) : ResultReduce()
+        data class UpdateRegisterDialogShown(val shown: Boolean, val skip: Boolean = false) : ResultReduce()
         data class UpdateRegisterState(val state: ResultRegisterState) : ResultReduce()
     }
 

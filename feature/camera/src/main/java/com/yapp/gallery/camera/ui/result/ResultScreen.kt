@@ -120,7 +120,7 @@ fun ResultRoute(
                 }
                 is ResultSideEffect.NavigateToHome -> {
                     // Todo : Info 화면으로 이동으로 변경
-                    Toast.makeText(context, "전시가 생성되었습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "작품이 등록되었습니다.", Toast.LENGTH_SHORT).show()
                     navigateToHome()
                 }
             }
@@ -133,7 +133,7 @@ fun ResultRoute(
         RegisterDialog(
             onConfirm = { viewModel.sendEvent(ResultEvent.OnConfirmRegister) },
             onDismiss = { viewModel.sendEvent(ResultEvent.OnCancelRegister)},
-            isContentEmpty = resultState.authorName.isEmpty() || resultState.postName.isEmpty() || resultState.tagList.isEmpty(),
+            isContentEmpty = resultState.skip,
             registerState = resultState.registerState,
         )
     }
@@ -150,7 +150,8 @@ fun ResultRoute(
         popBackStack = {
             popBackStack(resultState.imageList.isNotEmpty())
         },
-        onRegister = { viewModel.sendEvent(ResultEvent.OnRegister)}
+        onRegister = { viewModel.sendEvent(ResultEvent.OnRegister(false))},
+        onSkip = { viewModel.sendEvent(ResultEvent.OnRegister(true))},
     )
 }
 
@@ -165,6 +166,7 @@ private fun ResultScreen(
     setTempTag: (String) -> Unit,
     enterTag: () -> Unit,
     onDeleteTag: (String) -> Unit,
+    onSkip: () -> Unit,
     onRegister: () -> Unit,
     popBackStack: () -> Unit,
     scope: CoroutineScope = rememberCoroutineScope()
@@ -182,7 +184,8 @@ private fun ResultScreen(
                 setTempTag = setTempTag,
                 enterTag = enterTag,
                 onDeleteTag = onDeleteTag,
-                onRegister = onRegister
+                onRegister = onRegister,
+                onSkip = onSkip
             )
         },
         drawerScrimColor = Color.Transparent,
@@ -196,10 +199,9 @@ private fun ResultScreen(
         }
 
         Box(modifier = Modifier
+            .padding(it)
             .fillMaxSize()
             .background(color = MaterialTheme.colors.background)
-            .padding(it)
-            .navigationBarsPadding()
         ) {
             if (resultState.imageList.isNotEmpty()) {
                 HorizontalPager(pageCount = resultState.imageList.size,
@@ -313,6 +315,7 @@ private fun ResultRegisterBottomSheet(
     enterTag: () -> Unit,
     onDeleteTag: (String) -> Unit,
     onRegister: () -> Unit,
+    onSkip: () -> Unit,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     focusManger: FocusManager = LocalFocusManager.current
 ){
@@ -323,7 +326,7 @@ private fun ResultRegisterBottomSheet(
             .fillMaxWidth()
             .background(color = color_popUpBottom),
     ) {
-        TextButton(onClick = onRegister,
+        TextButton(onClick = onSkip,
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(
@@ -503,7 +506,8 @@ private fun BottomSheetPreview(){
             setTempTag = {},
             enterTag = {},
             onRegister = {},
-            onDeleteTag = {}
+            onDeleteTag = {},
+            onSkip = {}
         )
     }
 }
@@ -536,7 +540,8 @@ private fun ResultScreenPreview(){
             enterTag = {},
             onDeleteTag = {},
             onClickRegister = {},
-            onRegister = {}
+            onRegister = {},
+            onSkip = {},
         )
     }
 }

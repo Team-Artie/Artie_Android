@@ -13,7 +13,7 @@ interface ExhibitRecordRepository {
         postId: Long, name: String, categoryId: Long, postDate: String, postLink: String?
     ): Flow<Long>
     fun getTempPost() : Flow<TempPostInfo>
-    fun deleteTempPost() : Flow<Long>
+    fun deleteTempPost() : Flow<Long?>
     // 서버, 로컬 다 지우는 역할
 
     fun deleteBoth() : Flow<Boolean>

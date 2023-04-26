@@ -3,12 +3,10 @@ package com.yapp.gallery.data.repository
 import com.yapp.gallery.data.BuildConfig
 import com.yapp.gallery.data.source.remote.camera.CameraRemoteDataSource
 import com.yapp.gallery.domain.repository.CameraRepository
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.singleOrNull
 import javax.inject.Inject
 
@@ -51,9 +49,5 @@ class CameraRepositoryImpl @Inject constructor(
         postId: Long, imageList: List<String>
     ): Flow<Unit> {
         return cameraRemoteDataSource.registerOnlyImages(postId, imageList).map {  }
-    }
-
-    override fun publishRecord(postId: Long): Flow<Boolean> {
-        return cameraRemoteDataSource.publishPost(postId)
     }
 }

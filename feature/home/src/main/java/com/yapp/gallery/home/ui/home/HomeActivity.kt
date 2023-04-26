@@ -6,15 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
-import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.home.navigation.HomeNavHost
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.navigation.camera.CameraNavigator
-import com.yapp.navigator.saver.SaverNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -23,26 +20,12 @@ class HomeActivity : ComponentActivity() {
     @Inject lateinit var cameraNavigator: CameraNavigator
     @Inject lateinit var profileNavigator: ProfileNavigator
     @Inject lateinit var infoNavigator: ExhibitInfoNavigator
-    @Inject lateinit var saverNavigator: SaverNavigator
 
     @Inject lateinit var webViewProvider: WebViewProvider
 
     private lateinit var navController : NavHostController
 
     private var backKeyPressedTime: Long = 0
-
-//    private val imagePicker = registerImagePicker {imageList ->
-//        if(imageList.isNotEmpty()) {
-//            startActivity(
-//                cameraNavigator.navigateWithUris(
-//                    this,
-//                    postId,
-//                    imageList.map { it.uri }
-//                )
-//            )
-//            postId = 0
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

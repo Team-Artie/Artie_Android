@@ -43,8 +43,7 @@ android {
 
 dependencies {
     implementation project(":common")
-    implementation project(":feature:saver")
-    implementation(project(":navigation:camera"))
+    implementation project(":navigation:camera")
     implementation project(":navigation:home")
     implementation project(":domain")
 

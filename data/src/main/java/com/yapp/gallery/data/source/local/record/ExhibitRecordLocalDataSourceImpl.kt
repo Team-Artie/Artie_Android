@@ -5,8 +5,12 @@ import com.yapp.gallery.data.room.TempPost
 import com.yapp.gallery.data.room.TempPostDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.singleOrNull
 import javax.inject.Inject
 
 class ExhibitRecordLocalDataSourceImpl @Inject constructor(
@@ -33,7 +37,7 @@ class ExhibitRecordLocalDataSourceImpl @Inject constructor(
 
     override fun deleteTempPost(): Flow<Long> = flow {
         val postId = tempPostDao.getPost().postId
-        // postId 찾을 수 없으면 catch문으로 빠짐
+
         tempPostDao.deletePost()
         emit(postId)
     }.flowOn(dispatcher)

@@ -2,7 +2,6 @@ package com.yapp.gallery.info.ui.info
 
 import android.app.Activity
 import android.view.KeyEvent
-import android.view.WindowManager
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -65,14 +64,6 @@ fun ExhibitInfoRoute(
             }
         }
     }
-//
-//    // 전체 화면 및 상태바 투명화
-//    LaunchedEffect(Unit){
-//        context.window.setFlags(
-//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-//            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-//        )
-//    }
 
     // 웹뷰 정의
     val webView = webViewProvider.getWebView{ action, payload ->
@@ -112,6 +103,7 @@ private fun ExhibitInfoScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .navigationBarsPadding()
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally

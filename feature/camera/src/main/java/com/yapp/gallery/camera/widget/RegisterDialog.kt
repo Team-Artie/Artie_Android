@@ -73,7 +73,7 @@ fun RegisterDialog(
             Spacer(modifier = Modifier.height(22.dp))
 
             Text(
-                text = stringResource(id = R.string.post_upload),
+                text = stringResource(id = R.string.post_upload) + if (registerState is ResultRegisterState.RegisterLoading) "중" else "",
                 style = MaterialTheme.typography.h2.copy(
                     color = color_white, fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp, lineHeight = 27.sp
