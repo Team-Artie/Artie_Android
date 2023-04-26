@@ -1,7 +1,5 @@
 package com.yapp.gallery.camera.ui.result
 
-import android.net.Uri
-import androidx.core.net.toUri
 import com.yapp.gallery.camera.model.ImageData
 import com.yapp.gallery.common.base.ViewModelContract
 
@@ -9,7 +7,7 @@ class ResultContract {
     data class ResultState(
         val postId: Long = 0L,
         val captureData: ImageData? = null,
-        val imageList: List<Uri> = listOf(("https://picsum.photos/360/800").toUri()),
+        val imageList: List<ByteArray> = emptyList(),
         val authorName: String = "",
         val postName: String = "",
         val tempTag: String = "",
@@ -21,15 +19,21 @@ class ResultContract {
         data class SetAuthorName(val name: String) : ResultEvent()
         data class SetPostName(val name: String) : ResultEvent()
         data class SetTempTag(val tag: String) : ResultEvent()
+        object EnterTag : ResultEvent()
+        data class OnDeleteTag(val tag: String) : ResultEvent()
     }
 
     sealed class ResultReduce : ViewModelContract.Reduce{
-        data class SetLoadedData(val postId: Long, val imageData: ImageData?, val imageList: List<Uri>) : ResultReduce()
+        data class SetLoadedData(val postId: Long, val imageData: ImageData?, val imageList: List<ByteArray>) : ResultReduce()
         data class UpdateAuthorName(val name: String) : ResultReduce()
         data class UpdatePostName(val name: String) : ResultReduce()
+        data class UpdateTempTag(val tag: String) : ResultReduce()
+        data class AddTempTag(val tag: String) : ResultReduce()
+        data class DeleteTag(val tag: String) : ResultReduce()
     }
 
     sealed class ResultSideEffect : ViewModelContract.SideEffect{
         object ShowBottomSheet : ResultSideEffect()
+        data class ShowToast(val message: String) : ResultSideEffect()
     }
 }

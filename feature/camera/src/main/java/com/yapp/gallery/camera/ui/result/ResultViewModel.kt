@@ -1,6 +1,5 @@
 package com.yapp.gallery.camera.ui.result
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.yapp.gallery.camera.model.ImageData
@@ -13,12 +12,12 @@ import dagger.assisted.AssistedInject
 class ResultViewModel @AssistedInject constructor(
     @Assisted private val postId: Long,
     @Assisted private val byteArray: ByteArray? = null,
-    @Assisted private val imageList: List<Uri> = emptyList()
+    @Assisted private val imageList: List<ByteArray> = emptyList()
 ) : BaseStateViewModel<ResultState, ResultEvent, ResultReduce, ResultSideEffect>(ResultState()) {
 
     @AssistedFactory
     interface ResultFactory{
-        fun create(postId: Long, byteArray: ByteArray? = null, imageList: List<Uri> = emptyList()) : ResultViewModel
+        fun create(postId: Long, byteArray: ByteArray? = null, imageList: List<ByteArray> = emptyList()) : ResultViewModel
     }
 
     init {
@@ -37,7 +36,33 @@ class ResultViewModel @AssistedInject constructor(
                 updateState(ResultReduce.UpdatePostName(event.name))
             }
             is ResultEvent.SetTempTag -> {
-
+                if (viewState.value.tagList.size >= 5){
+                    return
+                }
+                else updateState(ResultReduce.UpdateTempTag(event.tag))
+            }
+            is ResultEvent.EnterTag -> {
+                val tempTag = viewState.value.tempTag
+                if (tempTag.isNotEmpty()){
+                    // TODO : 태그는 무조건 #으로 시작해야 하는지?
+                    val check = if(tempTag.startsWith("#")){
+                        // tagList 안에 있는지 판별
+                        viewState.value.tagList.contains(tempTag)
+                    } else {
+                        viewState.value.tagList.contains("#${tempTag}")
+                    }
+                    if (!check){
+                        val tag = if(tempTag.startsWith("#")) tempTag else "#${tempTag}"
+                        updateState(ResultReduce.AddTempTag(tag))
+                    } else {
+                        sendSideEffect(ResultSideEffect.ShowToast("이미 존재하는 태그입니다."))
+                    }
+                } else {
+                    sendSideEffect(ResultSideEffect.ShowToast("태그를 입력해주세요."))
+                }
+            }
+            is ResultEvent.OnDeleteTag -> {
+                updateState(ResultReduce.DeleteTag(event.tag))
             }
         }
     }
@@ -56,6 +81,20 @@ class ResultViewModel @AssistedInject constructor(
             is ResultReduce.UpdatePostName -> {
                 state.copy(postName = reduce.name)
             }
+            is ResultReduce.UpdateTempTag -> {
+                state.copy(tempTag = reduce.tag)
+            }
+            is ResultReduce.AddTempTag -> {
+                state.copy(
+                    tempTag = "",
+                    tagList = state.tagList + reduce.tag
+                )
+            }
+            is ResultReduce.DeleteTag -> {
+                state.copy(
+                    tagList = state.tagList - reduce.tag
+                )
+            }
         }
     }
 
@@ -64,7 +103,7 @@ class ResultViewModel @AssistedInject constructor(
             assistedFactory: ResultFactory,
             postId: Long,
             byteArray: ByteArray? = null,
-            imageList: List<Uri> = emptyList()
+            imageList: List<ByteArray> = emptyList()
         ) : ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return assistedFactory.create(postId, byteArray, imageList) as T

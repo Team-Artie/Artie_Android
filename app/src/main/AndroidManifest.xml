@@ -58,7 +58,7 @@
         <activity
             android:name=".camera.ui.camera.CameraActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:exported="true"/>
 
         <activity android:name=".info.ui.info.ExhibitInfoActivity"

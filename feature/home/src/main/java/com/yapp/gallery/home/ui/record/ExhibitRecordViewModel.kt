@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.model.BaseState
 import com.yapp.gallery.domain.entity.home.CategoryItem
+import com.yapp.gallery.domain.entity.home.TempPostInfo
 import com.yapp.gallery.domain.usecase.record.*
 import com.yapp.gallery.home.ui.record.ExhibitRecordContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,15 +80,18 @@ class ExhibitRecordViewModel @Inject constructor(
         with(viewState.value){
             // 생성된 적 있음
             if (continuous && postId != null) {
-                updateRecordUseCase(postId, exhibitName, categorySelect, exhibitDate, exhibitLink.ifEmpty { null })
-                    .onEach {
-                        if (type == CreateType.ALBUM) {
-                            sendSideEffect(ExhibitRecordSideEffect.NavigateToGallery(it))
-                        } else {
-                            sendSideEffect(ExhibitRecordSideEffect.NavigateToCamera(it))
+                // 바뀐 여부 체크
+                if (checkEdited(this)){
+                    updateRecordUseCase(postId, exhibitName, categorySelect, exhibitDate, exhibitLink.ifEmpty { null })
+                        .onEach {
+                           navigateToCameraGallery(type, it)
                         }
-                    }
-                    .launchIn(viewModelScope)
+                        .launchIn(viewModelScope)
+                }
+                else {
+                    navigateToCameraGallery(type, postId)
+                }
+
 
             } else {
                 createRecordUseCase(exhibitName, categorySelect, exhibitDate, exhibitLink.ifEmpty { null })
@@ -118,6 +122,23 @@ class ExhibitRecordViewModel @Inject constructor(
                     Timber.d("delete success")
                     updateState(ExhibitRecordReduce.DeleteTempPost)
                 }
+        }
+    }
+
+    private fun checkEdited(state: ExhibitRecordState) : Boolean{
+        return with(state){
+            exhibitName != tempPostInfo?.name ||
+                    categorySelect != tempPostInfo.categoryId ||
+                    exhibitDate != tempPostInfo.postDate ||
+                    exhibitLink.ifEmpty { null } != tempPostInfo.postLink
+        }
+    }
+
+    private fun navigateToCameraGallery(type: CreateType, postId: Long){
+        if (type == CreateType.ALBUM) {
+            sendSideEffect(ExhibitRecordSideEffect.NavigateToGallery(postId))
+        } else {
+            sendSideEffect(ExhibitRecordSideEffect.NavigateToCamera(postId))
         }
     }
 
@@ -180,7 +201,13 @@ class ExhibitRecordViewModel @Inject constructor(
             is ExhibitRecordReduce.UpdateExhibitLink -> state.copy(exhibitLink = reduce.link)
             is ExhibitRecordReduce.AddCategoryItem -> state.copy(categoryList = state.categoryList + reduce.categoryItem)
             is ExhibitRecordReduce.UpdateCategoryState -> state.copy(categoryState = reduce.categoryState)
-            is ExhibitRecordReduce.CreateRecord -> state.copy(continuous = true, postId = reduce.postId)
+            is ExhibitRecordReduce.CreateRecord ->
+                state.copy(
+                    continuous = true, postId = reduce.postId,
+                    tempPostInfo = TempPostInfo(
+                        reduce.postId, state.exhibitName, state.categorySelect,
+                        state.exhibitDate, state.exhibitLink.ifEmpty { null })
+                )
         }
     }
     enum class CreateType { CAMERA, ALBUM }

@@ -1,6 +1,5 @@
 package com.yapp.gallery.camera.ui.camera
 
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +11,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.navigation.CameraNavHost
+import com.yapp.gallery.camera.util.uriToByteArray
 import com.yapp.gallery.common.theme.ArtieTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,11 +19,11 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
-    private val resultFlow: MutableSharedFlow<List<Uri>> = MutableSharedFlow()
+    private val resultFlow: MutableSharedFlow<List<ByteArray>> = MutableSharedFlow()
 
     private val imagePicker = registerImagePicker {imageList ->
         lifecycleScope.launch {
-            resultFlow.emit(imageList.map { it.uri })
+            resultFlow.emit(imageList.map { uriToByteArray(this@CameraActivity, it.uri)})
         }
     }
 

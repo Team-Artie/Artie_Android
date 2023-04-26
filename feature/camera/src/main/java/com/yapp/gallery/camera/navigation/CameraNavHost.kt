@@ -23,11 +23,11 @@ import kotlinx.coroutines.flow.collectLatest
 fun CameraNavHost(
     navController: NavHostController = rememberNavController(),
     onLaunchImagePicker : () -> Unit,
-    resultFlow: MutableSharedFlow<List<Uri>>,
+    resultFlow: MutableSharedFlow<List<ByteArray>>,
     context: Activity,
 ) {
-    var localByteArray = remember<ByteArray?> { null }
-    val localUriList = remember { mutableListOf<Uri>()}
+    var localCameraImage = remember<ByteArray?> { null }
+    val localImageList = remember { mutableListOf<ByteArray>()}
 
     val startDestination = if (context.intent.hasExtra("gallery")) {
         CameraRoute.Gallery.name
@@ -38,8 +38,8 @@ fun CameraNavHost(
     LaunchedEffect(Unit){
         resultFlow.collectLatest {
             if (it.isNotEmpty()){
-                localUriList.clear()
-                localUriList.addAll(it)
+                localImageList.clear()
+                localImageList.addAll(it)
                 navController.navigate(CameraRoute.Result.name)
             } else {
                 popBackStack(context, navController)
@@ -52,7 +52,7 @@ fun CameraNavHost(
         composable(CameraRoute.Camera.name) {
             CameraRoute(
                 navigateToResult = { byteArray ->
-                    localByteArray = byteArray
+                    localCameraImage = byteArray
                     navController.navigate(CameraRoute.Result.name) },
                 popBackStack = { popBackStack(context, navController) },
                 context = context
@@ -69,9 +69,9 @@ fun CameraNavHost(
 
         composable(CameraRoute.Result.name) {
             ResultRoute(
-                byteArray = localByteArray,
+                byteArray = localCameraImage,
                 context = context,
-                uriList = localUriList,
+                imageList = localImageList,
                 popBackStack = {
                     popBackStack(context, navController) }
             )

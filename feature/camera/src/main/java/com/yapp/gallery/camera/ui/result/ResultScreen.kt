@@ -2,63 +2,67 @@ package com.yapp.gallery.camera.ui.result
 
 import android.app.Activity
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.TextFieldDefaults.indicatorLine
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -70,15 +74,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.yapp.gallery.camera.R
-import com.yapp.gallery.camera.model.ImageData
 import com.yapp.gallery.camera.provider.ResultViewModelFactoryProvider
 import com.yapp.gallery.camera.ui.result.ResultContract.*
+import com.yapp.gallery.camera.widget.EmotionalTag
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_background
 import com.yapp.gallery.common.theme.color_black
@@ -102,22 +104,24 @@ import timber.log.Timber
 fun ResultRoute(
     popBackStack: (Boolean) -> Unit,
     byteArray: ByteArray?,
-    uriList: List<Uri>?,
+    imageList: List<ByteArray>,
     context: Activity
 ){
-    val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray, uriList = uriList)
+    val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray, imageList = imageList)
     val resultState : ResultState by viewModel.viewState.collectAsStateWithLifecycle()
 
     // Bottom Sheet State
-    val modalBottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val scaffoldBottomSheetState = rememberBottomSheetScaffoldState()
 
 
     LaunchedEffect(viewModel.sideEffect){
         viewModel.sideEffect.collectLatest {
             when(it){
                 is ResultSideEffect.ShowBottomSheet -> {
-                    modalBottomSheetState.show()
+                    scaffoldBottomSheetState.bottomSheetState.expand()
+                }
+                is ResultSideEffect.ShowToast -> {
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -125,11 +129,13 @@ fun ResultRoute(
 
     ResultScreen(
         resultState = resultState,
-        modalBottomSheetState = modalBottomSheetState,
+        scaffoldState = scaffoldBottomSheetState,
         onClickRegister = { viewModel.sendEvent(ResultEvent.OnClickRegister) },
         setAuthorName = { viewModel.sendEvent(ResultEvent.SetAuthorName(it)) },
         setPostName = { viewModel.sendEvent(ResultEvent.SetPostName(it)) },
         setTempTag = { viewModel.sendEvent(ResultEvent.SetTempTag(it)) },
+        enterTag = { viewModel.sendEvent(ResultEvent.EnterTag) },
+        onDeleteTag = { viewModel.sendEvent(ResultEvent.OnDeleteTag(it))},
         popBackStack = {
             popBackStack(resultState.imageList.isNotEmpty())
         }
@@ -140,18 +146,20 @@ fun ResultRoute(
 @Composable
 private fun ResultScreen(
     resultState: ResultState,
-    modalBottomSheetState: ModalBottomSheetState,
+    scaffoldState: BottomSheetScaffoldState,
     onClickRegister: () -> Unit,
     setAuthorName: (String) -> Unit,
     setPostName: (String) -> Unit,
     setTempTag: (String) -> Unit,
+    enterTag: () -> Unit,
+    onDeleteTag: (String) -> Unit,
     popBackStack: () -> Unit,
     scope: CoroutineScope = rememberCoroutineScope()
 ){
     val pagerState = rememberPagerState()
 
-    ModalBottomSheetLayout(
-        sheetState = modalBottomSheetState,
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
         sheetContent = {
             Spacer(modifier = Modifier.height(1.dp))
             ResultRegisterBottomSheet(
@@ -159,20 +167,24 @@ private fun ResultScreen(
                 setAuthorName = setAuthorName,
                 setPostName = setPostName,
                 setTempTag = setTempTag,
+                enterTag = enterTag,
                 onSkip = { /*TODO*/ },
+                onDeleteTag = onDeleteTag,
                 onRegister = { /*TODO*/ }) },
-        scrimColor = Color.Transparent,
+        drawerScrimColor = Color.Transparent,
+        sheetElevation = 0.dp,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     ) {
-        BackHandler(enabled = modalBottomSheetState.isVisible) {
+        BackHandler(enabled = scaffoldState.bottomSheetState.isExpanded) {
             scope.launch {
-                modalBottomSheetState.hide()
+                scaffoldState.bottomSheetState.collapse()
             }
         }
 
         Box(modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colors.background)
+            .padding(it)
             .navigationBarsPadding()
         ) {
             if (resultState.imageList.isNotEmpty()) {
@@ -216,7 +228,7 @@ private fun ResultScreen(
                 ) {
                     Text(
                         text = if (resultState.imageList.isEmpty()) stringResource(id = R.string.retry_camera_btn)
-                                else stringResource(id = R.string.retry_gallery_btn),
+                        else stringResource(id = R.string.retry_gallery_btn),
                         style = MaterialTheme.typography.h3.copy(
                             fontWeight = FontWeight.SemiBold
                         )
@@ -267,7 +279,7 @@ private fun ResultScreen(
                 }
             }
 
-            if (modalBottomSheetState.isAnimationRunning || modalBottomSheetState.isVisible){
+            if (scaffoldState.bottomSheetState.isAnimationRunning || scaffoldState.bottomSheetState.isExpanded){
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -278,15 +290,17 @@ private fun ResultScreen(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ResultRegisterBottomSheet(
     resultState: ResultState,
     setAuthorName: (String) -> Unit,
     setPostName: (String) -> Unit,
     setTempTag: (String) -> Unit,
+    enterTag: () -> Unit,
     onSkip: () -> Unit,
+    onDeleteTag: (String) -> Unit,
     onRegister: () -> Unit,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     focusManger: FocusManager = LocalFocusManager.current
 ){
     val focusRequester = remember { FocusRequester() }
@@ -313,7 +327,8 @@ private fun ResultRegisterBottomSheet(
             value = resultState.authorName,
             onDataSet = setAuthorName,
             focusRequester = focusRequester,
-            focusManager = focusManger
+            focusManager = focusManger,
+            interactionSource = interactionSource,
         )
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -324,7 +339,8 @@ private fun ResultRegisterBottomSheet(
             value = resultState.postName,
             onDataSet = setPostName,
             focusRequester = focusRequester,
-            focusManager = focusManger
+            focusManager = focusManger,
+            interactionSource = interactionSource
         )
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -335,10 +351,33 @@ private fun ResultRegisterBottomSheet(
             value = resultState.tempTag,
             onDataSet = setTempTag,
             focusRequester = focusRequester,
-            focusManager = focusManger
+            focusManager = focusManger,
+            interactionSource = interactionSource,
+            onEnterClick = enterTag,
         )
 
-        Spacer(modifier = Modifier.height(112.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .imePadding()
+                .defaultMinSize(minHeight = 24.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        ){
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ){
+                items(resultState.tagList){
+                    EmotionalTag(
+                        tag = it,
+                        onDelete = { onDeleteTag(it) }
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(60.dp))
 
         // 하단 버튼
         Button(
@@ -351,6 +390,7 @@ private fun ResultRegisterBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .navigationBarsPadding()
                 .padding(bottom = 53.dp),
             onClick = {},
             enabled = resultState.authorName.isNotEmpty() && resultState.postName.isNotEmpty() && resultState.tagList.isNotEmpty()
@@ -364,24 +404,26 @@ private fun ResultRegisterBottomSheet(
             )
         }
 
-
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ResultRegisterField(
     title: String,
     hint: String,
     value: String,
     onDataSet: (String) -> Unit,
+    onEnterClick: (() -> Unit)? = null,
     focusRequester: FocusRequester,
     focusManager: FocusManager,
-    keyboardController: SoftwareKeyboardController? = LocalSoftwareKeyboardController.current
+    interactionSource: MutableInteractionSource,
+    modifier: Modifier = Modifier
 ){
-    Column(modifier = Modifier
+    Column(modifier = modifier
         .fillMaxWidth()
-        .padding(horizontal = 20.dp)) {
+        .padding(horizontal = 20.dp)
+    ) {
         Text(
             text = title,
             style = MaterialTheme.typography.h2.copy(fontWeight = FontWeight.SemiBold)
@@ -398,7 +440,9 @@ private fun ResultRegisterField(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    focusManager.clearFocus()
+                    onEnterClick?.let { it() }?: run {
+                        focusManager.moveFocus(FocusDirection.Down)
+                    }
                 }
             ),
             decorationBox = { innerTextField ->
@@ -416,19 +460,20 @@ private fun ResultRegisterField(
                 }
                 innerTextField()
             },
-            modifier = Modifier.onKeyEvent { keyEvent ->
-                if (keyEvent.key != Key.Enter || keyEvent.key != Key.SystemNavigationDown) return@onKeyEvent false
-                keyboardController?.hide()
-                focusManager.clearFocus()
-                true
-            },
+            modifier = Modifier
+                .indicatorLine(
+                    enabled = true,
+                    isError = false,
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = color_gray600,
+                        unfocusedIndicatorColor = color_gray600,
+                    ),
+                    focusedIndicatorLineThickness = 0.8.dp,
+                    unfocusedIndicatorLineThickness = 0.8.dp,
+                    interactionSource = interactionSource,
+                )
+                .padding(bottom = 8.dp),
             cursorBrush = SolidColor(color_white)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(
-            color = color_gray600,
-            modifier = Modifier.fillMaxWidth(),
-            thickness = 0.8.dp
         )
 
     }
@@ -444,28 +489,24 @@ private fun BottomSheetPreview(){
             setPostName = {},
             setTempTag = {},
             onSkip = {},
-            onRegister = {}
+            enterTag = {},
+            onRegister = {},
+            onDeleteTag = {}
         )
     }
 }
 
 @Composable
-fun resultViewModel(context : Activity, byteArray: ByteArray?, uriList: List<Uri>?) : ResultViewModel {
+fun resultViewModel(context : Activity, byteArray: ByteArray?, imageList: List<ByteArray>) : ResultViewModel {
     val postId = context.intent.getLongExtra("postId", 0L)
-
-//    val imageList = if (VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//        context.intent.getParcelableArrayExtra("imageList", Uri::class.java)?.toList() ?: emptyList()
-//    } else {
-//        context.intent.getParcelableArrayExtra("imageList")?.toList() ?: emptyList()
-//    }
 
     val factory = EntryPointAccessors.fromActivity(
         context,
         ResultViewModelFactoryProvider::class.java
     ).resultViewModelFactory()
 
-    Timber.e("postId : $postId, imageList : $uriList")
-    return viewModel(factory = ResultViewModel.provideFactory(factory, postId, byteArray, uriList ?: emptyList()))
+    Timber.e("postId : $postId, imageList : $imageList")
+    return viewModel(factory = ResultViewModel.provideFactory(factory, postId, byteArray, imageList))
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -475,11 +516,13 @@ private fun ResultScreenPreview(){
     ArtieTheme {
         ResultScreen(
             resultState = ResultState(),
-            modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden),
+            scaffoldState = rememberBottomSheetScaffoldState(),
             popBackStack = {},
             setAuthorName = {},
             setPostName = {},
             setTempTag = {},
+            enterTag = {},
+            onDeleteTag = {},
             onClickRegister = {}
         )
     }
