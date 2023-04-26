@@ -1,7 +1,6 @@
 package com.yapp.gallery.camera.ui.result
 
 import android.app.Activity
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -38,8 +37,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextFieldDefaults
@@ -47,14 +44,12 @@ import androidx.compose.material.TextFieldDefaults.indicatorLine
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusDirection
@@ -65,8 +60,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -81,6 +74,7 @@ import com.yapp.gallery.camera.R
 import com.yapp.gallery.camera.provider.ResultViewModelFactoryProvider
 import com.yapp.gallery.camera.ui.result.ResultContract.*
 import com.yapp.gallery.camera.widget.EmotionalTag
+import com.yapp.gallery.camera.widget.RegisterDialog
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_background
 import com.yapp.gallery.common.theme.color_black
@@ -105,7 +99,8 @@ fun ResultRoute(
     popBackStack: (Boolean) -> Unit,
     byteArray: ByteArray?,
     imageList: List<ByteArray>,
-    context: Activity
+    context: Activity,
+    navigateToHome: () -> Unit
 ){
     val viewModel : ResultViewModel = resultViewModel(context = context, byteArray = byteArray, imageList = imageList)
     val resultState : ResultState by viewModel.viewState.collectAsStateWithLifecycle()
@@ -123,8 +118,24 @@ fun ResultRoute(
                 is ResultSideEffect.ShowToast -> {
                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
+                is ResultSideEffect.NavigateToHome -> {
+                    // Todo : Info 화면으로 이동으로 변경
+                    Toast.makeText(context, "전시가 생성되었습니다.", Toast.LENGTH_SHORT).show()
+                    navigateToHome()
+                }
             }
         }
+    }
+
+
+    // 업로드 다이얼로그
+    if (resultState.registerDialogShown){
+        RegisterDialog(
+            onConfirm = { viewModel.sendEvent(ResultEvent.OnConfirmRegister) },
+            onDismiss = { viewModel.sendEvent(ResultEvent.OnCancelRegister)},
+            isContentEmpty = resultState.authorName.isEmpty() || resultState.postName.isEmpty() || resultState.tagList.isEmpty(),
+            registerState = resultState.registerState,
+        )
     }
 
     ResultScreen(
@@ -138,7 +149,8 @@ fun ResultRoute(
         onDeleteTag = { viewModel.sendEvent(ResultEvent.OnDeleteTag(it))},
         popBackStack = {
             popBackStack(resultState.imageList.isNotEmpty())
-        }
+        },
+        onRegister = { viewModel.sendEvent(ResultEvent.OnRegister)}
     )
 }
 
@@ -153,6 +165,7 @@ private fun ResultScreen(
     setTempTag: (String) -> Unit,
     enterTag: () -> Unit,
     onDeleteTag: (String) -> Unit,
+    onRegister: () -> Unit,
     popBackStack: () -> Unit,
     scope: CoroutineScope = rememberCoroutineScope()
 ){
@@ -168,9 +181,10 @@ private fun ResultScreen(
                 setPostName = setPostName,
                 setTempTag = setTempTag,
                 enterTag = enterTag,
-                onSkip = { /*TODO*/ },
                 onDeleteTag = onDeleteTag,
-                onRegister = { /*TODO*/ }) },
+                onRegister = onRegister
+            )
+        },
         drawerScrimColor = Color.Transparent,
         sheetElevation = 0.dp,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
@@ -297,7 +311,6 @@ private fun ResultRegisterBottomSheet(
     setPostName: (String) -> Unit,
     setTempTag: (String) -> Unit,
     enterTag: () -> Unit,
-    onSkip: () -> Unit,
     onDeleteTag: (String) -> Unit,
     onRegister: () -> Unit,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -310,7 +323,7 @@ private fun ResultRegisterBottomSheet(
             .fillMaxWidth()
             .background(color = color_popUpBottom),
     ) {
-        TextButton(onClick = onSkip,
+        TextButton(onClick = onRegister,
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(
@@ -392,7 +405,7 @@ private fun ResultRegisterBottomSheet(
                 .padding(horizontal = 20.dp)
                 .navigationBarsPadding()
                 .padding(bottom = 53.dp),
-            onClick = {},
+            onClick = onRegister,
             enabled = resultState.authorName.isNotEmpty() && resultState.postName.isNotEmpty() && resultState.tagList.isNotEmpty()
         ) {
             Text(
@@ -488,7 +501,6 @@ private fun BottomSheetPreview(){
             setAuthorName = {},
             setPostName = {},
             setTempTag = {},
-            onSkip = {},
             enterTag = {},
             onRegister = {},
             onDeleteTag = {}
@@ -523,7 +535,8 @@ private fun ResultScreenPreview(){
             setTempTag = {},
             enterTag = {},
             onDeleteTag = {},
-            onClickRegister = {}
+            onClickRegister = {},
+            onRegister = {}
         )
     }
 }

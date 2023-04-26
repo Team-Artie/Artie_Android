@@ -16,6 +16,7 @@ import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.ui.camera.CameraRoute
 import com.yapp.gallery.camera.ui.gallery.GalleryRoute
 import com.yapp.gallery.camera.ui.result.ResultRoute
+import com.yapp.gallery.navigation.home.HomeNavigator
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
@@ -24,6 +25,7 @@ fun CameraNavHost(
     navController: NavHostController = rememberNavController(),
     onLaunchImagePicker : () -> Unit,
     resultFlow: MutableSharedFlow<List<ByteArray>>,
+    homeNavigator: HomeNavigator,
     context: Activity,
 ) {
     var localCameraImage = remember<ByteArray?> { null }
@@ -73,7 +75,12 @@ fun CameraNavHost(
                 context = context,
                 imageList = localImageList,
                 popBackStack = {
-                    popBackStack(context, navController) }
+                    popBackStack(context, navController)
+                },
+                navigateToHome = {
+                    context.finishAffinity()
+                    context.startActivity(homeNavigator.navigate(context))
+                }
             )
         }
     }

@@ -11,7 +11,9 @@ class ResultContract {
         val authorName: String = "",
         val postName: String = "",
         val tempTag: String = "",
-        val tagList: List<String> = emptyList()
+        val tagList: List<String> = emptyList(),
+        val registerDialogShown : Boolean = false,
+        val registerState: ResultRegisterState = ResultRegisterState.RegisterInitial
     ) : ViewModelContract.State
 
     sealed class ResultEvent : ViewModelContract.Event {
@@ -21,6 +23,9 @@ class ResultContract {
         data class SetTempTag(val tag: String) : ResultEvent()
         object EnterTag : ResultEvent()
         data class OnDeleteTag(val tag: String) : ResultEvent()
+        object OnRegister : ResultEvent()
+        object OnCancelRegister : ResultEvent()
+        object OnConfirmRegister : ResultEvent()
     }
 
     sealed class ResultReduce : ViewModelContract.Reduce{
@@ -30,10 +35,19 @@ class ResultContract {
         data class UpdateTempTag(val tag: String) : ResultReduce()
         data class AddTempTag(val tag: String) : ResultReduce()
         data class DeleteTag(val tag: String) : ResultReduce()
+        data class UpdateRegisterDialogShown(val shown: Boolean) : ResultReduce()
+        data class UpdateRegisterState(val state: ResultRegisterState) : ResultReduce()
     }
 
     sealed class ResultSideEffect : ViewModelContract.SideEffect{
         object ShowBottomSheet : ResultSideEffect()
         data class ShowToast(val message: String) : ResultSideEffect()
+        object NavigateToHome : ResultSideEffect()
+    }
+
+    sealed class ResultRegisterState{
+        object RegisterInitial : ResultRegisterState()
+        object RegisterLoading : ResultRegisterState()
+        data class RegisterError(val message: String) : ResultRegisterState()
     }
 }

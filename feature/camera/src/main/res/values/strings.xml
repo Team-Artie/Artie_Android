@@ -20,4 +20,10 @@
 
     <string name="emotional_tag">감정태그 (최대 5개)</string>
     <string name="emotional_tag_hint">#감정태그를 적어주세요.</string>
+
+    <string name="post_upload">작품 등록</string>
+    <string name="post_upload_complete">작품 등록이 완료되었습니다.</string>
+    <string name="post_upload_fail">작품 등록에 실패하였습니다.</string>
+    <string name="post_upload_empty_content">작품 정보 없이 등록 하시겠습니까?</string>
+    <string name="post_upload_content">작품 등록을 진행합니다.</string>
 </resources>

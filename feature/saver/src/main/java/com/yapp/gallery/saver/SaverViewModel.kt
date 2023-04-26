@@ -3,7 +3,7 @@ package com.yapp.gallery.saver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.domain.usecase.record.DeleteTempPostUseCase
-import com.yapp.gallery.domain.usecase.record.PublishRecordUseCase
+import com.yapp.gallery.domain.usecase.camera.PublishRecordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
