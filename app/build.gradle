@@ -15,16 +15,24 @@ android {
         minSdk 26
 
         targetSdk 33
-        versionCode 3
-        versionName "1.0.2"
+        versionCode 4
+        versionName "1.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders = [APP_NAME : "@string/app_name_dev"]
+        }
+
         release {
-            minifyEnabled false
+            manifestPlaceholders = [APP_NAME : "@string/app_name"]
+
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
