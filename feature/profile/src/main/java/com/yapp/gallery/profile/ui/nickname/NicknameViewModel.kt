@@ -39,7 +39,7 @@ class NicknameViewModel @Inject constructor(
 
     fun changeNickname(editedName: String){
         nickname.value = editedName
-        if (editedName == originNickname || editedName.isEmpty()){
+        if (editedName == originNickname || editedName.isBlank()){
             _nicknameState.value = NicknameState.None
         } else if (editedName.length in 1..10){
             _nicknameState.value = NicknameState.Normal(editedName)

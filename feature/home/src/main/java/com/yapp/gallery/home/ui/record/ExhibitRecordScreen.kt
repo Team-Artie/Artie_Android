@@ -233,9 +233,9 @@ private fun ExhibitRecordScreen(
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 53.dp),
                     onClick = onRecordClick,
-                    enabled = recordState.exhibitName.isNotEmpty() &&
+                    enabled = recordState.exhibitName.isNotBlank() &&
                             recordState.categorySelect != -1L &&
-                            recordState.exhibitDate.isNotEmpty()
+                            recordState.exhibitDate.isNotBlank()
                 ) {
                     Text(
                         text = if (recordState.continuous) stringResource(id = R.string.exhibit_crate_continuous_btn)

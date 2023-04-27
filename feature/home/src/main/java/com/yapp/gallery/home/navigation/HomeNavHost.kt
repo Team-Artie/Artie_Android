@@ -5,12 +5,15 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
+import com.yapp.gallery.home.ui.test.TestRoute
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -42,7 +45,10 @@ fun HomeNavHost(
                     )
                 },
                 webViewProvider = webViewProvider,
-                context = context
+                context = context,
+                navigateToTest = {
+                    navHostController.navigate("test?token=${it}")
+                }
             )
         }
         composable("record") {
@@ -71,6 +77,16 @@ fun HomeNavHost(
                 popBackStack = { popBackStack(context, navHostController) },
                 webViewProvider = webViewProvider
             )
+        }
+        composable("test?token={token}",
+            arguments = listOf(
+                navArgument("token"){
+                    type = NavType.StringType
+                }
+            )
+        ){
+            val token = it.arguments?.getString("token")
+            TestRoute(webViewProvider = webViewProvider, token = token)
         }
     }
 }

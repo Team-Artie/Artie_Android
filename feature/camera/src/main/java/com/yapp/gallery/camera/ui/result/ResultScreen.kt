@@ -409,7 +409,7 @@ private fun ResultRegisterBottomSheet(
                 .navigationBarsPadding()
                 .padding(bottom = 53.dp),
             onClick = onRegister,
-            enabled = resultState.authorName.isNotEmpty() && resultState.postName.isNotEmpty() && resultState.tagList.isNotEmpty()
+            enabled = resultState.authorName.isNotBlank() && resultState.postName.isNotBlank() && resultState.tagList.isNotEmpty()
         ) {
             Text(
                 text = "완료",

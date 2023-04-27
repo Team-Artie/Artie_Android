@@ -130,7 +130,7 @@ class ExhibitRecordViewModel @Inject constructor(
             exhibitName != tempPostInfo?.name ||
                     categorySelect != tempPostInfo.categoryId ||
                     exhibitDate != tempPostInfo.postDate ||
-                    exhibitLink.ifEmpty { null } != tempPostInfo.postLink
+                    exhibitLink.ifBlank { null } != tempPostInfo.postLink
         }
     }
 
@@ -206,7 +206,7 @@ class ExhibitRecordViewModel @Inject constructor(
                     continuous = true, postId = reduce.postId,
                     tempPostInfo = TempPostInfo(
                         reduce.postId, state.exhibitName, state.categorySelect,
-                        state.exhibitDate, state.exhibitLink.ifEmpty { null })
+                        state.exhibitDate, state.exhibitLink.ifBlank { null })
                 )
         }
     }

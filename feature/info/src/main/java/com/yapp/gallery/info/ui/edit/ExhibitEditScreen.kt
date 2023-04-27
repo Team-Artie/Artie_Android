@@ -222,7 +222,7 @@ fun ExhibitEditScreen(
                     onClick = {
                         viewModel.updateRemotePost()
                     },
-                    enabled = viewModel.exhibitName.value.isNotEmpty() &&
+                    enabled = viewModel.exhibitName.value.isNotBlank() &&
                             viewModel.categorySelect.value != -1L &&
                             viewModel.exhibitDate.value.isNotEmpty()
                 ) {
