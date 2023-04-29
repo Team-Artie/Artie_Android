@@ -6,13 +6,18 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+
     <application
         android:name=".GalleryApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="${APP_NAME}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.YAPPALLRounderTeam2"
@@ -47,26 +52,19 @@
         <activity android:name=".home.ui.home.HomeActivity"
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
-            android:taskAffinity="@string/home_activity_task_affinity"
             android:theme="@style/Theme.YAPPALLRounderTeam2.NoAnim"
             android:exported="true"/>
 
         <activity
-            android:name=".camera.CameraActivity"
+            android:name=".camera.ui.camera.CameraActivity"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:exported="true"/>
 
         <activity android:name=".info.ui.info.ExhibitInfoActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            android:theme="@style/Theme.FitSystemWindow"
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
             android:exported="true"/>
-
-        <activity
-            android:name=".saver.SaverActivity"
-            android:screenOrientation="portrait"
-            android:exported="true"
-            android:theme="@style/Theme.YAPPALLRounderTeam2.NoAnim" />
 
         <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"

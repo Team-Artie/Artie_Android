@@ -38,4 +38,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(authRepositoryImpl: AuthRepositoryImpl) : AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCameraRepository(cameraRepositoryImpl: CameraRepositoryImpl) : CameraRepository
 }

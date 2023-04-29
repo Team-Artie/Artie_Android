@@ -31,18 +31,18 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
+            // 1.5초간 스플래시 화면 보여주기
+            delay(1500)
             auth.currentUser?.let {
                 getValidTokenUseCase()
                     .catch {
                         // 네트워크 오류 등으로 못 받아와질 때
-                        delay(1000)
                         moveToHomeLogin(true, "")
                     }
                     .collectLatest {
                         moveToHomeLogin(true, it)
                     }
             } ?: run {
-                delay(1000)
                 moveToHomeLogin(false, "")
             }
         }

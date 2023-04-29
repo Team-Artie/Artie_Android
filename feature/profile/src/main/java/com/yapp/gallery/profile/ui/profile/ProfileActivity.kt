@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.kakao.sdk.user.UserApiClient
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.navigation.login.LoginNavigator
 import com.yapp.gallery.profile.navigation.ProfileNavHost
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +25,7 @@ class ProfileActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            GalleryTheme {
+            ArtieTheme {
                 ProfileNavHost(
                     navigateToLogin = { navigateToLogin() }, context = this)
             }

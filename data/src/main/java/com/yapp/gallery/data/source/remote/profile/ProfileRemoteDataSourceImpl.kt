@@ -1,6 +1,6 @@
 package com.yapp.gallery.data.source.remote.profile
 
-import com.yapp.gallery.data.api.ArtieSerivce
+import com.yapp.gallery.data.api.ArtieService
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
 import com.yapp.gallery.domain.entity.profile.User
 import kotlinx.coroutines.CoroutineDispatcher
@@ -10,20 +10,20 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class ProfileRemoteDataSourceImpl @Inject constructor(
-    private val artieSerivce: ArtieSerivce,
+    private val artieService: ArtieService,
     @IoDispatcher private val dispatcher : CoroutineDispatcher
 ) : ProfileRemoteDataSource {
     override fun loadUserData(): Flow<User> = flow {
-        emit(artieSerivce.getUserData())
+        emit(artieService.getUserData())
     }.flowOn(dispatcher)
 
     override fun changeNickname(
         userId: Long, editedName: String
     ): Flow<Boolean> = flow {
-        emit(artieSerivce.updateNickname(userId, editedName).isSuccessful)
+        emit(artieService.updateNickname(userId, editedName).isSuccessful)
     }.flowOn(dispatcher)
 
     override fun signOut(): Flow<Boolean> = flow {
-        emit(artieSerivce.signOut().isSuccessful)
+        emit(artieService.signOut().isSuccessful)
     }.flowOn(dispatcher)
 }

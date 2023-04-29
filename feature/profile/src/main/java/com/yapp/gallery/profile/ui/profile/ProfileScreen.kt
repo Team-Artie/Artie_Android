@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.yapp.gallery.common.theme.GalleryTheme
+import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.profile.ui.profile.ProfileContract.*
 import com.yapp.gallery.common.theme.color_background
 import com.yapp.gallery.common.theme.color_gray600
@@ -162,7 +162,8 @@ private fun ProfileScaffold(
                 Column {
                     val nicknameString = buildAnnotatedString {
                         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)){
-                            append(editedNickname?: user?.name ?: "")
+                            append(editedNickname?: user?.name ?: "회원")
+                            append("님")
                         }
                         append("이")
                     }
@@ -238,7 +239,7 @@ private fun ProfileFeature(
 @Preview(showBackground = true)
 @Composable
 fun ProfilePreview() {
-    GalleryTheme {
+    ArtieTheme {
         ProfileScaffold(
             profileState = ProfileState.Initial,
             editedNickname = null,

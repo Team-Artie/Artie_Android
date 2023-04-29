@@ -1,8 +1,9 @@
 package com.yapp.gallery.data.di
 
-import com.yapp.gallery.data.api.ArtieSerivce
+import com.yapp.gallery.data.api.ArtieService
 import com.yapp.gallery.data.api.login.ArtieKakaoService
 import com.yapp.gallery.data.api.login.ArtieNaverService
+import com.yapp.gallery.data.api.s3.ArtieS3Service
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +27,13 @@ object ServiceModule {
     }
     @Singleton
     @Provides
-    fun provideArtieService(@NetworkModule.ArtieRetrofit retrofit: Retrofit) : ArtieSerivce {
-        return retrofit.create(ArtieSerivce::class.java)
+    fun provideArtieService(@NetworkModule.ArtieRetrofit retrofit: Retrofit) : ArtieService {
+        return retrofit.create(ArtieService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideArtieS3Service(@NetworkModule.ArtieS3Retrofit retrofit: Retrofit) : ArtieS3Service {
+        return retrofit.create(ArtieS3Service::class.java)
     }
 }

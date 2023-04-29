@@ -1,8 +1,5 @@
 package com.yapp.gallery.home.ui.calendar
 
-import android.app.Activity
-import android.view.ViewGroup
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -22,17 +19,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.color_gray600
-import com.yapp.gallery.common.util.WebViewUtils
-import com.yapp.gallery.common.util.webview.NavigateJsObject
 import com.yapp.gallery.common.util.webview.WebViewState
+import com.yapp.gallery.common.util.webview.rememberWebView
+import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 
 @Composable
 fun CalendarScreen(
     popBackStack: () -> Unit,
-    webViewProvider: WebViewProvider,
     viewModel: CalendarViewModel = hiltViewModel()
 ){
     LaunchedEffect(viewModel.calendarSideEffect){
@@ -43,9 +38,9 @@ fun CalendarScreen(
             }
         }
     }
-    val webView = webViewProvider.getWebView { action, payload ->
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.setSideEffect(action, payload)
-    }
+    })
 
 
     CalendarWebView(
@@ -62,7 +57,7 @@ private fun CalendarWebView(
     calendarState: WebViewState,
     onReload : () -> Unit
 ){
-    val baseUrl = stringResource(id = R.string.calendar_base_url)
+    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.calendar_section)
     Scaffold(
     ) { paddingValues ->
         Column(

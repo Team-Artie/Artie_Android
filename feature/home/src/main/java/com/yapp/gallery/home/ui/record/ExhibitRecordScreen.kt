@@ -1,5 +1,6 @@
 package com.yapp.gallery.home.ui.record
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +45,6 @@ import kotlinx.coroutines.launch
 fun ExhibitRecordRoute(
     navigateToCamera: (Long) -> Unit,
     navigateToGallery: (Long) -> Unit,
-    navigateToHome: () -> Unit,
     popBackStack: () -> Unit,
     viewModel: ExhibitRecordViewModel = hiltViewModel()
 ){
@@ -63,7 +63,6 @@ fun ExhibitRecordRoute(
             when(it){
                 is ExhibitRecordSideEffect.NavigateToCamera -> navigateToCamera(it.postId)
                 is ExhibitRecordSideEffect.NavigateToGallery -> navigateToGallery(it.postId)
-                is ExhibitRecordSideEffect.NavigateToHome -> navigateToHome()
                 is ExhibitRecordSideEffect.ShowSnackBar -> {
                     val res = scaffoldState.snackbarHostState.showSnackbar(
                         message = "임시 보관된 전시를 삭제하였습니다.",
@@ -103,11 +102,9 @@ fun ExhibitRecordRoute(
         RecordMenuDialog(
             onCameraClick = {
                 viewModel.sendEvent(ExhibitRecordEvent.OnCameraClick)
-                navigateToHome.invoke()
             },
             onGalleryClick = {
                 viewModel.sendEvent(ExhibitRecordEvent.OnGalleryClick)
-                navigateToHome.invoke()
             },
             onDismissRequest = { viewModel.sendEvent(ExhibitRecordEvent.OnCancelClick) }
         )
@@ -197,6 +194,12 @@ private fun ExhibitRecordScreen(
                 )
             },
         ) { paddingValues ->
+            BackHandler(enabled = modalBottomSheetState.isVisible) {
+                scope.launch {
+                    modalBottomSheetState.hide()
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -230,9 +233,9 @@ private fun ExhibitRecordScreen(
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 53.dp),
                     onClick = onRecordClick,
-                    enabled = recordState.exhibitName.isNotEmpty() &&
+                    enabled = recordState.exhibitName.isNotBlank() &&
                             recordState.categorySelect != -1L &&
-                            recordState.exhibitDate.isNotEmpty()
+                            recordState.exhibitDate.isNotBlank()
                 ) {
                     Text(
                         text = if (recordState.continuous) stringResource(id = R.string.exhibit_crate_continuous_btn)
@@ -253,7 +256,7 @@ private fun ExhibitRecordScreen(
 @Preview(showBackground = true)
 @Composable
 private fun ExhibitRecordScreenPreview(){
-    GalleryTheme {
+    ArtieTheme {
         ExhibitRecordScreen(
             recordState = ExhibitRecordState(),
             addCategory = {},

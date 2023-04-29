@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.yapp.gallery.common.provider.WebViewProvider
+import androidx.navigation.navArgument
 import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
+import com.yapp.gallery.home.ui.test.TestRoute
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -21,9 +23,7 @@ fun HomeNavHost(
     profileNavigator: ProfileNavigator,
     cameraNavigator: CameraNavigator,
     infoNavigator: ExhibitInfoNavigator,
-    webViewProvider: WebViewProvider,
     context: Activity,
-    navToImagePicker: (Long) -> Unit,
 ) {
     NavHost(navController = navHostController, startDestination = "home") {
         composable("home") {
@@ -42,8 +42,10 @@ fun HomeNavHost(
                         infoNavigator.navigateToInfo(context, id, token)
                     )
                 },
-                webViewProvider = webViewProvider,
-                context = context
+                context = context,
+                navigateToTest = {
+                    navHostController.navigate("test?token=${it}")
+                }
             )
         }
         composable("record") {
@@ -56,21 +58,31 @@ fun HomeNavHost(
                     )
                 },
                 popBackStack = { popBackStack(context, navHostController) },
-                navigateToGallery = { postId -> navToImagePicker.invoke(postId) },
-                navigateToHome = {
-                    navHostController.navigate("home") {
-                        popUpTo(navHostController.graph.id) {
-                            inclusive = true
+                navigateToGallery = { postId ->
+                    navigateToScreen(
+                        context = context,
+                        intent = cameraNavigator.navigate(context).apply {
+                            putExtra("postId", postId)
+                            putExtra("gallery", true)
                         }
-                    }
+                    )
                 }
             )
         }
         composable("calendar") {
             CalendarScreen(
                 popBackStack = { popBackStack(context, navHostController) },
-                webViewProvider = webViewProvider
             )
+        }
+        composable("test?token={token}",
+            arguments = listOf(
+                navArgument("token"){
+                    type = NavType.StringType
+                }
+            )
+        ){
+            val token = it.arguments?.getString("token")
+            TestRoute(token = token)
         }
     }
 }

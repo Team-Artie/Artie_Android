@@ -90,7 +90,7 @@ class ExhibitEditViewModel @Inject constructor(
         viewModelScope.launch {
             updateRemotePostUseCase(
                 id, exhibitName.value, categorySelect.value,
-                exhibitDate.value, exhibitLink.value.ifEmpty { null }
+                exhibitDate.value, exhibitLink.value.ifBlank { null }
             ).catch {
                 Log.e("updateError", it.message.toString())
                 _editState.value =

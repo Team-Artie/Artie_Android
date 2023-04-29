@@ -1,6 +1,6 @@
 package com.yapp.gallery.data.source.remote.login
 
-import com.yapp.gallery.data.api.ArtieSerivce
+import com.yapp.gallery.data.api.ArtieService
 import com.yapp.gallery.data.api.login.ArtieKakaoService
 import com.yapp.gallery.data.api.login.ArtieNaverService
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
@@ -16,7 +16,7 @@ import javax.inject.Inject
 class LoginRemoteDataSourceImpl @Inject constructor(
     private val artieKakaoService: ArtieKakaoService,
     private val artieNaverService: ArtieNaverService,
-    private val artieService: ArtieSerivce,
+    private val artieService: ArtieService,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : LoginRemoteDataSource {
     override fun kakaoLogin(accessToken: String): Flow<FirebaseToken> = flow {

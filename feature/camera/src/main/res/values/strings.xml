@@ -1,3 +1,29 @@
 <resources>
-    <string name="app_name">YAPP_ALL_Rounder_Team-2</string>
+    <string name="app_name">Artie</string>
+
+    <string name="camera_permission_title">카메라 승인 권한이 필요해요</string>
+    <string name="gallery_permission_title">갤러리 승인 권한이 필요해요</string>
+    <string name="permission_content">해당 권한을 승인하지 않으면\n사진을 업로드할 수 없습니다.</string>
+
+    <string name="retry_camera_btn">다시 찍기</string>
+    <string name="retry_gallery_btn">다시 선택하기</string>
+    <string name="register_post_btn">작품 기록하기</string>
+
+    <string name="gallery_limit_title">사진 최대 개수</string>
+    <string name="gallery_limit_content">사진은 최대 5장 까지 선택이 가능합니다.\n추가 선택 시 5장만 선택됩니다.</string>
+
+    <string name="author_name">작가 이름</string>
+    <string name="author_name_hint">작가 이름을 적어주세요.</string>
+
+    <string name="post_name">작품명</string>
+    <string name="post_name_hint">작품명을 적어주세요.</string>
+
+    <string name="emotional_tag">감정태그 (최대 5개)</string>
+    <string name="emotional_tag_hint">#감정태그를 적어주세요.</string>
+
+    <string name="post_upload">작품 등록</string>
+    <string name="post_upload_complete">작품 등록이 완료되었습니다.</string>
+    <string name="post_upload_fail">작품 등록에 실패하였습니다.</string>
+    <string name="post_upload_empty_content">작품 정보 없이 등록 하시겠습니까?</string>
+    <string name="post_upload_content">작품 등록을 진행합니다.</string>
 </resources>

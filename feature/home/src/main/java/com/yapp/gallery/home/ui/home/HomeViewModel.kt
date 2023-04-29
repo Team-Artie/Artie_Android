@@ -19,7 +19,7 @@ class HomeViewModel @AssistedInject constructor(
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
     @Assisted private val accessToken: String?
-) : BaseStateViewModel<HomeState, HomeEvent, HomeReduce, HomeSideEffect>(HomeState.Initial) {
+) : BaseStateViewModel<HomeState, HomeEvent, HomeReduce, HomeSideEffect>(HomeState()) {
 
     @AssistedFactory
     interface HomeFactory{
@@ -67,7 +67,7 @@ class HomeViewModel @AssistedInject constructor(
             "NAVIGATE_TO_EXHIBITION_DETAIL" -> {
                 payload?.let { p ->
                     val exhibitId = JSONObject(p).getLong("id")
-                    val idToken = (viewState.value as? HomeState.Connected)?.idToken
+                    val idToken = viewState.value.idToken
                     sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
                 }
             }
@@ -88,12 +88,15 @@ class HomeViewModel @AssistedInject constructor(
 
     override fun reduceState(state: HomeState, reduce: HomeReduce): HomeState {
         return when(reduce){
-            is HomeReduce.Connected -> {
-                HomeState.Connected(reduce.idToken)
-            }
-            is HomeReduce.Disconnected -> {
-                HomeState.Disconnected
-            }
+            is HomeReduce.Connected ->
+                state.copy(
+                    idToken = reduce.idToken,
+                    connected = true
+                )
+            is HomeReduce.Disconnected ->
+                state.copy(
+                    connected = false
+                )
         }
     }
 

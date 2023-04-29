@@ -1,6 +1,6 @@
 package com.yapp.gallery.data.source.remote.record
 
-import com.yapp.gallery.data.api.ArtieSerivce
+import com.yapp.gallery.data.api.ArtieService
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
 import com.yapp.gallery.data.model.CategoryBody
 import com.yapp.gallery.data.model.CreateRecordBody
@@ -13,17 +13,17 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class ExhibitRecordRemoteDataSourceImpl @Inject constructor(
-    private val artieSerivce: ArtieSerivce,
+    private val artieService: ArtieService,
     @IoDispatcher private val dispatcher : CoroutineDispatcher
 ) : ExhibitRecordRemoteDataSource {
     override fun getCategoryList()
     : Flow<List<CategoryItem>> = flow {
-        emit(artieSerivce.getCategoryList())
+        emit(artieService.getCategoryList())
     }.flowOn(dispatcher)
 
     override fun createCategory(category: String)
     : Flow<Long> = flow {
-        emit(artieSerivce.createCategory(CategoryBody(category)).id)
+        emit(artieService.createCategory(CategoryBody(category)).id)
     }.flowOn(dispatcher)
 
     override fun createRecord(
@@ -32,7 +32,7 @@ class ExhibitRecordRemoteDataSourceImpl @Inject constructor(
         postDate: String,
         attachedLink: String?
     ): Flow<Long> = flow {
-        emit(artieSerivce.createRecord(CreateRecordBody(name, categoryId, changeDateFormat(postDate), attachedLink)).id)
+        emit(artieService.createRecord(CreateRecordBody(name, categoryId, changeDateFormat(postDate), attachedLink)).id)
     }.flowOn(dispatcher)
 
     override fun updateRecord(
@@ -42,16 +42,12 @@ class ExhibitRecordRemoteDataSourceImpl @Inject constructor(
         postDate: String,
         attachedLink: String?
     ): Flow<Boolean> = flow{
-        emit(artieSerivce.updateRecord(postId, CreateRecordBody(name, categoryId, changeDateFormat(postDate), attachedLink)).isSuccessful)
+        emit(artieService.updateRecord(postId, CreateRecordBody(name, categoryId, changeDateFormat(postDate), attachedLink)).isSuccessful)
     }
 
     override fun deleteRecord(
         postId: Long
     ): Flow<Boolean> = flow {
-        emit(artieSerivce.deleteRecord(postId).isSuccessful)
-    }
-
-    override fun publishRecord(postId: Long): Flow<Boolean> = flow {
-        emit(artieSerivce.publishRecord(postId).isSuccessful)
+        emit(artieService.deleteRecord(postId).isSuccessful)
     }
 }

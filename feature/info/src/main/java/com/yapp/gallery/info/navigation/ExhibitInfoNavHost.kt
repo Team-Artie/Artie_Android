@@ -3,14 +3,16 @@ package com.yapp.gallery.info.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.info.ui.edit.ExhibitEditScreen
 import com.yapp.gallery.info.ui.info.ExhibitInfoRoute
 import com.yapp.gallery.navigation.home.HomeNavigator
@@ -21,21 +23,32 @@ import java.time.LocalDate
 @Composable
 fun ExhibitInfoNavHost(
     exhibitId: Long,
-    webViewProvider: WebViewProvider,
     cameraNavigator: CameraNavigator,
     homeNavigator: HomeNavigator,
-    navToImgPicker: () -> Unit,
     context: Activity
 ){
     val navHostController = rememberNavController()
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        if (it.resultCode == Activity.RESULT_OK){
+            context.finish()
+        }
+    }
+
     NavHost(navController = navHostController, startDestination = "info"){
         composable("info"){
             ExhibitInfoRoute(
                 exhibitId = exhibitId,
-                webViewProvider = webViewProvider,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
-                navigateToGallery = { navToImgPicker() },
-                navigateToCamera = { navigateToScreen(context, cameraNavigator.navigate(context))},
+                navigateToGallery = {
+                    cameraLauncher.launch(cameraNavigator.navigate(context)
+                        .putExtra("postId", exhibitId))
+                },
+                navigateToCamera = {
+                    cameraLauncher.launch(cameraNavigator.navigate(context)
+                        .putExtra("postId", exhibitId))
+                    },
+                navigateToWebPage = { navigateToWebPage(context, it) },
                 popBackStack = { popBackStack(context, navHostController)},
                 context = context
             )
@@ -71,6 +84,8 @@ fun ExhibitInfoNavHost(
     }
 }
 
+
+
 private fun navigateToScreen(context: Context, intent: Intent){
     context.startActivity(intent)
 }
@@ -84,6 +99,10 @@ private fun popBackStack(
     else{
         context.finish()
     }
+}
+
+private fun navigateToWebPage(context: Activity, it: String) {
+    context.startActivity(Intent(Intent.ACTION_VIEW, it.toUri()))
 }
 
 private fun navigateWithPayload(

@@ -2,7 +2,7 @@ package com.yapp.gallery.data.source.remote.category
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.yapp.gallery.data.api.ArtieSerivce
+import com.yapp.gallery.data.api.ArtieService
 import com.yapp.gallery.data.di.DispatcherModule
 import com.yapp.gallery.domain.entity.category.PostContent
 import dagger.assisted.Assisted
@@ -14,7 +14,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 class CategoryManagePagingSource @AssistedInject constructor(
-    private val artieSerivce: ArtieSerivce,
+    private val artieService: ArtieService,
     @DispatcherModule.IoDispatcher private val dispatcher: CoroutineDispatcher,
     @Assisted private val categoryId: Long
 ) : PagingSource<Int, PostContent>() {
@@ -28,7 +28,7 @@ class CategoryManagePagingSource @AssistedInject constructor(
         return try {
             val page = if (params.key != null) params.key!! * PAGE_SIZE else 0
             val response = withContext(dispatcher){
-                artieSerivce.getCategoryPost(categoryId, page, PAGE_SIZE)
+                artieService.getCategoryPost(categoryId, page, PAGE_SIZE)
             }
 
             val next = params.key ?: 0

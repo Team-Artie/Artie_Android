@@ -173,7 +173,7 @@ private fun NoticeTile(
 @Preview(showBackground = true, backgroundColor = 1)
 @Composable
 private fun NoticeTilePreview(){
-    GalleryTheme {
+    ArtieTheme {
         NoticeTile(notice = NoticeItem(date = "2023-02-22", id = 1, title = "공지사항", contents = "내용"),
             onClick = {}
         )

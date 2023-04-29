@@ -70,7 +70,7 @@ class ExhibitRecordContract {
     sealed class ExhibitRecordSideEffect : ViewModelContract.SideEffect {
         data class NavigateToGallery(val postId: Long) : ExhibitRecordSideEffect()
         data class NavigateToCamera(val postId: Long) : ExhibitRecordSideEffect()
-        object NavigateToHome : ExhibitRecordSideEffect()
+//        object NavigateToHome : ExhibitRecordSideEffect()
         object ShowSnackBar : ExhibitRecordSideEffect()
     }
 }

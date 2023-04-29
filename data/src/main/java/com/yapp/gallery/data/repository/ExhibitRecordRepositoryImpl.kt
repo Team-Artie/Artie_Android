@@ -6,6 +6,7 @@ import com.yapp.gallery.domain.entity.home.CategoryItem
 import com.yapp.gallery.domain.entity.home.TempPostInfo
 import com.yapp.gallery.domain.repository.ExhibitRecordRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
@@ -58,9 +59,5 @@ class ExhibitRecordRepositoryImpl @Inject constructor(
         return localDataSource.deleteTempPost().flatMapConcat {
             remoteDataSource.deleteRecord(it)
         }
-    }
-
-    override fun publishRecord(postId: Long): Flow<Boolean> {
-        return remoteDataSource.publishRecord(postId)
     }
 }

@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yapp.gallery.common.model.BaseState
 import com.yapp.gallery.common.theme.*
-import com.yapp.gallery.common.util.getStatusBarHeight
 import com.yapp.gallery.common.widget.CenterTopAppBar
 import com.yapp.gallery.common.widget.ConfirmDialog
 import com.yapp.gallery.home.widget.DatePickerSheet
@@ -112,7 +111,7 @@ fun ExhibitEditScreen(
         scrimColor = Color.Transparent,
         sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         sheetBackgroundColor = color_popUpBottom,
-        modifier = Modifier.padding(top = getStatusBarHeight(context).dp)
+        modifier = Modifier.navigationBarsPadding().statusBarsPadding()
     ){
         Scaffold(
             scaffoldState = scaffoldState,
@@ -223,7 +222,7 @@ fun ExhibitEditScreen(
                     onClick = {
                         viewModel.updateRemotePost()
                     },
-                    enabled = viewModel.exhibitName.value.isNotEmpty() &&
+                    enabled = viewModel.exhibitName.value.isNotBlank() &&
                             viewModel.categorySelect.value != -1L &&
                             viewModel.exhibitDate.value.isNotEmpty()
                 ) {

@@ -3,11 +3,10 @@ package com.yapp.gallery.home.ui.home
 import com.yapp.gallery.common.base.ViewModelContract
 
 class HomeContract {
-    sealed class HomeState : ViewModelContract.State{
-        object Initial : HomeState()
-        data class Connected(val idToken : String) : HomeState()
-        object Disconnected : HomeState()
-    }
+    data class HomeState(
+        val idToken: String? = null,
+        val connected: Boolean = true
+    ) : ViewModelContract.State
 
     sealed class HomeEvent : ViewModelContract.Event{
         object OnLoadAgain : HomeEvent()

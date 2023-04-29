@@ -33,6 +33,11 @@ object NetworkModule {
     @Retention(AnnotationRetention.BINARY)
     annotation class ArtieRetrofit
 
+    // S3 API 담당 레트로핏
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class ArtieS3Retrofit
+
     // 아르티 서비스 클라이언트
     @Qualifier
     @Retention(AnnotationRetention.BINARY)
@@ -64,6 +69,17 @@ object NetworkModule {
     @Provides
     @ArtieRetrofit
     fun providesLoginRetrofit(gsonConverterFactory: GsonConverterFactory, @ArtieClient client: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.BASE_URL)
+            .addConverterFactory(gsonConverterFactory)
+            .client(client)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @ArtieS3Retrofit
+    fun providesS3Retrofit(gsonConverterFactory: GsonConverterFactory, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(gsonConverterFactory)

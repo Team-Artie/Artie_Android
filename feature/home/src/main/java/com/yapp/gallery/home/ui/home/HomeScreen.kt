@@ -12,18 +12,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yapp.gallery.common.provider.WebViewProvider
+import com.yapp.gallery.common.theme.ArtieTheme
+import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.rememberWebView
+import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
 import dagger.hilt.android.EntryPointAccessors
@@ -35,7 +39,7 @@ fun HomeRoute(
     navigateToProfile: () -> Unit,
     navigateToCalendar: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
-    webViewProvider: WebViewProvider,
+    navigateToTest: (String?) -> Unit,
     context: Activity
 ){
     val viewModel = homeViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
@@ -53,14 +57,17 @@ fun HomeRoute(
         }
     }
 
-    val webView = webViewProvider.getWebView { action, payload ->
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
-    }
+    })
 
     HomeScreen(
         homeState = homeState,
         webView = webView,
-        onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) }
+        onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
+        navigateToTest = {
+            navigateToTest(context.intent.getStringExtra("accessToken"))
+        }
     )
 }
 
@@ -68,12 +75,22 @@ fun HomeRoute(
 private fun HomeScreen(
     homeState : HomeState,
     webView : WebView,
-    onReload : () -> Unit
+    onReload : () -> Unit,
+    navigateToTest: () -> Unit
 ){
-    val baseUrl = stringResource(id = R.string.home_base_url)
-//    val baseUrl = "https://21st-all-rounder-team-2-web-bobeenlee.vercel.app/test-token"
+    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.home_section)
 
     Scaffold(
+        floatingActionButton = {
+            if (BuildConfig.DEBUG){
+                Button(onClick = navigateToTest) {
+                    Text(text = "테스트 화면으로 이동", style = MaterialTheme.typography.h3.copy(
+                        color = color_black, fontWeight = FontWeight.SemiBold
+                    ))
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -82,19 +99,34 @@ private fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (homeState is HomeState.Disconnected){
+            if (homeState.connected.not()){
                 HomeDisconnectedScreen(onReload)
             } else {
                 AndroidView(
                     factory = { webView },
                     update = {
-                        if (homeState is HomeState.Connected) {
-                            it.loadUrl(baseUrl, mapOf("Authorization" to homeState.idToken))
+                        homeState.idToken?.let { token ->
+                            it.loadUrl(baseUrl, mapOf("Authorization" to token))
                         }
                     }
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenPreview(){
+    ArtieTheme {
+        HomeScreen(
+            homeState = HomeState(),
+            webView = WebView(LocalContext.current).apply {
+                loadUrl(BuildConfig.WEB_BASE_URL + stringResource(id = R.string.home_section))
+            },
+            onReload = {},
+            navigateToTest = {}
+        )
     }
 }
 
