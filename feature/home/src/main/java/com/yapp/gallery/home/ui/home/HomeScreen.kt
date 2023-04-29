@@ -26,6 +26,7 @@ import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
@@ -78,7 +79,7 @@ private fun HomeScreen(
     onReload : () -> Unit,
     navigateToTest: () -> Unit
 ){
-    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.home_section)
+    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
 
     Scaffold(
         floatingActionButton = {

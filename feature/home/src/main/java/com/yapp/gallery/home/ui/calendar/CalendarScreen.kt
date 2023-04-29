@@ -21,6 +21,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.util.webview.WebViewState
+import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
@@ -57,7 +58,7 @@ private fun CalendarWebView(
     calendarState: WebViewState,
     onReload : () -> Unit
 ){
-    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.calendar_section)
+    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.calendar_section)
     Scaffold(
     ) { paddingValues ->
         Column(
