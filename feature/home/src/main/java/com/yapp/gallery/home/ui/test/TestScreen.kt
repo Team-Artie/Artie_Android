@@ -3,15 +3,14 @@ package com.yapp.gallery.home.ui.test
 import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
-import com.yapp.gallery.common.provider.WebViewProvider
+import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 
 @Composable
 fun TestRoute(
     token: String? = null,
-    webViewProvider: WebViewProvider
 ){
-    val webView = webViewProvider.getWebView { _, _ -> }
+    val webView by rememberWebView(onBridgeCalled = { _, _ -> })
 
     TestScreen(webView = webView, token = token)
 }

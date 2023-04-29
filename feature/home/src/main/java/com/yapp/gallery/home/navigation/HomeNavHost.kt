@@ -9,7 +9,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
@@ -24,7 +23,6 @@ fun HomeNavHost(
     profileNavigator: ProfileNavigator,
     cameraNavigator: CameraNavigator,
     infoNavigator: ExhibitInfoNavigator,
-    webViewProvider: WebViewProvider,
     context: Activity,
 ) {
     NavHost(navController = navHostController, startDestination = "home") {
@@ -44,7 +42,6 @@ fun HomeNavHost(
                         infoNavigator.navigateToInfo(context, id, token)
                     )
                 },
-                webViewProvider = webViewProvider,
                 context = context,
                 navigateToTest = {
                     navHostController.navigate("test?token=${it}")
@@ -75,7 +72,6 @@ fun HomeNavHost(
         composable("calendar") {
             CalendarScreen(
                 popBackStack = { popBackStack(context, navHostController) },
-                webViewProvider = webViewProvider
             )
         }
         composable("test?token={token}",
@@ -86,7 +82,7 @@ fun HomeNavHost(
             )
         ){
             val token = it.arguments?.getString("token")
-            TestRoute(webViewProvider = webViewProvider, token = token)
+            TestRoute(token = token)
         }
     }
 }

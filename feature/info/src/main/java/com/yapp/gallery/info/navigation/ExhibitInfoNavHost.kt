@@ -13,7 +13,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.info.ui.edit.ExhibitEditScreen
 import com.yapp.gallery.info.ui.info.ExhibitInfoRoute
 import com.yapp.gallery.navigation.home.HomeNavigator
@@ -24,7 +23,6 @@ import java.time.LocalDate
 @Composable
 fun ExhibitInfoNavHost(
     exhibitId: Long,
-    webViewProvider: WebViewProvider,
     cameraNavigator: CameraNavigator,
     homeNavigator: HomeNavigator,
     context: Activity
@@ -41,7 +39,6 @@ fun ExhibitInfoNavHost(
         composable("info"){
             ExhibitInfoRoute(
                 exhibitId = exhibitId,
-                webViewProvider = webViewProvider,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
                 navigateToGallery = {
                     cameraLauncher.launch(cameraNavigator.navigate(context)

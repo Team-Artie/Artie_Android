@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.home.navigation.HomeNavHost
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
@@ -21,8 +20,6 @@ class HomeActivity : ComponentActivity() {
     @Inject lateinit var profileNavigator: ProfileNavigator
     @Inject lateinit var infoNavigator: ExhibitInfoNavigator
 
-    @Inject lateinit var webViewProvider: WebViewProvider
-
     private lateinit var navController : NavHostController
 
     private var backKeyPressedTime: Long = 0
@@ -35,7 +32,6 @@ class HomeActivity : ComponentActivity() {
                 HomeNavHost(
                     navHostController = navController, profileNavigator = profileNavigator,
                     cameraNavigator = cameraNavigator, infoNavigator = infoNavigator,
-                    webViewProvider = webViewProvider,
                     context = this
                 )
             }

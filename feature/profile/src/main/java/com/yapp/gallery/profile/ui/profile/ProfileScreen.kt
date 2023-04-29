@@ -162,7 +162,8 @@ private fun ProfileScaffold(
                 Column {
                     val nicknameString = buildAnnotatedString {
                         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)){
-                            append(editedNickname?: user?.name ?: "")
+                            append(editedNickname?: user?.name ?: "회원")
+                            append("님")
                         }
                         append("이")
                     }

@@ -1,20 +1,23 @@
-package com.yapp.gallery.common.provider
+package com.yapp.gallery.common.util.webview
 
 import android.content.Context
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import com.yapp.gallery.common.util.WebViewUtils
 import com.yapp.gallery.common.util.webview.NavigateJsObject
-import dagger.hilt.android.qualifiers.ActivityContext
-import dagger.hilt.android.scopes.ActivityScoped
-import javax.inject.Inject
+import timber.log.Timber
 
-@ActivityScoped
-class WebViewProvider @Inject constructor(
-    @ActivityContext val context: Context
-){
-    inline fun getWebView(crossinline onBridgeCalled: (String, String?) -> Unit) : WebView{
+class WebViewProvider(
+    private val context: Context,
+    private val onBridgeCalled: (String, String?) -> Unit
+) : Lazy<WebView>{
+    private var cached: WebView? = null
+
+    private fun getWebView() : WebView{
         return WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -34,6 +37,35 @@ class WebViewProvider @Inject constructor(
             addJavascriptInterface(NavigateJsObject { action, payload ->
                 onBridgeCalled(action, payload)
             }, "android")
+        }
+    }
+
+    override val value: WebView
+        get() {
+            val webView = cached
+            Timber.e("cached: $cached")
+            if (webView == null){
+                getWebView().also {
+                    cached = it
+                    return it
+                }
+            } else {
+                return webView
+            }
+        }
+
+    override fun isInitialized(): Boolean = cached != null
+}
+
+@Composable
+fun rememberWebView(
+    onBridgeCalled: (String, String?) -> Unit,
+    options : (WebView.() -> Unit) = {}
+) : Lazy<WebView> {
+    val context = LocalContext.current
+    return remember{
+        WebViewProvider(context, onBridgeCalled).apply {
+            options(value)
         }
     }
 }

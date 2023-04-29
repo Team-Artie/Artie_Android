@@ -7,7 +7,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.info.navigation.ExhibitInfoNavHost
 import com.yapp.gallery.navigation.home.HomeNavigator
@@ -21,9 +20,6 @@ class ExhibitInfoActivity : ComponentActivity() {
     lateinit var cameraNavigator: CameraNavigator
     @Inject
     lateinit var homeNavigator: HomeNavigator
-
-    @Inject
-    lateinit var webViewProvider: WebViewProvider
 
     private val exhibitId by lazy {
         intent.getLongExtra("exhibitId", 1)
@@ -42,7 +38,6 @@ class ExhibitInfoActivity : ComponentActivity() {
             ArtieTheme {
                 ExhibitInfoNavHost(
                     exhibitId = exhibitId,
-                    webViewProvider = webViewProvider,
                     cameraNavigator = cameraNavigator, homeNavigator = homeNavigator,
                     context = this
                 )

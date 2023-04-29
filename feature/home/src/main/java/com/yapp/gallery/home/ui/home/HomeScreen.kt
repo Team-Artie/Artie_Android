@@ -20,14 +20,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
@@ -41,7 +40,6 @@ fun HomeRoute(
     navigateToCalendar: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
     navigateToTest: (String?) -> Unit,
-    webViewProvider: WebViewProvider,
     context: Activity
 ){
     val viewModel = homeViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
@@ -59,9 +57,9 @@ fun HomeRoute(
         }
     }
 
-    val webView = webViewProvider.getWebView { action, payload ->
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
-    }
+    })
 
     HomeScreen(
         homeState = homeState,

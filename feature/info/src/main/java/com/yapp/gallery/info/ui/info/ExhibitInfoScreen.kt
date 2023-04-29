@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yapp.gallery.common.provider.WebViewProvider
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.info.R
 import com.yapp.gallery.info.provider.InfoViewModelFactoryProvider
@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun ExhibitInfoRoute(
     exhibitId: Long,
-    webViewProvider: WebViewProvider,
     navigateToCamera: () -> Unit,
     navigateToGallery: () -> Unit,
     navigateToEdit: (String) -> Unit,
@@ -66,9 +65,9 @@ fun ExhibitInfoRoute(
     }
 
     // 웹뷰 정의
-    val webView = webViewProvider.getWebView{ action, payload ->
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(ExhibitInfoEvent.OnWebViewClick(action, payload))
-    }.apply {
+    }, options = {
         setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
                 if (this.canGoBack()) {
@@ -79,7 +78,7 @@ fun ExhibitInfoRoute(
             }
             return@setOnKeyListener true
         }
-    }
+    })
 
     ExhibitInfoScreen(
         exhibitId = exhibitId,
