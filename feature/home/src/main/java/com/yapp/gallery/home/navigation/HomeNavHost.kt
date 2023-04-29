@@ -9,7 +9,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.yapp.gallery.home.ui.calendar.CalendarScreen
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
 import com.yapp.gallery.home.ui.test.TestRoute
@@ -35,7 +34,6 @@ fun HomeNavHost(
                         profileNavigator.navigate(context)
                     )
                 },
-                navigateToCalendar = { navHostController.navigate("calendar") },
                 navigateToInfo = { id, token ->
                     navigateToScreen(
                         context,
@@ -67,11 +65,6 @@ fun HomeNavHost(
                         }
                     )
                 }
-            )
-        }
-        composable("calendar") {
-            CalendarScreen(
-                popBackStack = { popBackStack(context, navHostController) },
             )
         }
         composable("test?token={token}",
