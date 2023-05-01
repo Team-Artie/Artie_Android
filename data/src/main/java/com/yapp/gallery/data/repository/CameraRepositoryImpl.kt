@@ -41,8 +41,9 @@ class CameraRepositoryImpl @Inject constructor(
         artist: String, imageList: List<String>, name: String, postId: Long, tags: List<String>,
     ): Flow<Unit> = flow {
         imageList.forEach {
-            cameraRemoteDataSource.registerPost(artist, it, name, postId, tags).collect()
+            cameraRemoteDataSource.registerPost(artist, it, name, postId, tags)
         }
+        emit(Unit)
     }
 
     override fun registerOnlyImages(

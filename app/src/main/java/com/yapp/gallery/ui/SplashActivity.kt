@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import com.yapp.gallery.home.ui.home.HomeActivity
 import com.yapp.gallery.login.ui.LoginActivity
@@ -29,6 +31,10 @@ class SplashActivity : ComponentActivity() {
 //        }
 
         super.onCreate(savedInstanceState)
+
+        setContent {
+            rememberWebView(onBridgeCalled = { _, _ -> })
+        }
 
         lifecycleScope.launch {
             // 1.5초간 스플래시 화면 보여주기
