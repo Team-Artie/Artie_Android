@@ -14,11 +14,13 @@ class ResultContract {
         val tagList: List<String> = emptyList(),
         val registerDialogShown : Boolean = false,
         val skip : Boolean = false,
+        val isSaved: Boolean = false,
         val registerState: ResultRegisterState = ResultRegisterState.RegisterInitial
     ) : ViewModelContract.State
 
     sealed class ResultEvent : ViewModelContract.Event {
         object OnClickRegister : ResultEvent()
+        object OnClickCaptureSave : ResultEvent()
         data class SetAuthorName(val name: String) : ResultEvent()
         data class SetPostName(val name: String) : ResultEvent()
         data class SetTempTag(val tag: String) : ResultEvent()
@@ -38,6 +40,7 @@ class ResultContract {
         data class DeleteTag(val tag: String) : ResultReduce()
         data class UpdateRegisterDialogShown(val shown: Boolean, val skip: Boolean = false) : ResultReduce()
         data class UpdateRegisterState(val state: ResultRegisterState) : ResultReduce()
+        data class UpdateCaptureSaved(val saved: Boolean) : ResultReduce()
     }
 
     sealed class ResultSideEffect : ViewModelContract.SideEffect{

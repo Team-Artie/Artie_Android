@@ -11,15 +11,14 @@ import com.yapp.gallery.camera.ui.result.ResultContract.ResultSideEffect
 import com.yapp.gallery.camera.ui.result.ResultContract.ResultState
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.domain.usecase.camera.RegisterPostUseCase
+import com.yapp.gallery.domain.usecase.camera.SaveImageUseCase
 import com.yapp.gallery.domain.usecase.camera.UploadImagesUseCase
 import com.yapp.gallery.domain.usecase.record.DeleteTempPostUseCase
-import com.yapp.gallery.domain.usecase.record.GetTempPostUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,6 +32,7 @@ class ResultViewModel @AssistedInject constructor(
     private val uploadImagesUseCase: UploadImagesUseCase,
     private val registerPostUseCase: RegisterPostUseCase,
     private val deleteTempPostUseCase: DeleteTempPostUseCase,
+    private val saveImageUseCase: SaveImageUseCase
 ) : BaseStateViewModel<ResultState, ResultEvent, ResultReduce, ResultSideEffect>(ResultState()) {
 
     @AssistedFactory
@@ -79,10 +79,30 @@ class ResultViewModel @AssistedInject constructor(
         }
     }
 
+    private fun saveCaptureToGallery(){
+        saveImageUseCase(viewState.value.postId, viewState.value.captureData?.byteArray ?: return)
+            .catch {
+                Timber.e("saveCaptureToGallery error : $it")
+                sendSideEffect(ResultSideEffect.ShowToast(it.message.toString()))
+            }
+            .onEach {
+                updateState(ResultReduce.UpdateCaptureSaved(true))
+                sendSideEffect(ResultSideEffect.ShowToast("갤러리에 저장되었습니다."))
+            }
+            .launchIn(viewModelScope)
+    }
+
     override fun handleEvents(event: ResultEvent) {
         when(event){
             is ResultEvent.OnClickRegister -> {
                 sendSideEffect(ResultSideEffect.ShowBottomSheet)
+            }
+            is ResultEvent.OnClickCaptureSave -> {
+                if (viewState.value.isSaved){
+                    sendSideEffect(ResultSideEffect.ShowToast("이미 저장된 사진입니다."))
+                } else {
+                    saveCaptureToGallery()
+                }
             }
             is ResultEvent.SetAuthorName -> {
                 updateState(ResultReduce.UpdateAuthorName(event.name))
@@ -167,6 +187,7 @@ class ResultViewModel @AssistedInject constructor(
                 )
             }
             is ResultReduce.UpdateRegisterState -> state.copy(registerState = reduce.state)
+            is ResultReduce.UpdateCaptureSaved -> state.copy(isSaved = reduce.saved)
         }
     }
 

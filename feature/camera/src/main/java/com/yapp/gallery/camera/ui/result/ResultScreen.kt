@@ -142,6 +142,7 @@ fun ResultRoute(
         resultState = resultState,
         scaffoldState = scaffoldBottomSheetState,
         onClickRegister = { viewModel.sendEvent(ResultEvent.OnClickRegister) },
+        onCaptureSave = { viewModel.sendEvent(ResultEvent.OnClickCaptureSave) },
         setAuthorName = { viewModel.sendEvent(ResultEvent.SetAuthorName(it)) },
         setPostName = { viewModel.sendEvent(ResultEvent.SetPostName(it)) },
         setTempTag = { viewModel.sendEvent(ResultEvent.SetTempTag(it)) },
@@ -161,6 +162,7 @@ private fun ResultScreen(
     resultState: ResultState,
     scaffoldState: BottomSheetScaffoldState,
     onClickRegister: () -> Unit,
+    onCaptureSave: () -> Unit,
     setAuthorName: (String) -> Unit,
     setPostName: (String) -> Unit,
     setTempTag: (String) -> Unit,
@@ -270,19 +272,37 @@ private fun ResultScreen(
                     .background(color_popUpBottom)
                     .fillMaxWidth()
             ) {
-                IconButton(
+                Row(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 47.dp, start = 16.dp, bottom = 14.dp)
-                        .size(24.dp),
-                    onClick = popBackStack
+                        .fillMaxWidth()
+                        .padding(top = 36.dp, start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+                    IconButton(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp)
+                            .size(24.dp) ,
+                        onClick = popBackStack
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    if (resultState.captureData != null){
+                        TextButton(onClick = onCaptureSave,
+                        ) {
+                            Text("저장", style = MaterialTheme.typography.h4.copy(
+                                fontWeight = FontWeight.Medium, color = color_white))
+                        }
+                    }
                 }
+
+
+
 
                 if (resultState.imageList.size > 1) {
                     Text(text = "${pagerState.currentPage + 1} / ${resultState.imageList.size}",
@@ -540,6 +560,7 @@ private fun ResultScreenPreview(){
             enterTag = {},
             onDeleteTag = {},
             onClickRegister = {},
+            onCaptureSave = {},
             onRegister = {},
             onSkip = {},
         )
