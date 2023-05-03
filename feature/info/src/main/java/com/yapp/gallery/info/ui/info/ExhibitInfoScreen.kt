@@ -20,8 +20,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
-import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.info.R
 import com.yapp.gallery.info.provider.InfoViewModelFactoryProvider
 import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
@@ -95,7 +95,7 @@ private fun ExhibitInfoScreen(
     infoState: ExhibitInfoState,
     onReload: () -> Unit,
 ){
-    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.exhibit_info_section)
+    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.exhibit_info_section)
 
     Scaffold(
     ) { paddingValues ->

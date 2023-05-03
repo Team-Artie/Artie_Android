@@ -44,14 +44,18 @@ class CameraActivity : AppCompatActivity() {
                     imagePicker.launch(
                         ImagePickerConfig(
                             isMultipleMode = true,
-                            maxSize = 5,
+                            maxSize = MAX_IMAGE_COUNT,
                             doneTitle = "완료",
-                            limitMessage = "사진은 최대 5장까지 선택 가능해요!"
+                            limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT}장까지 선택 가능해요!"
                         )
                     )
                 }, infoNavigator = infoNavigator)
             }
         }
+    }
+
+    companion object{
+        private const val MAX_IMAGE_COUNT = 10
     }
 }
 

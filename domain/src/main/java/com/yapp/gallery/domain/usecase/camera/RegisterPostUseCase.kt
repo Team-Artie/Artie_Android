@@ -1,6 +1,7 @@
 package com.yapp.gallery.domain.usecase.camera
 
 import com.yapp.gallery.domain.repository.CameraRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class RegisterPostUseCase @Inject constructor(
@@ -13,7 +14,9 @@ class RegisterPostUseCase @Inject constructor(
         name: String,
         tags: List<String>,
         skip: Boolean,
-    ) = if (skip) cameraRepository.registerOnlyImages(postId, imageList)
+    ) : Flow<Unit> {
+        return if (skip) cameraRepository.registerOnlyImages(postId, imageList)
         else cameraRepository.registerPost(authorName, imageList, name, postId, tags)
+    }
 
 }

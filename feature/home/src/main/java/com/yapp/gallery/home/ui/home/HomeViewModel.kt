@@ -61,7 +61,6 @@ class HomeViewModel @AssistedInject constructor(
 
     private fun handleWebViewBridge(action: String, payload: String?) {
         when (action) {
-            "NAVIGATE_TO_CALENDAR" -> sendSideEffect(HomeSideEffect.NavigateToCalendar)
             "NAVIGATE_TO_EDIT" -> sendSideEffect(HomeSideEffect.NavigateToRecord)
             "NAVIGATE_TO_MY" -> sendSideEffect(HomeSideEffect.NavigateToProfile)
             "NAVIGATE_TO_EXHIBITION_DETAIL" -> {

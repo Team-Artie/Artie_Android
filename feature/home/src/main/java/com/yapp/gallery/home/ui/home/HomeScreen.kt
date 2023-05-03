@@ -2,6 +2,8 @@ package com.yapp.gallery.home.ui.home
 
 import android.app.Activity
 import android.webkit.WebView
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +28,7 @@ import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
@@ -37,7 +40,6 @@ import kotlinx.coroutines.flow.collectLatest
 fun HomeRoute(
     navigateToRecord: () -> Unit,
     navigateToProfile: () -> Unit,
-    navigateToCalendar: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
     navigateToTest: (String?) -> Unit,
     context: Activity
@@ -51,7 +53,6 @@ fun HomeRoute(
             when(it){
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
-                is HomeSideEffect.NavigateToCalendar -> navigateToCalendar()
                 is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId, it.idToken)
             }
         }
@@ -60,6 +61,21 @@ fun HomeRoute(
     val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
     })
+
+    var backKeyPressedTime = 0L
+    BackHandler(enabled = true) {
+        if (webView.canGoBack()){
+            webView.goBack()
+        } else {
+            if (System.currentTimeMillis() <= backKeyPressedTime + 2000) {
+                // 뒤로가기 두 번 누르면 종료
+                context.finishAffinity()
+            } else {
+                backKeyPressedTime = System.currentTimeMillis()
+                Toast.makeText(context, "뒤로 가기 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     HomeScreen(
         homeState = homeState,
@@ -78,7 +94,7 @@ private fun HomeScreen(
     onReload : () -> Unit,
     navigateToTest: () -> Unit
 ){
-    val baseUrl = BuildConfig.WEB_BASE_URL + stringResource(id = R.string.home_section)
+    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
 
     Scaffold(
         floatingActionButton = {

@@ -42,7 +42,9 @@ fun ExhibitInfoNavHost(
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
                 navigateToGallery = {
                     cameraLauncher.launch(cameraNavigator.navigate(context)
-                        .putExtra("postId", exhibitId))
+                        .putExtra("postId", exhibitId)
+                        .putExtra("gallery", true)
+                    )
                 },
                 navigateToCamera = {
                     cameraLauncher.launch(cameraNavigator.navigate(context)
