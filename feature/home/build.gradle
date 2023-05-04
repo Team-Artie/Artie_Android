@@ -45,8 +45,8 @@ android {
 dependencies {
     implementation project(":common")
     implementation project(":domain")
+    implementation project(":navigation:record")
     implementation project(":navigation:home")
-    implementation project(":navigation:camera")
     implementation project(":navigation:info")
     implementation project(":navigation:profile")
 
@@ -62,10 +62,7 @@ dependencies {
     implementation libs.firebase.auth.ktx
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
-    implementation libs.accompanist.flowLayout
-    implementation libs.numberPicker
 
-    implementation libs.imagePicker
     implementation libs.androidx.webview
 
     kapt libs.bundles.hilt.compilers

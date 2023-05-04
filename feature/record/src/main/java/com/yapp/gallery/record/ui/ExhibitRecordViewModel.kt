@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.ui.record
+package com.yapp.gallery.record.ui
 
 import androidx.lifecycle.viewModelScope
 import com.yapp.gallery.common.base.BaseStateViewModel
@@ -6,7 +6,7 @@ import com.yapp.gallery.common.model.BaseState
 import com.yapp.gallery.domain.entity.home.CategoryItem
 import com.yapp.gallery.domain.entity.home.TempPostInfo
 import com.yapp.gallery.domain.usecase.record.*
-import com.yapp.gallery.home.ui.record.ExhibitRecordContract.*
+import com.yapp.gallery.record.ui.ExhibitRecordContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

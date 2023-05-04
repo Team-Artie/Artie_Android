@@ -10,24 +10,28 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.yapp.gallery.home.ui.home.HomeRoute
-import com.yapp.gallery.home.ui.record.ExhibitRecordRoute
 import com.yapp.gallery.home.ui.test.TestRoute
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
-import com.yapp.navigation.camera.CameraNavigator
+import com.yapp.gallery.navigation.record.RecordNavigator
 
 @Composable
 fun HomeNavHost(
     navHostController: NavHostController,
     profileNavigator: ProfileNavigator,
-    cameraNavigator: CameraNavigator,
+    recordNavigator: RecordNavigator,
     infoNavigator: ExhibitInfoNavigator,
     context: Activity,
 ) {
     NavHost(navController = navHostController, startDestination = "home") {
         composable("home") {
             HomeRoute(
-                navigateToRecord = { navHostController.navigate("record") },
+                navigateToRecord = {
+                    navigateToScreen(
+                        context,
+                        recordNavigator.navigate(context)
+                    )
+                },
                 navigateToProfile = {
                     navigateToScreen(
                         context,
@@ -46,27 +50,27 @@ fun HomeNavHost(
                 }
             )
         }
-        composable("record") {
-            ExhibitRecordRoute(
-                navigateToCamera = { postId ->
-                    navigateToScreen(
-                        context = context,
-                        intent = cameraNavigator.navigate(context)
-                            .putExtra("postId", postId)
-                    )
-                },
-                popBackStack = { popBackStack(context, navHostController) },
-                navigateToGallery = { postId ->
-                    navigateToScreen(
-                        context = context,
-                        intent = cameraNavigator.navigate(context).apply {
-                            putExtra("postId", postId)
-                            putExtra("gallery", true)
-                        }
-                    )
-                }
-            )
-        }
+//        composable("record") {
+//            ExhibitRecordRoute(
+//                navigateToCamera = { postId ->
+//                    navigateToScreen(
+//                        context = context,
+//                        intent = cameraNavigator.navigate(context)
+//                            .putExtra("postId", postId)
+//                    )
+//                },
+//                popBackStack = { popBackStack(context, navHostController) },
+//                navigateToGallery = { postId ->
+//                    navigateToScreen(
+//                        context = context,
+//                        intent = cameraNavigator.navigate(context).apply {
+//                            putExtra("postId", postId)
+//                            putExtra("gallery", true)
+//                        }
+//                    )
+//                }
+//            )
+//        }
         composable("test?token={token}",
             arguments = listOf(
                 navArgument("token"){

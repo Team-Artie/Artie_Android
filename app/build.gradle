@@ -55,6 +55,7 @@ dependencies {
     implementation project(":feature:info")
     implementation project(":feature:camera")
     implementation project(":feature:profile")
+    implementation project(":feature:record")
     implementation project(":navigation:profile")
     implementation project(":navigation:camera")
     implementation project(":navigation:home")

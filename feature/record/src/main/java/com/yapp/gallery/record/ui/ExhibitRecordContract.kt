@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.ui.record
+package com.yapp.gallery.record.ui
 
 import com.yapp.gallery.common.base.ViewModelContract
 import com.yapp.gallery.common.model.BaseState

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exhibit_title">전시 정보 작성</string>
+    <string name="exhibit_name">전시명</string>
+    <string name="exhibit_name_hint">기록할 전시회 이름을 작성해주세요</string>
+    <string name="exhibit_category">전시 카테고리</string>
+    <string name="exhibit_category_hint">전시 기록을 보관할 카테고리를 설정해주세요</string>
+    <string name="exhibit_date">관람 날짜</string>
+    <string name="exhibit_link">온라인 전시</string>
+    <string name="exhibit_link_hint">온라인 전시 링크가 있다면 링크를 남겨주세요</string>
+    <string name="exhibit_date_hint">전시를 관람한 날짜를 선택해주세요</string>
+    <string name="exhibit_create_btn">전시기록 시작하기</string>
+    <string name="exhibit_category_create_btn">카테고리 만들기</string>
+
+    <string name="record_menu_title">무엇으로 기록할까요?</string>
+    <string name="record_camera_label">사진 촬영하기</string>
+    <string name="record_gallery_label">갤러리에서 선택하기</string>
+
+    <string name="category_empty_guide">전시 기록을 위한 나만의\n카테고리를 만들어주세요!</string>
+
+    <string name="temp_post_title">작성 중인 전시기록이 있어요!\n이어서 작성할까요?</string>
+    <string name="temp_post_guide">작성을 그만둘 시 전시 정보가 삭제됩니다</string>
+
+    <string name="exhibit_crate_continuous_btn">이어서 기록하기</string>
+</resources>

@@ -1,11 +1,10 @@
-package com.yapp.gallery.home.widget.exhibit
+package com.yapp.gallery.record.widget.exhibit
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -17,7 +16,7 @@ import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_white
 import com.yapp.gallery.common.theme.pretendard
-import com.yapp.gallery.home.R
+import com.yapp.gallery.record.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

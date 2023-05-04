@@ -55,6 +55,12 @@
             android:theme="@style/Theme.YAPPALLRounderTeam2.NoAnim"
             android:exported="true"/>
 
+        <activity android:name=".record.ui.ExhibitRecordActivity"
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.YAPPALLRounderTeam2.NoAnim"
+            android:exported="true"/>
+
         <activity
             android:name=".camera.ui.camera.CameraActivity"
             android:screenOrientation="portrait"

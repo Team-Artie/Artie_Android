@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.widget
+package com.yapp.gallery.record.widget
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

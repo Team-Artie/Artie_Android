@@ -130,7 +130,7 @@ private fun ExhibitInfoDisconnectedScreen(
     onReload: () -> Unit,
 ){
     Text(
-        text = stringResource(id = com.yapp.gallery.home.R.string.home_network_error),
+        text = stringResource(id = R.string.info_network_error),
         style = MaterialTheme.typography.h3.copy(
             color = color_gray600,
             lineHeight = 24.sp
@@ -145,7 +145,7 @@ private fun ExhibitInfoDisconnectedScreen(
         border = BorderStroke(1.dp, color = Color(0xFFA7C5F9)),
         onClick = onReload ) {
         Text(
-            text = stringResource(id = com.yapp.gallery.home.R.string.home_network_reload_btn),
+            text = stringResource(id = R.string.info_network_reload_btn),
             style = MaterialTheme.typography.h3.copy(
                 color = Color(0xFFA7C5F9), fontWeight = FontWeight.Medium
             ),

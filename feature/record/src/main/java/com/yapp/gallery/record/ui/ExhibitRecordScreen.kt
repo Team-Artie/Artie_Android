@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.ui.record
+package com.yapp.gallery.record.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -27,14 +27,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.common.theme.*
 import com.yapp.gallery.common.widget.CenterTopAppBar
 import com.yapp.gallery.common.widget.ConfirmDialog
-import com.yapp.gallery.home.R
-import com.yapp.gallery.home.widget.DatePickerSheet
-import com.yapp.gallery.home.widget.RecordMenuDialog
-import com.yapp.gallery.home.widget.exhibit.ExhibitCategory
-import com.yapp.gallery.home.widget.exhibit.ExhibitDate
-import com.yapp.gallery.home.widget.exhibit.ExhibitLink
-import com.yapp.gallery.home.widget.exhibit.ExhibitRecordName
-import com.yapp.gallery.home.ui.record.ExhibitRecordContract.*
+import com.yapp.gallery.record.widget.DatePickerSheet
+import com.yapp.gallery.record.widget.RecordMenuDialog
+import com.yapp.gallery.record.widget.exhibit.ExhibitDate
+import com.yapp.gallery.record.widget.exhibit.ExhibitLink
+import com.yapp.gallery.record.widget.exhibit.ExhibitRecordName
+import com.yapp.gallery.record.R
+import com.yapp.gallery.record.ui.ExhibitRecordContract.*
+import com.yapp.gallery.record.widget.exhibit.ExhibitCategory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace 'com.yapp.gallery.info'
+    namespace 'com.yapp.gallery.record'
     compileSdk 33
 
     defaultConfig {
@@ -45,12 +45,10 @@ android {
 dependencies {
     implementation project(":common")
     implementation project(":domain")
-    implementation project(":feature:record")
     implementation project(":navigation:camera")
-    implementation project(":navigation:home")
-    implementation project(":navigation:info")
+    implementation project(":navigation:record")
 
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     testImplementation 'junit:junit:4.13.2'
@@ -58,9 +56,10 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation libs.timber
-    implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
-    implementation libs.accompanist.uiController
-    implementation libs.androidx.webview
+    implementation libs.bundles.compose
+    implementation libs.accompanist.flowLayout
+    implementation libs.numberPicker
+
     kapt libs.bundles.hilt.compilers
 }

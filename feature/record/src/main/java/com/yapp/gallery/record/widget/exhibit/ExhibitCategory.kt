@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.widget.exhibit
+package com.yapp.gallery.record.widget.exhibit
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -22,7 +22,7 @@ import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_mainGreen
 import com.yapp.gallery.common.widget.CategoryCreateDialog
 import com.yapp.gallery.domain.entity.home.CategoryItem
-import com.yapp.gallery.home.R
+import com.yapp.gallery.record.R
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

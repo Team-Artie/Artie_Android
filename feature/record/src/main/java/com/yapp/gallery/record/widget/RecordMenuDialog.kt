@@ -1,4 +1,4 @@
-package com.yapp.gallery.home.widget
+package com.yapp.gallery.record.widget
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.yapp.gallery.common.theme.*
-import com.yapp.gallery.home.R
+import com.yapp.gallery.record.R
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
