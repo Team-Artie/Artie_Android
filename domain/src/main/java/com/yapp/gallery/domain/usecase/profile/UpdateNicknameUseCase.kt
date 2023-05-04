@@ -6,5 +6,5 @@ import javax.inject.Inject
 class UpdateNicknameUseCase @Inject constructor(
     private val repository: ProfileRepository
 ) {
-    operator fun invoke(userId: Long, editedName: String) = repository.changeNickname(userId, editedName)
+    operator fun invoke(editedName: String) = repository.changeNickname(editedName)
 }

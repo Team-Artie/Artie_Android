@@ -18,9 +18,9 @@ class ProfileRemoteDataSourceImpl @Inject constructor(
     }.flowOn(dispatcher)
 
     override fun changeNickname(
-        userId: Long, editedName: String
+        editedName: String
     ): Flow<Boolean> = flow {
-        emit(artieService.updateNickname(userId, editedName).isSuccessful)
+        emit(artieService.updateNickname(editedName).isSuccessful)
     }.flowOn(dispatcher)
 
     override fun signOut(): Flow<Boolean> = flow {

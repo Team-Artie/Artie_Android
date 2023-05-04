@@ -66,8 +66,8 @@ interface ArtieService {
     suspend fun getNoticeList() : List<NoticeItem>
 
     // 닉네임 변경
-    @PATCH("/user/{id}")
-    suspend fun updateNickname(@Path("id") id: Long, @Query("name") name: String) : Response<Unit>
+    @PATCH("/user")
+    suspend fun updateNickname(@Query("name") name: String) : Response<Unit>
 
     // 회원 탈퇴
     @DELETE("/user/")

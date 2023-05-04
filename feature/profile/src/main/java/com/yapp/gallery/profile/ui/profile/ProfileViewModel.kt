@@ -27,7 +27,7 @@ class ProfileViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase,
     private val getLoginTypeUseCase: GetLoginTypeUseCase,
     private val deleteBothUseCase: DeleteBothUseCase,
-    private val deleteLoginInfoUseCase: DeleteLoginInfoUseCase
+    private val deleteLoginInfoUseCase: DeleteLoginInfoUseCase,
 ) : BaseStateViewModel<ProfileState, ProfileEvent, ProfileReduce, ProfileSideEffect>(ProfileState.Initial) {
     init {
         getUser()
@@ -91,6 +91,7 @@ class ProfileViewModel @Inject constructor(
                 sendSideEffect(ProfileSideEffect.NavigateToManage)
             }
             is ProfileEvent.OnNicknameClick -> {
+
                 sendSideEffect(ProfileSideEffect.NavigateToNickname)
             }
             is ProfileEvent.OnLegacyClick -> {
