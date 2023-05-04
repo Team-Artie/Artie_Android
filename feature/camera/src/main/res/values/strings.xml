@@ -24,6 +24,7 @@
     <string name="post_upload">작품 등록</string>
     <string name="post_upload_complete">작품 등록이 완료되었습니다.</string>
     <string name="post_upload_fail">작품 등록에 실패하였습니다.</string>
-    <string name="post_upload_empty_content">작품 정보 없이 등록 하시겠습니까?</string>
-    <string name="post_upload_content">작품 등록을 진행합니다.</string>
+    <string name="post_upload_empty_content">작품 정보 없이\n등록하시겠습니까?</string>
+    <string name="post_upload_content">작품 등록을\n 진행합니다.</string>
+    <string name="post_upload_loading">작품 등록중</string>
 </resources>

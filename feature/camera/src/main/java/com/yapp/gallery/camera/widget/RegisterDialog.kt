@@ -70,36 +70,30 @@ fun RegisterDialog(
                 )
             }
 
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+
+            val str = when(registerState) {
+                is ResultRegisterState.RegisterError -> stringResource(id = R.string.post_upload_fail)
+                is ResultRegisterState.RegisterLoading -> stringResource(id = R.string.post_upload_loading)
+                else -> if (isContentEmpty) stringResource(R.string.post_upload_empty_content)
+                else stringResource(R.string.post_upload_content)
+            }
             Text(
-                text = stringResource(id = R.string.post_upload) + if (registerState is ResultRegisterState.RegisterLoading) "중" else "",
+                text = str,
                 style = MaterialTheme.typography.h2.copy(
                     color = color_white, fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp, lineHeight = 27.sp
                 ),
             )
-
-
             if (registerState is ResultRegisterState.RegisterLoading){
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 CircularProgressIndicator(
                     modifier = Modifier.size(40.dp)
                 )
-            } else {
-                val str = when(registerState) {
-                    is ResultRegisterState.RegisterError -> stringResource(id = R.string.post_upload_fail)
-                    is ResultRegisterState.RegisterLoading -> ""
-                    else -> if (isContentEmpty) stringResource(R.string.post_upload_empty_content)
-                            else stringResource(R.string.post_upload_content)
-                }
-                Text(text = str, style = MaterialTheme.typography.h4
-                        .copy(color = color_gray600, lineHeight = 16.8.sp), textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
             }
 
-            Spacer(modifier = Modifier.height(42.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
 
 
@@ -117,7 +111,7 @@ fun RegisterDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "취소", style = MaterialTheme.typography.h2.copy(
+                            text = "아니오", style = MaterialTheme.typography.h2.copy(
                                 color = color_black, fontWeight = FontWeight.SemiBold
                             ),
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
@@ -130,7 +124,7 @@ fun RegisterDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "등록", style = MaterialTheme.typography.h2.copy(
+                            text = "예", style = MaterialTheme.typography.h2.copy(
                                 color = color_black, fontWeight = FontWeight.SemiBold
                             ),
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
@@ -149,5 +143,13 @@ fun RegisterDialog(
 fun RegisterDialogPreview(){
     ArtieTheme {
         RegisterDialog()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RegisterDialogLoadingPreview(){
+    ArtieTheme {
+        RegisterDialog(registerState = ResultRegisterState.RegisterLoading)
     }
 }
