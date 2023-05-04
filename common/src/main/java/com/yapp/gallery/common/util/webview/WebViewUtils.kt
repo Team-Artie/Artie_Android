@@ -1,4 +1,4 @@
-package com.yapp.gallery.common.util
+package com.yapp.gallery.common.util.webview
 
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient

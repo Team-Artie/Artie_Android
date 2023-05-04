@@ -7,8 +7,6 @@ import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import com.yapp.gallery.common.util.WebViewUtils
-import com.yapp.gallery.common.util.webview.NavigateJsObject
 import timber.log.Timber
 
 class WebViewProvider(

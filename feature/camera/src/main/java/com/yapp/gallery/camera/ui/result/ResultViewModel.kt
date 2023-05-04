@@ -18,6 +18,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
@@ -35,6 +36,9 @@ class ResultViewModel @AssistedInject constructor(
     private val saveImageUseCase: SaveImageUseCase
 ) : BaseStateViewModel<ResultState, ResultEvent, ResultReduce, ResultSideEffect>(ResultState()) {
 
+    private val captureSaveFlow = MutableSharedFlow<Long>()
+    private var lastClickedTime = 0L
+
     @AssistedFactory
     interface ResultFactory{
         fun create(postId: Long, byteArray: ByteArray? = null, imageList: List<ByteArray> = emptyList()) : ResultViewModel
@@ -42,6 +46,14 @@ class ResultViewModel @AssistedInject constructor(
 
     init {
         updateState(ResultReduce.SetLoadedData(postId, ImageData(byteArray), imageList))
+
+        captureSaveFlow.onEach {
+            val enabled = it - lastClickedTime > 3000L
+            if (enabled){
+                lastClickedTime = it
+                saveCaptureToGallery()
+            }
+        }.launchIn(viewModelScope)
     }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -101,7 +113,9 @@ class ResultViewModel @AssistedInject constructor(
                 if (viewState.value.isSaved){
                     sendSideEffect(ResultSideEffect.ShowToast("이미 저장된 사진입니다."))
                 } else {
-                    saveCaptureToGallery()
+                    viewModelScope.launch {
+                        captureSaveFlow.emit(System.currentTimeMillis())
+                    }
                 }
             }
             is ResultEvent.SetAuthorName -> {
