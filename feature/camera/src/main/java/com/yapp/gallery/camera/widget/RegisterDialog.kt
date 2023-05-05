@@ -85,6 +85,7 @@ fun RegisterDialog(
                     color = color_white, fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp, lineHeight = 27.sp
                 ),
+                textAlign = TextAlign.Center
             )
             if (registerState is ResultRegisterState.RegisterLoading){
                 Spacer(modifier = Modifier.height(32.dp))

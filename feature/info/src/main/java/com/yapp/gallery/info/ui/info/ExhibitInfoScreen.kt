@@ -2,6 +2,7 @@ package com.yapp.gallery.info.ui.info
 
 import android.app.Activity
 import android.view.KeyEvent
+import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -17,29 +18,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.info.R
-import com.yapp.gallery.info.provider.InfoViewModelFactoryProvider
 import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
-import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
 fun ExhibitInfoRoute(
     exhibitId: Long,
-    navigateToCamera: () -> Unit,
-    navigateToGallery: () -> Unit,
+    navigateToCamera: (Long) -> Unit,
+    navigateToGallery: (Long) -> Unit,
     navigateToEdit: (String) -> Unit,
     navigateToWebPage: (String) -> Unit,
     popBackStack: () -> Unit,
-    context: Activity,
+    viewModel: ExhibitInfoViewModel = hiltViewModel(),
 ){
-    val viewModel = infoViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
     val infoState : ExhibitInfoState by viewModel.viewState.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel.sideEffect){
@@ -49,10 +47,10 @@ fun ExhibitInfoRoute(
                     navigateToEdit(it.data)
                 }
                 is ExhibitInfoSideEffect.NavigateToCamera -> {
-                    navigateToCamera()
+                    navigateToCamera(it.exhibitId)
                 }
                 is ExhibitInfoSideEffect.NavigateToGallery -> {
-                    navigateToGallery()
+                    navigateToGallery(it.exhibitId)
                 }
                 is ExhibitInfoSideEffect.PopBackStack -> {
                     popBackStack()
@@ -156,12 +154,12 @@ private fun ExhibitInfoDisconnectedScreen(
     }
 }
 
-@Composable
-fun infoViewModel(context: Activity, accessToken: String?) : ExhibitInfoViewModel {
-    val factory = EntryPointAccessors.fromActivity(
-        context,
-        InfoViewModelFactoryProvider::class.java
-    ).exhibitInfoViewModelFactory()
-
-    return viewModel(factory = ExhibitInfoViewModel.provideFactory(factory, accessToken))
-}
+//@Composable
+//fun infoViewModel(context: Activity, accessToken: String?) : ExhibitInfoViewModel {
+//    val factory = EntryPointAccessors.fromActivity(
+//        context,
+//        InfoViewModelFactoryProvider::class.java
+//    ).exhibitInfoViewModelFactory()
+//
+//    return viewModel(factory = ExhibitInfoViewModel.provideFactory(factory, accessToken))
+//}

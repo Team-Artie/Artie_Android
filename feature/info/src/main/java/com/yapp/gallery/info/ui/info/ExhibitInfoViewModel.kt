@@ -1,6 +1,7 @@
 package com.yapp.gallery.info.ui.info
 
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -11,20 +12,24 @@ import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 import timber.log.Timber
+import javax.inject.Inject
 
-class ExhibitInfoViewModel @AssistedInject constructor(
+@HiltViewModel
+class ExhibitInfoViewModel @Inject constructor(
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
-    @Assisted private val accessToken: String?,
+    savedStateHandle: SavedStateHandle
 ) : BaseStateViewModel<ExhibitInfoState, ExhibitInfoEvent, ExhibitInfoReduce, ExhibitInfoSideEffect>(ExhibitInfoState.Initial) {
 
-    @AssistedFactory
-    interface InfoFactory {
-        fun create(accessToken: String?): ExhibitInfoViewModel
-    }
+    private val exhibitId = savedStateHandle.get<Long>("exhibitId") ?: 120L
+//    @AssistedFactory
+//    interface InfoFactory {
+//        fun create(accessToken: String?): ExhibitInfoViewModel
+//    }
 
     init {
         initLoad()
@@ -43,19 +48,20 @@ class ExhibitInfoViewModel @AssistedInject constructor(
     }
 
     private fun loadWithValidToken(){
-        accessToken?.let {
-            updateState(ExhibitInfoReduce.Connected(it))
-            Timber.e("accessToken Received : $it")
-        } ?: run {
-            getValidTokenUseCase()
-                .catch {
-                    updateState(ExhibitInfoReduce.Disconnected)
-                }
-                .onEach {
-                    updateState(ExhibitInfoReduce.Connected(it))
-                }
-                .launchIn(viewModelScope)
-        }
+        getValidTokenUseCase()
+            .catch {
+                updateState(ExhibitInfoReduce.Disconnected)
+            }
+            .onEach {
+                updateState(ExhibitInfoReduce.Connected(it))
+            }
+            .launchIn(viewModelScope)
+//        accessToken?.let {
+//            updateState(ExhibitInfoReduce.Connected(it))
+//            Timber.e("accessToken Received : $it")
+//        } ?: run {
+//
+//        }
     }
 
     override fun handleEvents(event: ExhibitInfoEvent) {
@@ -69,10 +75,11 @@ class ExhibitInfoViewModel @AssistedInject constructor(
                         }
                     }
                     "NAVIGATE_TO_CAMERA" -> {
-                        sendSideEffect(ExhibitInfoSideEffect.NavigateToCamera)
+                        // Todo : 추후에 아이디 값 적용
+                        sendSideEffect(ExhibitInfoSideEffect.NavigateToCamera(exhibitId))
                     }
                     "NAVIGATE_TO_GALLERY" -> {
-                       sendSideEffect(ExhibitInfoSideEffect.NavigateToGallery)
+                       sendSideEffect(ExhibitInfoSideEffect.NavigateToGallery(exhibitId))
                     }
                     "GO_BACK" -> {
                         sendSideEffect(ExhibitInfoSideEffect.PopBackStack)
@@ -103,14 +110,14 @@ class ExhibitInfoViewModel @AssistedInject constructor(
         }
     }
 
-    companion object {
-        fun provideFactory(
-            assistedFactory: InfoFactory,
-            accessToken: String?
-        ) : ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return assistedFactory.create(accessToken) as T
-            }
-        }
-    }
+//    companion object {
+//        fun provideFactory(
+//            assistedFactory: InfoFactory,
+//            accessToken: String?
+//        ) : ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+//            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//                return assistedFactory.create(accessToken) as T
+//            }
+//        }
+//    }
 }

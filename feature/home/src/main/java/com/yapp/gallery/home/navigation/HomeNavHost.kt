@@ -3,6 +3,8 @@ package com.yapp.gallery.home.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -11,26 +13,33 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.test.TestRoute
+import com.yapp.gallery.info.navigation.infoGraph
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.gallery.navigation.record.RecordNavigator
+import com.yapp.navigation.camera.CameraNavigator
 
 @Composable
 fun HomeNavHost(
     navHostController: NavHostController,
     profileNavigator: ProfileNavigator,
     recordNavigator: RecordNavigator,
-    infoNavigator: ExhibitInfoNavigator,
+    cameraNavigator : CameraNavigator,
     context: Activity,
 ) {
+    val recordLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        if (it.resultCode == Activity.RESULT_OK){
+            it.data?.extras?.getLong("exhibitId")?.let { id ->
+                navHostController.navigate("info?exhibitId=${id}")
+            }
+        }
+    }
+
     NavHost(navController = navHostController, startDestination = "home") {
         composable("home") {
             HomeRoute(
                 navigateToRecord = {
-                    navigateToScreen(
-                        context,
-                        recordNavigator.navigate(context)
-                    )
+                    recordLauncher.launch(recordNavigator.navigate(context))
                 },
                 navigateToProfile = {
                     navigateToScreen(
@@ -38,11 +47,8 @@ fun HomeNavHost(
                         profileNavigator.navigate(context)
                     )
                 },
-                navigateToInfo = { id, token ->
-                    navigateToScreen(
-                        context,
-                        infoNavigator.navigateToInfo(context, id, token)
-                    )
+                navigateToInfo = { id, _ ->
+                    navHostController.navigate("info?exhibitId=${id}")
                 },
                 context = context,
                 navigateToTest = {
@@ -50,27 +56,8 @@ fun HomeNavHost(
                 }
             )
         }
-//        composable("record") {
-//            ExhibitRecordRoute(
-//                navigateToCamera = { postId ->
-//                    navigateToScreen(
-//                        context = context,
-//                        intent = cameraNavigator.navigate(context)
-//                            .putExtra("postId", postId)
-//                    )
-//                },
-//                popBackStack = { popBackStack(context, navHostController) },
-//                navigateToGallery = { postId ->
-//                    navigateToScreen(
-//                        context = context,
-//                        intent = cameraNavigator.navigate(context).apply {
-//                            putExtra("postId", postId)
-//                            putExtra("gallery", true)
-//                        }
-//                    )
-//                }
-//            )
-//        }
+
+
         composable("test?token={token}",
             arguments = listOf(
                 navArgument("token"){
@@ -81,6 +68,20 @@ fun HomeNavHost(
             val token = it.arguments?.getString("token")
             TestRoute(token = token)
         }
+
+        infoGraph(
+            navHostController = navHostController,
+            context = context,
+            navigateToCamera = {
+                navigateToScreen(context, cameraNavigator.navigate(context)
+                    .putExtra("postId", it))
+            },
+            navigateToGallery = {
+                navigateToScreen(context, cameraNavigator.navigate(context)
+                    .putExtra("postId", it)
+                    .putExtra("gallery", true))
+            },
+        )
     }
 }
 

@@ -13,16 +13,12 @@ import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.navigation.CameraNavHost
 import com.yapp.gallery.camera.util.uriToByteArray
 import com.yapp.gallery.common.theme.ArtieTheme
-import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
-    @Inject lateinit var infoNavigator: ExhibitInfoNavigator
-
     private val resultFlow: MutableSharedFlow<List<ByteArray>> = MutableSharedFlow()
 
     private val imagePicker = registerImagePicker {imageList ->
@@ -49,7 +45,7 @@ class CameraActivity : AppCompatActivity() {
                             limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT}장까지 선택 가능해요!"
                         )
                     )
-                }, infoNavigator = infoNavigator)
+                })
             }
         }
     }

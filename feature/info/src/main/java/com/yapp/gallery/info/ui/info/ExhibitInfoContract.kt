@@ -21,8 +21,8 @@ class ExhibitInfoContract {
 
     sealed class ExhibitInfoSideEffect : ViewModelContract.SideEffect {
         data class NavigateToEdit(val data: String) : ExhibitInfoSideEffect()
-        object NavigateToCamera : ExhibitInfoSideEffect()
-        object NavigateToGallery : ExhibitInfoSideEffect()
+        data class NavigateToCamera(val exhibitId: Long) : ExhibitInfoSideEffect()
+        data class NavigateToGallery(val exhibitId: Long) : ExhibitInfoSideEffect()
         object PopBackStack : ExhibitInfoSideEffect()
         data class ShowWebPage(val url: String) : ExhibitInfoSideEffect()
     }

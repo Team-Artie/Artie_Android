@@ -292,7 +292,7 @@ private fun ResultScreen(
                     }
                     Spacer(modifier = Modifier.weight(1f))
 
-                    if (resultState.captureData != null){
+                    if (resultState.captureData != null && resultState.imageList.isEmpty()){
                         TextButton(onClick = onCaptureSave,
                         ) {
                             Text("저장", style = MaterialTheme.typography.h4.copy(
