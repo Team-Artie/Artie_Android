@@ -24,7 +24,7 @@ class SplashActivity : ComponentActivity() {
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var getValidTokenUseCase: GetValidTokenUseCase
     override fun onCreate(savedInstanceState: Bundle?) {
-        //
+//
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 //            val content: View = findViewById(android.R.id.content)
 //            content.viewTreeObserver.addOnPreDrawListener { false }
@@ -32,13 +32,8 @@ class SplashActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        setContent {
-            rememberWebView(onBridgeCalled = { _, _ -> })
-        }
-
         lifecycleScope.launch {
-            // 1.5초간 스플래시 화면 보여주기
-            delay(1500)
+            // 1초간 스플래시 화면 보여주기
             auth.currentUser?.let {
                 getValidTokenUseCase()
                     .catch {

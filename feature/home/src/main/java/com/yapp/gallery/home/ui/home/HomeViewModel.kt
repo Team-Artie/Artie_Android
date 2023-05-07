@@ -11,7 +11,9 @@ import com.yapp.gallery.home.ui.home.HomeContract.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
 
@@ -28,6 +30,11 @@ class HomeViewModel @AssistedInject constructor(
 
     init {
         initLoad()
+
+        viewModelScope.launch {
+            delay(1500)
+            updateState(HomeReduce.UpdateTimeOut(true))
+        }
     }
 
     private fun initLoad(){
@@ -87,6 +94,10 @@ class HomeViewModel @AssistedInject constructor(
 
     override fun reduceState(state: HomeState, reduce: HomeReduce): HomeState {
         return when(reduce){
+            is HomeReduce.UpdateTimeOut ->
+                state.copy(
+                    timeOut = reduce.timeOut
+                )
             is HomeReduce.Connected ->
                 state.copy(
                     idToken = reduce.idToken,

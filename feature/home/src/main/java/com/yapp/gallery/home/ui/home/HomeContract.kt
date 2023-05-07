@@ -5,7 +5,8 @@ import com.yapp.gallery.common.base.ViewModelContract
 class HomeContract {
     data class HomeState(
         val idToken: String? = null,
-        val connected: Boolean = true
+        val connected: Boolean = true,
+        val timeOut: Boolean = false,
     ) : ViewModelContract.State
 
     sealed class HomeEvent : ViewModelContract.Event{
@@ -14,6 +15,7 @@ class HomeContract {
     }
 
     sealed class HomeReduce : ViewModelContract.Reduce{
+        data class UpdateTimeOut(val timeOut: Boolean) : HomeReduce()
         data class Connected(val idToken: String) : HomeReduce()
         object Disconnected : HomeReduce()
     }

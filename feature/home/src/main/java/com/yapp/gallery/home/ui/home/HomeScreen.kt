@@ -141,13 +141,14 @@ private fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (homeState.connected.not()){
+
+            if (homeState.connected.not()) {
                 HomeDisconnectedScreen(onReload)
             } else {
                 AndroidView(
                     factory = { webView },
                     update = {
-                        if (hasBundle.not()){
+                        if (hasBundle.not()) {
                             homeState.idToken?.let { token ->
                                 it.loadUrl(baseUrl, mapOf("Authorization" to token))
                             }

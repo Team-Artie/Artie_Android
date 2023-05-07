@@ -46,6 +46,7 @@ dependencies {
     implementation project(":common")
     implementation project(":domain")
     implementation project(":feature:info")
+    implementation project(":navigation:login")
     implementation project(":navigation:record")
     implementation project(":navigation:home")
     implementation project(":navigation:info")
