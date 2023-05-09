@@ -15,6 +15,7 @@ import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.test.TestRoute
 import com.yapp.gallery.info.navigation.infoGraph
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
+import com.yapp.gallery.navigation.login.LoginNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.gallery.navigation.record.RecordNavigator
 import com.yapp.navigation.camera.CameraNavigator
@@ -22,6 +23,7 @@ import com.yapp.navigation.camera.CameraNavigator
 @Composable
 fun HomeNavHost(
     navHostController: NavHostController,
+    loginNavigator: LoginNavigator,
     profileNavigator: ProfileNavigator,
     recordNavigator: RecordNavigator,
     cameraNavigator : CameraNavigator,
@@ -53,6 +55,12 @@ fun HomeNavHost(
                 context = context,
                 navigateToTest = {
                     navHostController.navigate("test?token=${it}")
+                },
+                navigateToLogin = {
+                    with(context){
+                        finishAfterTransition()
+                        startActivity(loginNavigator.navigate(this))
+                    }
                 }
             )
         }

@@ -5,9 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.provider.ConnectionProvider
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
+import com.yapp.gallery.domain.usecase.auth.SetIdTokenUseCase
 import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -20,6 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExhibitInfoViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
     savedStateHandle: SavedStateHandle
@@ -48,14 +51,19 @@ class ExhibitInfoViewModel @Inject constructor(
     }
 
     private fun loadWithValidToken(){
-        getValidTokenUseCase()
-            .catch {
-                updateState(ExhibitInfoReduce.Disconnected)
+        auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
+            it.token?.let {t ->
+                updateState(ExhibitInfoReduce.Connected(t))
             }
-            .onEach {
-                updateState(ExhibitInfoReduce.Connected(it))
-            }
-            .launchIn(viewModelScope)
+        }
+//        getValidTokenUseCase()
+//            .catch {
+//                updateState(ExhibitInfoReduce.Disconnected)
+//            }
+//            .onEach {
+//                updateState(ExhibitInfoReduce.Connected(it))
+//            }
+//            .launchIn(viewModelScope)
 //        accessToken?.let {
 //            updateState(ExhibitInfoReduce.Connected(it))
 //            Timber.e("accessToken Received : $it")

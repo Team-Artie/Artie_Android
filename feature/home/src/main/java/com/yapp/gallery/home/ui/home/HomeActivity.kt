@@ -40,11 +40,6 @@ class HomeActivity : ComponentActivity() {
                 window.setBackgroundDrawable(
                     ResourcesCompat.getDrawable(resources, R.color.background, null))
             }
-            else{
-                delay(1000)
-                finishAfterTransition()
-                startActivity(loginNavigator.navigate(this@HomeActivity))
-            }
         }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -54,8 +49,8 @@ class HomeActivity : ComponentActivity() {
             navController = rememberNavController()
             ArtieTheme {
                 HomeNavHost(
-                    navHostController = navController, profileNavigator = profileNavigator,
-                    recordNavigator = recordNavigator,
+                    navHostController = navController, loginNavigator = loginNavigator,
+                    profileNavigator = profileNavigator, recordNavigator = recordNavigator,
                     cameraNavigator = cameraNavigator, context = this,
                 )
             }

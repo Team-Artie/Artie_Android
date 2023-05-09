@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,55 +26,64 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.os.bundleOf
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
-import com.yapp.gallery.common.util.webview.NavigateJsObject
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
-import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
-import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 
 @Composable
 fun HomeRoute(
+    navigateToLogin: () -> Unit,
     navigateToRecord: () -> Unit,
     navigateToProfile: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
     navigateToTest: (String?) -> Unit,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    viewModel: HomeViewModel = hiltViewModel(),
     context: Activity
 ){
-    val viewModel = homeViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
-
-    val webViewState = rememberSaveable() { Bundle() }
+    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
 
     val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
     })
 
-    LaunchedEffect(Unit){
-        webViewState.getBundle("webViewState")?.let {
-            webView.restoreState(it)
-        }
-    }
-
-    val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
+    val webViewState = rememberSaveable() { Bundle() }
 
     LaunchedEffect(viewModel.sideEffect){
         viewModel.sideEffect.collectLatest {
             when(it){
+                is HomeSideEffect.LoadWebView -> {
+                    // 기존 상태 복원
+                    webViewState.getBundle("webViewState")?.let { s ->
+                        Timber.d("상태 복원 : $s")
+                        webView.restoreState(s)
+                    } ?: run {
+                        val url = if (webView.originalUrl != null) webView.originalUrl.toString() else baseUrl
+                        webView.loadUrl(url, mapOf("Authorization" to it.token))
+                    }
+                }
+                is HomeSideEffect.NavigateToLogin -> navigateToLogin()
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
                 is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId, it.idToken)
             }
         }
     }
+
+    val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
+
 
     var backKeyPressedTime = 0L
     BackHandler(enabled = true) {
@@ -97,16 +107,31 @@ fun HomeRoute(
             webViewState.putBundle("webViewState", bundle)
         }
     }
+    
+    DisposableEffect(lifecycleOwner){
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.sendEvent(HomeEvent.CheckToken)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
 
-    HomeScreen(
-        homeState = homeState,
-        webView = webView,
-        onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
-        navigateToTest = {
-            navigateToTest(context.intent.getStringExtra("accessToken"))
-        },
-        hasBundle = webViewState.getBundle("webViewState") != null
-    )
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    if (homeState.afterLogin){
+        HomeScreen(
+            homeState = homeState,
+            webView = webView,
+            onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
+            navigateToTest = {
+                navigateToTest(context.intent.getStringExtra("accessToken"))
+            },
+            hasBundle = webViewState.getBundle("webViewState") != null
+        )
+    }
 }
 
 @Composable
@@ -148,11 +173,11 @@ private fun HomeScreen(
                 AndroidView(
                     factory = { webView },
                     update = {
-                        if (hasBundle.not()) {
-                            homeState.idToken?.let { token ->
-                                it.loadUrl(baseUrl, mapOf("Authorization" to token))
-                            }
-                        }
+//                        if (hasBundle.not()) {
+//                            homeState.idToken?.let { token ->
+//                                it.loadUrl(baseUrl, mapOf("Authorization" to token))
+//                            }
+//                        }
 
                     }
                 )
@@ -207,14 +232,4 @@ private fun HomeDisconnectedScreen(
             )
         )
     }
-}
-
-@Composable
-fun homeViewModel(context: Activity, accessToken: String?) : HomeViewModel {
-    val factory = EntryPointAccessors.fromActivity(
-        context,
-        HomeViewModelFactoryProvider::class.java
-    ).homeViewModelFactory()
-
-    return viewModel(factory = HomeViewModel.provideFactory(factory, accessToken))
 }
