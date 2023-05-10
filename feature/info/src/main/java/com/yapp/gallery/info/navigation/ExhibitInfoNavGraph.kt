@@ -87,9 +87,12 @@ fun NavGraphBuilder.infoGraph(
     context: Activity,
 ) {
     navigation(startDestination = "info", route = "info_route") {
-        composable("info?exhibitId={exhibitId}", arguments = listOf(
+        composable("info?exhibitId={exhibitId},idToken={idToken}", arguments = listOf(
             navArgument("exhibitId") {
                 type = NavType.LongType
+            },
+            navArgument("idToken"){
+                type = NavType.StringType
             }
         )) {
             ExhibitInfoRoute(

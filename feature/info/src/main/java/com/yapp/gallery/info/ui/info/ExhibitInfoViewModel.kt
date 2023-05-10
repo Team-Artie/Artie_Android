@@ -22,13 +22,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExhibitInfoViewModel @Inject constructor(
-    private val auth: FirebaseAuth,
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
     savedStateHandle: SavedStateHandle
 ) : BaseStateViewModel<ExhibitInfoState, ExhibitInfoEvent, ExhibitInfoReduce, ExhibitInfoSideEffect>(ExhibitInfoState.Initial) {
 
     private val exhibitId = savedStateHandle.get<Long>("exhibitId") ?: 120L
+    private val idToken = savedStateHandle.get<String>("idToken")
 //    @AssistedFactory
 //    interface InfoFactory {
 //        fun create(accessToken: String?): ExhibitInfoViewModel
@@ -51,10 +51,18 @@ class ExhibitInfoViewModel @Inject constructor(
     }
 
     private fun loadWithValidToken(){
-        auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
-            it.token?.let {t ->
-                updateState(ExhibitInfoReduce.Connected(t))
-            }
+        idToken?.let {
+            Timber.e("idToken Received : $it")
+            updateState(ExhibitInfoReduce.Connected(it))
+        } ?: run {
+            getValidTokenUseCase()
+                .catch {
+                    updateState(ExhibitInfoReduce.Disconnected)
+                }
+                .onEach {
+                    updateState(ExhibitInfoReduce.Connected(it))
+                }
+                .launchIn(viewModelScope)
         }
 //        getValidTokenUseCase()
 //            .catch {

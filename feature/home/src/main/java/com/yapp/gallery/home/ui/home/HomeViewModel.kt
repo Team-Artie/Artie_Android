@@ -58,22 +58,14 @@ class HomeViewModel @Inject constructor(
 //                }
 //            )
 //        }
-        auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
-            it.token?.let {t ->
-                if (viewState.value.idToken != t) {
-                    sendSideEffect(HomeSideEffect.LoadWebView(t))
-                    updateState(HomeReduce.Connected(t))
-                }
+        getValidTokenUseCase()
+            .catch {
+                updateState(HomeReduce.Disconnected)
             }
-        }
-//        getValidTokenUseCase()
-//            .catch {
-//                updateState(HomeReduce.Disconnected)
-//            }
-//            .onEach {
-//                updateState(HomeReduce.Connected(it))
-//            }
-//            .launchIn(viewModelScope)
+            .onEach {
+                updateState(HomeReduce.Connected(it))
+            }
+            .launchIn(viewModelScope)
     }
 
 
@@ -84,8 +76,15 @@ class HomeViewModel @Inject constructor(
             "NAVIGATE_TO_EXHIBITION_DETAIL" -> {
                 payload?.let { p ->
                     val exhibitId = JSONObject(p).getLong("id")
-                    val idToken = viewState.value.idToken
-                    sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
+                    viewModelScope.launch{
+                        // 토큰 조회 실패 시 기존 토큰으로 보냄
+                        // 토큰 조회 성공 시 조회한 토큰으로 보냄
+                        getValidTokenUseCase().firstOrNull()?.let { idToken ->
+                            sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
+                        } ?: run {
+                            sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, viewState.value.idToken))
+                        }
+                    }
                 }
             }
         }
@@ -115,7 +114,7 @@ class HomeViewModel @Inject constructor(
             is HomeReduce.Connected ->
                 state.copy(
                     idToken = reduce.idToken,
-                    connected = true
+                    connected = true,
                 )
             is HomeReduce.Disconnected ->
                 state.copy(

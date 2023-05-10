@@ -32,7 +32,7 @@ fun HomeNavHost(
     val recordLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode == Activity.RESULT_OK){
             it.data?.extras?.getLong("exhibitId")?.let { id ->
-                navHostController.navigate("info?exhibitId=${id}")
+                navHostController.navigate("info?exhibitId=${id},idToken=&${null}")
             }
         }
     }
@@ -49,8 +49,8 @@ fun HomeNavHost(
                         profileNavigator.navigate(context)
                     )
                 },
-                navigateToInfo = { id, _ ->
-                    navHostController.navigate("info?exhibitId=${id}")
+                navigateToInfo = { id, idToken ->
+                    navHostController.navigate("info?exhibitId=${id},idToken=${idToken}")
                 },
                 context = context,
                 navigateToTest = {

@@ -22,7 +22,6 @@ class HomeContract {
     }
 
     sealed class HomeSideEffect : ViewModelContract.SideEffect{
-        data class LoadWebView(val token: String) : HomeSideEffect()
         object NavigateToLogin : HomeSideEffect()
         object NavigateToRecord : HomeSideEffect()
         object NavigateToProfile : HomeSideEffect()

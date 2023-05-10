@@ -40,7 +40,6 @@ import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
 import kotlinx.coroutines.flow.collectLatest
-import timber.log.Timber
 
 @Composable
 fun HomeRoute(
@@ -53,27 +52,21 @@ fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
     context: Activity
 ){
-    val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
-
     val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
     })
 
     val webViewState = rememberSaveable() { Bundle() }
 
+    LaunchedEffect(Unit){
+        webViewState.getBundle("webViewState")?.let {
+            webView.restoreState(it)
+        }
+    }
+
     LaunchedEffect(viewModel.sideEffect){
         viewModel.sideEffect.collectLatest {
             when(it){
-                is HomeSideEffect.LoadWebView -> {
-                    // 기존 상태 복원
-                    webViewState.getBundle("webViewState")?.let { s ->
-                        Timber.d("상태 복원 : $s")
-                        webView.restoreState(s)
-                    } ?: run {
-                        val url = if (webView.originalUrl != null) webView.originalUrl.toString() else baseUrl
-                        webView.loadUrl(url, mapOf("Authorization" to it.token))
-                    }
-                }
                 is HomeSideEffect.NavigateToLogin -> navigateToLogin()
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
@@ -121,17 +114,15 @@ fun HomeRoute(
         }
     }
 
-    if (homeState.afterLogin){
-        HomeScreen(
-            homeState = homeState,
-            webView = webView,
-            onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
-            navigateToTest = {
-                navigateToTest(context.intent.getStringExtra("accessToken"))
-            },
-            hasBundle = webViewState.getBundle("webViewState") != null
-        )
-    }
+    HomeScreen(
+        homeState = homeState,
+        webView = webView,
+        onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
+        navigateToTest = {
+            navigateToTest(context.intent.getStringExtra("accessToken"))
+        },
+        hasBundle = webViewState.getBundle("webViewState") != null
+    )
 }
 
 @Composable
@@ -173,12 +164,9 @@ private fun HomeScreen(
                 AndroidView(
                     factory = { webView },
                     update = {
-//                        if (hasBundle.not()) {
-//                            homeState.idToken?.let { token ->
-//                                it.loadUrl(baseUrl, mapOf("Authorization" to token))
-//                            }
-//                        }
-
+                        if (hasBundle.not() && homeState.idToken != null){
+                            it.loadUrl(baseUrl, mapOf("Authorization" to homeState.idToken))
+                        }
                     }
                 )
             }
