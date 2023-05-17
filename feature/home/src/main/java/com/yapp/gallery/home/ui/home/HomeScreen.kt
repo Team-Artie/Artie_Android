@@ -101,18 +101,18 @@ fun HomeRoute(
         }
     }
     
-    DisposableEffect(lifecycleOwner){
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.sendEvent(HomeEvent.CheckToken)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
+//    DisposableEffect(lifecycleOwner){
+//        val observer = LifecycleEventObserver { _, event ->
+//            if (event == Lifecycle.Event.ON_RESUME) {
+//                viewModel.sendEvent(HomeEvent.CheckToken)
+//            }
+//        }
+//        lifecycleOwner.lifecycle.addObserver(observer)
+//
+//        onDispose {
+//            lifecycleOwner.lifecycle.removeObserver(observer)
+//        }
+//    }
 
     HomeScreen(
         homeState = homeState,
@@ -158,9 +158,7 @@ private fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            if (homeState.connected.not()) {
-                HomeDisconnectedScreen(onReload)
-            } else {
+            if (homeState.connected) {
                 AndroidView(
                     factory = { webView },
                     update = {
@@ -169,6 +167,8 @@ private fun HomeScreen(
                         }
                     }
                 )
+            } else {
+                HomeDisconnectedScreen(onReload)
             }
         }
     }

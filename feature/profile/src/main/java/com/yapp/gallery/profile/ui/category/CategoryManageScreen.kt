@@ -42,6 +42,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
@@ -61,9 +62,10 @@ import com.yapp.gallery.profile.widget.CategoryEditDialog
 import com.yapp.gallery.profile.widget.CustomSnackbarHost
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CategoryManageRoute(
     popBackStack: () -> Unit,
@@ -79,11 +81,15 @@ internal fun CategoryManageRoute(
     val snackState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.errors.collect { error ->
-            snackState.showSnackbar(
-                message = error.asString(context), duration = SnackbarDuration.Short
-            )
+    LaunchedEffect(viewModel.sideEffect) {
+        viewModel.sideEffect.collectLatest {
+            when(it){
+                is CategoryManageSideEffect.ShowSnackbar -> {
+                    snackState.showSnackbar(
+                        message = it.msg.asString(context), duration = SnackbarDuration.Short
+                    )
+                }
+            }
         }
     }
 
@@ -101,8 +107,7 @@ internal fun CategoryManageRoute(
         categoryManageState = categoryManageState,
         categoryState = categoryState,
         categoryCreateDialogShown = categoryCreateDialogShown,
-        categoryList = viewModel.categoryList,
-        categoryPostStateList = viewModel.categoryPostStateList,
+        categoryList = categoryManageState.categoryList,
         onReorder = { from, to -> viewModel.sendEvent(CategoryManageEvent.OnReorderCategory(from, to)) },
         onEditCategory = { category, name -> viewModel.sendEvent(CategoryManageEvent.OnEditClick(category, name)) },
         onExpandCategory = { position -> viewModel.sendEvent(CategoryManageEvent.OnExpandClick(position)) },
@@ -119,7 +124,6 @@ internal fun CategoryManageRoute(
 private fun CategoryManageScreen(
     categoryManageState: CategoryManageState,
     categoryState: BaseState<Boolean>,
-    categoryPostStateList: List<CategoryPostState>,
     categoryCreateDialogShown: MutableState<Boolean>,
     categoryList: List<CategoryItem>,
     onReorder: (Int, Int) -> Unit,
@@ -164,7 +168,7 @@ private fun CategoryManageScreen(
                                 message = "최대 5개까지 생성 가능해요!", duration = SnackbarDuration.Short
                             )
                         }
-                    }, enabled = categoryManageState is CategoryManageState.Success || categoryManageState is CategoryManageState.Empty
+                    }, enabled = categoryManageState.isLoading.not()
                 ) {
                     Text(
                         text = stringResource(id = R.string.category_add),
@@ -182,7 +186,7 @@ private fun CategoryManageScreen(
             CategoryListView(
                 categoryManageState = categoryManageState,
                 categoryState = categoryState,
-                categoryPostStateList = categoryPostStateList,
+                categoryPostFlowList = categoryManageState.categoryPostFlowList,
                 onReorder = { from, to -> onReorder(from, to) },
                 onExpandCategory = onExpandCategory,
                 onEditCategory = onEditCategory,
@@ -197,10 +201,10 @@ private fun CategoryManageScreen(
             // 커스텀 Snackbar
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter)
+                .align(Alignment.BottomCenter)
             ) {
-                Spacer(modifier = Modifier.height(12.dp))
                 CustomSnackbarHost(snackbarHostState = snackState)
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -210,7 +214,7 @@ private fun CategoryManageScreen(
 @Composable
 private fun CategoryListView(
     categoryManageState: CategoryManageState,
-    categoryPostStateList: List<CategoryPostState>,
+    categoryPostFlowList: List<Flow<PagingData<PostContent>>>,
     categoryState: BaseState<Boolean>,
     onReorder : (Int, Int) -> Unit,
     onEditCategory : (CategoryItem, String) -> Unit,
@@ -228,7 +232,7 @@ private fun CategoryListView(
     var overscrollJob by remember { mutableStateOf<Job?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        if (categoryManageState is CategoryManageState.Success) {
+        if (categoryManageState.categoryList.isNotEmpty()) {
             Spacer(modifier = Modifier.height(36.dp))
 
             LazyColumn(state = listState, modifier = Modifier.pointerInput(dragDropState) {
@@ -263,12 +267,12 @@ private fun CategoryListView(
                         CategoryListTile(
                             category = item,
                             categoryState = categoryState,
-                            categoryPostState = categoryPostStateList[index],
+                            categoryPostFlow = categoryPostFlowList[index],
                             onExpandCategory = onExpandCategory,
                             onEditCategory = onEditCategory,
                             onDeleteCategory = onDeleteCategory,
                             onCheckEditable = onCheckEditable,
-                            onLoadError = onLoadError,
+                            isExpanded = categoryManageState.expandedList[index],
                             elevation = elevation,
                             index = index
                         )
@@ -291,7 +295,7 @@ private fun CategoryListView(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (categoryManageState is CategoryManageState.Initial) {
+                if (categoryManageState.isLoading) {
                     // 로딩 중
                     CircularProgressIndicator(
                         modifier = Modifier.size(50.dp), color = color_mainBlue
@@ -309,12 +313,12 @@ private fun CategoryListView(
 private fun CategoryListTile(
     category: CategoryItem,
     categoryState : BaseState<Boolean>,
-    categoryPostState : CategoryPostState,
+    categoryPostFlow : Flow<PagingData<PostContent>>,
     onEditCategory : (CategoryItem, String) -> Unit,
     onExpandCategory : (Int) -> Unit,
     onCheckEditable : (String, String) -> Unit,
     onDeleteCategory : (CategoryItem) -> Unit,
-    onLoadError: (Int) -> Unit,
+    isExpanded: Boolean,
     elevation: Dp,
     index: Int
 ) {
@@ -345,7 +349,7 @@ private fun CategoryListTile(
                         bottom.linkTo(text1.bottom)
                     }
             ) {
-                Icon(painter = if (categoryPostState is CategoryPostState.Expanded) painterResource(id = R.drawable.arrow_up)
+                Icon(painter = if (isExpanded) painterResource(id = R.drawable.arrow_up)
                         else painterResource(id = R.drawable.arrow_down),
                     contentDescription = "categoryExpand",
                     tint = color_gray500,
@@ -401,15 +405,14 @@ private fun CategoryListTile(
             )
 
         }
-        if (categoryPostState is CategoryPostState.Expanded) {
-            // 카테고리 하나 하나당 Page 데이터 발생
-            // 누를 때 마다 collect 하게
-            val data = categoryPostState.postFlow.collectAsLazyPagingItems()
-            if (data.loadState.refresh is LoadState.Error){
-                onLoadError(index)
-            }
+
+        val data = categoryPostFlow.collectAsLazyPagingItems()
+
+        // 카테고리 전시 기록 리스트
+        if (isExpanded) {
             CategoryPostPagingView(posts = data, modifier = Modifier.padding(start = 46.dp, end = 20.dp))
         }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         // 카테고리 삭제 다이얼로그

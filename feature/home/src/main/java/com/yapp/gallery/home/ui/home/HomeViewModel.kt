@@ -37,8 +37,7 @@ class HomeViewModel @Inject constructor(
         connectionProvider.getConnectionFlow()
             .onEach {
                 if (it) {
-                    // 원래 네트워크 연결이 안 되어있다가 연결된 경우
-                    if (viewState.value.connected.not()) loadWithValidToken()
+                    loadWithValidToken()
                 } else {
                     updateState(HomeReduce.Disconnected)
                 }
@@ -97,7 +96,7 @@ class HomeViewModel @Inject constructor(
                 loadWithValidToken()
             }
             is HomeEvent.OnLoadAgain ->{
-                loadWithValidToken()
+//                loadWithValidToken()
             }
             is HomeEvent.OnWebViewClick -> {
                 handleWebViewBridge(event.action, event.payload)
