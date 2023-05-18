@@ -1,6 +1,6 @@
 package com.yapp.gallery.info.ui.edit
 
-import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +14,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +41,7 @@ fun ExhibitEditScreen(
     popBackStack: () -> Unit,
     navigateToHome: () -> Unit,
     viewModel: ExhibitEditViewModel = hiltViewModel(),
-    context: Activity,
+    context: Context = LocalContext.current
 ){
     // 키보드 포커스
     val focusRequester = remember { FocusRequester() }

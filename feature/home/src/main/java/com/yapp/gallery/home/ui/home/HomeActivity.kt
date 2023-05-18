@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.home.R
 import com.yapp.gallery.home.navigation.HomeNavHost
+import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.login.LoginNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
 import com.yapp.gallery.navigation.record.RecordNavigator
@@ -26,7 +27,7 @@ class HomeActivity : ComponentActivity() {
     @Inject lateinit var loginNavigator: LoginNavigator
     @Inject lateinit var profileNavigator: ProfileNavigator
     @Inject lateinit var recordNavigator: RecordNavigator
-    @Inject lateinit var cameraNavigator: CameraNavigator
+    @Inject lateinit var infoNavigator: ExhibitInfoNavigator
 
     private lateinit var navController : NavHostController
 
@@ -51,7 +52,7 @@ class HomeActivity : ComponentActivity() {
                 HomeNavHost(
                     navHostController = navController, loginNavigator = loginNavigator,
                     profileNavigator = profileNavigator, recordNavigator = recordNavigator,
-                    cameraNavigator = cameraNavigator, context = this,
+                    infoNavigator = infoNavigator, context = this,
                 )
             }
         }

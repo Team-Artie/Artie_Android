@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun ExhibitInfoRoute(
     exhibitId: Long,
     navigateToCamera: (Long) -> Unit,
-    navigateToGallery: (Long) -> Unit,
+    navigateToGallery: (Long, Int) -> Unit,
     navigateToEdit: (String) -> Unit,
     navigateToWebPage: (String) -> Unit,
     popBackStack: () -> Unit,
@@ -50,7 +50,7 @@ fun ExhibitInfoRoute(
                     navigateToCamera(it.exhibitId)
                 }
                 is ExhibitInfoSideEffect.NavigateToGallery -> {
-                    navigateToGallery(it.exhibitId)
+                    navigateToGallery(it.exhibitId, it.count)
                 }
                 is ExhibitInfoSideEffect.PopBackStack -> {
                     popBackStack()

@@ -48,6 +48,7 @@ dependencies {
     implementation project(":feature:record")
     implementation project(":navigation:camera")
     implementation project(":navigation:home")
+    implementation project(":navigation:info")
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

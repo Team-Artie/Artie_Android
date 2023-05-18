@@ -82,9 +82,8 @@ import java.time.LocalDate
 
 fun NavGraphBuilder.infoGraph(
     navHostController: NavHostController,
-    navigateToGallery: (Long) -> Unit,
+    navigateToGallery: (Long, Int) -> Unit,
     navigateToCamera: (Long) -> Unit,
-    context: Activity,
 ) {
     navigation(startDestination = "info", route = "info_route") {
         composable("info?exhibitId={exhibitId},idToken={idToken}", arguments = listOf(
@@ -98,19 +97,18 @@ fun NavGraphBuilder.infoGraph(
             ExhibitInfoRoute(
                 exhibitId = it.arguments?.getLong("exhibitId") ?: 0L,
                 navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
-                navigateToGallery = {
-                    navigateToGallery(it)
+                navigateToGallery = { id, count ->
+                    navigateToGallery(id, count)
                 },
                 navigateToCamera = {
-
-                                   navigateToCamera(it)
+                    navigateToCamera(it)
                 },
 //                    cameraLauncher.launch(
 //                        cameraNavigator.navigate(context)
 //                            .putExtra("postId", exhibitId)
 //                    )
-                navigateToWebPage = { navigateToWebPage(context, it) },
-                popBackStack = { popBackStack(context, navHostController) },
+                navigateToWebPage = { navigateToWebPage(navHostController.context, it) },
+                popBackStack = { navHostController.popBackStack() },
             )
         }
         composable(
@@ -137,8 +135,7 @@ fun NavGraphBuilder.infoGraph(
                     navHostController.navigate("home")
 //                    navigateToScreen(context, homeNavigator.navigate(context))
                 },
-                popBackStack = { popBackStack(context, navHostController) },
-                context = context
+                popBackStack = { navHostController.popBackStack() },
             )
         }
     }
@@ -153,18 +150,18 @@ fun NavGraphBuilder.infoGraph(
 //    }
 //}
 
-private fun popBackStack(
-    context: Activity, navHostController: NavHostController
-){
-    if (navHostController.previousBackStackEntry != null) {
-        navHostController.popBackStack()
-    }
-    else{
-        context.finish()
-    }
-}
+//private fun popBackStack(
+//    context: Activity, navHostController: NavHostController
+//){
+//    if (navHostController.previousBackStackEntry != null) {
+//        navHostController.popBackStack()
+//    }
+//    else{
+//        context.finish()
+//    }
+//}
 
-private fun navigateToWebPage(context: Activity, it: String) {
+private fun navigateToWebPage(context: Context, it: String) {
     context.startActivity(Intent(Intent.ACTION_VIEW, it.toUri()))
 }
 

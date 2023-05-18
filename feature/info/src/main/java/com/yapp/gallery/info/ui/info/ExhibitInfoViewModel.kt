@@ -27,7 +27,7 @@ class ExhibitInfoViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : BaseStateViewModel<ExhibitInfoState, ExhibitInfoEvent, ExhibitInfoReduce, ExhibitInfoSideEffect>(ExhibitInfoState.Initial) {
 
-    private val exhibitId = savedStateHandle.get<Long>("exhibitId") ?: 120L
+    private val exhibitId = checkNotNull(savedStateHandle.get<Long>("exhibitId"))
     private val idToken = savedStateHandle.get<String>("idToken")
 //    @AssistedFactory
 //    interface InfoFactory {
@@ -95,7 +95,13 @@ class ExhibitInfoViewModel @Inject constructor(
                         sendSideEffect(ExhibitInfoSideEffect.NavigateToCamera(exhibitId))
                     }
                     "NAVIGATE_TO_GALLERY" -> {
-                       sendSideEffect(ExhibitInfoSideEffect.NavigateToGallery(exhibitId))
+                        event.payload?.let {
+                            val json = JSONObject(it)
+                            val count = json.getInt("count")
+                            sendSideEffect(ExhibitInfoSideEffect.NavigateToGallery(exhibitId, count))
+                        } ?: run{
+                            sendSideEffect(ExhibitInfoSideEffect.NavigateToGallery(exhibitId))
+                        }
                     }
                     "GO_BACK" -> {
                         sendSideEffect(ExhibitInfoSideEffect.PopBackStack)

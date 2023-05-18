@@ -21,6 +21,10 @@ import kotlinx.coroutines.launch
 class CameraActivity : AppCompatActivity() {
     private val resultFlow: MutableSharedFlow<List<ByteArray>> = MutableSharedFlow()
 
+    private val imageCount by lazy {
+        if (intent.hasExtra("count")) intent.getIntExtra("count", 0) else 0
+    }
+
     private val imagePicker = registerImagePicker {imageList ->
         lifecycleScope.launch {
             resultFlow.emit(imageList.map { uriToByteArray(this@CameraActivity, it.uri)})
@@ -40,9 +44,9 @@ class CameraActivity : AppCompatActivity() {
                     imagePicker.launch(
                         ImagePickerConfig(
                             isMultipleMode = true,
-                            maxSize = MAX_IMAGE_COUNT,
+                            maxSize = MAX_IMAGE_COUNT - imageCount,
                             doneTitle = "완료",
-                            limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT}장까지 선택 가능해요!"
+                            limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT - imageCount}장까지 선택 가능해요!"
                         )
                     )
                 })
@@ -51,7 +55,8 @@ class CameraActivity : AppCompatActivity() {
     }
 
     companion object{
-        private const val MAX_IMAGE_COUNT = 10
+        // Todo : 최대 장수 변경 할건지?!
+        private const val MAX_IMAGE_COUNT = 5
     }
 }
 

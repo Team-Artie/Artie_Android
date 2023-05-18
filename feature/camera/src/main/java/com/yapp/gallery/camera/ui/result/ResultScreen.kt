@@ -119,7 +119,6 @@ fun ResultRoute(
                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
                 is ResultSideEffect.NavigateToInfo -> {
-                    // Todo : Info 화면으로 이동으로 변경
                     Toast.makeText(context, "작품이 등록되었습니다.", Toast.LENGTH_SHORT).show()
                     navigateToInfo(it.postId)
                 }

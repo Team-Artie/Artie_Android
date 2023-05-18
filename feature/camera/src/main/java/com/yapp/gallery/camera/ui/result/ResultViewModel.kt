@@ -133,7 +133,6 @@ class ResultViewModel @AssistedInject constructor(
             is ResultEvent.EnterTag -> {
                 val tempTag = viewState.value.tempTag
                 if (tempTag.isNotEmpty()){
-                    // TODO : 태그는 무조건 #으로 시작해야 하는지?
                     val check = if(tempTag.startsWith("#")){
                         // tagList 안에 있는지 판별
                         viewState.value.tagList.contains(tempTag)

@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,7 +14,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.yapp.gallery.home.ui.home.HomeRoute
 import com.yapp.gallery.home.ui.test.TestRoute
-import com.yapp.gallery.info.navigation.infoGraph
 import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import com.yapp.gallery.navigation.login.LoginNavigator
 import com.yapp.gallery.navigation.profile.ProfileNavigator
@@ -24,9 +24,9 @@ import com.yapp.navigation.camera.CameraNavigator
 fun HomeNavHost(
     navHostController: NavHostController,
     loginNavigator: LoginNavigator,
+    infoNavigator: ExhibitInfoNavigator,
     profileNavigator: ProfileNavigator,
     recordNavigator: RecordNavigator,
-    cameraNavigator : CameraNavigator,
     context: Activity,
 ) {
     val recordLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -77,20 +77,15 @@ fun HomeNavHost(
             TestRoute(token = token)
         }
 
-        infoGraph(
-            navHostController = navHostController,
-            context = context,
-            navigateToCamera = {
-                navigateToScreen(context, cameraNavigator.navigate(context)
-                    .putExtra("postId", it))
-            },
-            navigateToGallery = {
-                navigateToScreen(context, cameraNavigator.navigate(context)
-                    .putExtra("postId", it)
-                    .putExtra("gallery", true))
-            },
-        )
+        infoGraphComposable(infoNavigator, navHostController)
     }
+}
+
+fun NavGraphBuilder.infoGraphComposable(
+    infoNavigator: ExhibitInfoNavigator,
+    navHostController: NavHostController
+){
+    infoNavigator.provideGraph(this, navHostController)
 }
 
 private fun navigateToScreen(context: Context, intent: Intent) {
