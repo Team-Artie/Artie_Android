@@ -133,15 +133,8 @@ class ResultViewModel @AssistedInject constructor(
             is ResultEvent.EnterTag -> {
                 val tempTag = viewState.value.tempTag
                 if (tempTag.isNotEmpty()){
-                    val check = if(tempTag.startsWith("#")){
-                        // tagList 안에 있는지 판별
-                        viewState.value.tagList.contains(tempTag)
-                    } else {
-                        viewState.value.tagList.contains("#${tempTag}")
-                    }
-                    if (!check){
-                        val tag = if(tempTag.startsWith("#")) tempTag else "#${tempTag}"
-                        updateState(ResultReduce.AddTempTag(tag))
+                    if (!viewState.value.tagList.contains(tempTag)){
+                        updateState(ResultReduce.AddTempTag(tempTag))
                     } else {
                         sendSideEffect(ResultSideEffect.ShowToast("이미 존재하는 태그입니다."))
                     }

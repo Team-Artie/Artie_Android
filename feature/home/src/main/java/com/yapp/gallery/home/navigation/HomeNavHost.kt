@@ -25,6 +25,7 @@ fun HomeNavHost(
     navHostController: NavHostController,
     loginNavigator: LoginNavigator,
     infoNavigator: ExhibitInfoNavigator,
+    cameraNavigator: CameraNavigator,
     profileNavigator: ProfileNavigator,
     recordNavigator: RecordNavigator,
     context: Activity,
@@ -77,15 +78,34 @@ fun HomeNavHost(
             TestRoute(token = token)
         }
 
-        infoGraphComposable(infoNavigator, navHostController)
+        infoGraphComposable(infoNavigator, navHostController, cameraNavigator, context)
     }
 }
 
 fun NavGraphBuilder.infoGraphComposable(
     infoNavigator: ExhibitInfoNavigator,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    cameraNavigator: CameraNavigator,
+    context: Activity,
 ){
-    infoNavigator.provideGraph(this, navHostController)
+    infoNavigator.provideGraph(
+        navGraphBuilder = this,
+        navController = navHostController,
+        navigateToCamera = {
+            context.startActivity(
+                cameraNavigator.navigate(context)
+                    .putExtra("postId", it)
+            )
+        },
+        navigateToGallery = { id, count ->
+            context.startActivity(
+                cameraNavigator.navigate(context)
+                    .putExtra("postId", id)
+                    .putExtra("count", count)
+                    .putExtra("gallery", true)
+            )
+        }
+    )
 }
 
 private fun navigateToScreen(context: Context, intent: Intent) {

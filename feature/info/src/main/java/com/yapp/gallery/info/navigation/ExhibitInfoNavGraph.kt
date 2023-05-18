@@ -1,6 +1,5 @@
 package com.yapp.gallery.info.navigation
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
@@ -14,71 +13,6 @@ import com.yapp.gallery.info.ui.edit.ExhibitEditScreen
 import com.yapp.gallery.info.ui.info.ExhibitInfoRoute
 import org.json.JSONObject
 import java.time.LocalDate
-
-//@Composable
-//fun ExhibitInfoNavHost(
-//    exhibitId: Long,
-//    cameraNavigator: CameraNavigator,
-//    homeNavigator: HomeNavigator,
-//    context: Activity
-//){
-//    val navHostController = rememberNavController()
-//
-//    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
-//        if (it.resultCode == Activity.RESULT_OK){
-//            context.finish()
-//        }
-//    }
-
-//    NavHost(navController = navHostController, startDestination = "info"){
-//        composable("info"){
-//            ExhibitInfoRoute(
-//                exhibitId = exhibitId,
-//                navigateToEdit = { payload -> navigateWithPayload(payload, navHostController) },
-//                navigateToGallery = {
-//                    cameraLauncher.launch(cameraNavigator.navigate(context)
-//                        .putExtra("postId", exhibitId)
-//                        .putExtra("gallery", true)
-//                    )
-//                },
-//                navigateToCamera = {
-//                    cameraLauncher.launch(cameraNavigator.navigate(context)
-//                        .putExtra("postId", exhibitId))
-//                    },
-//                navigateToWebPage = { navigateToWebPage(context, it) },
-//                popBackStack = { popBackStack(context, navHostController)},
-//            )
-//        }
-//        composable(
-//            route = "edit?id={id},exhibitName={exhibitName},exhibitDate={exhibitDate},categoryId={categoryId},exhibitLink={exhibitLink}",
-//            arguments = listOf(
-//                navArgument("id"){
-//                    type = NavType.LongType
-//                },
-//                navArgument("exhibitName"){
-//                    type = NavType.StringType
-//                },
-//                navArgument("exhibitDate"){
-//                    type = NavType.StringType
-//                },
-//                navArgument("categoryId"){
-//                    type = NavType.LongType
-//                },navArgument("exhibitLink"){
-//                    type = NavType.StringType
-//                }
-//            )
-//        ) {
-//            ExhibitEditScreen(
-//                navigateToHome = {
-//                    context.finishAffinity()
-//                    navigateToScreen(context, homeNavigator.navigate(context))
-//                },
-//                popBackStack = { popBackStack(context, navHostController)},
-//                context = context
-//            )
-//        }
-//    }
-//}
 
 fun NavGraphBuilder.infoGraph(
     navHostController: NavHostController,

@@ -119,7 +119,7 @@ fun HomeRoute(
         webView = webView,
         onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
         navigateToTest = {
-            navigateToTest(context.intent.getStringExtra("accessToken"))
+            navigateToTest(homeState.idToken)
         },
         hasBundle = webViewState.getBundle("webViewState") != null
     )

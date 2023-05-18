@@ -330,6 +330,7 @@ private fun CategoryListTile(
             .fillMaxWidth()
             .shadow(ambientColor = color_popUpBottom, elevation = elevation)
             .animateContentSize(animationSpec = tween())
+            .clickable(onClick = { onExpandCategory(index) })
             .background(color = color_background)
     ) {
         Spacer(modifier = Modifier.height(24.dp))

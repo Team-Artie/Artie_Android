@@ -27,6 +27,7 @@ class HomeActivity : ComponentActivity() {
     @Inject lateinit var loginNavigator: LoginNavigator
     @Inject lateinit var profileNavigator: ProfileNavigator
     @Inject lateinit var recordNavigator: RecordNavigator
+    @Inject lateinit var cameraNavigator: CameraNavigator
     @Inject lateinit var infoNavigator: ExhibitInfoNavigator
 
     private lateinit var navController : NavHostController
@@ -52,7 +53,7 @@ class HomeActivity : ComponentActivity() {
                 HomeNavHost(
                     navHostController = navController, loginNavigator = loginNavigator,
                     profileNavigator = profileNavigator, recordNavigator = recordNavigator,
-                    infoNavigator = infoNavigator, context = this,
+                    infoNavigator = infoNavigator, cameraNavigator = cameraNavigator, context = this,
                 )
             }
         }

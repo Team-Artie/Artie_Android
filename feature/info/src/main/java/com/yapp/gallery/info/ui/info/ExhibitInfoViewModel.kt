@@ -2,20 +2,18 @@ package com.yapp.gallery.info.ui.info
 
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.provider.ConnectionProvider
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
-import com.yapp.gallery.domain.usecase.auth.SetIdTokenUseCase
-import com.yapp.gallery.info.ui.info.ExhibitInfoContract.*
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoEvent
+import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoReduce
+import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoSideEffect
+import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.json.JSONObject
 import timber.log.Timber
 import javax.inject.Inject

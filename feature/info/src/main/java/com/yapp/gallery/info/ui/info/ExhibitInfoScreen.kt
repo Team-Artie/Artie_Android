@@ -1,8 +1,6 @@
 package com.yapp.gallery.info.ui.info
 
-import android.app.Activity
 import android.view.KeyEvent
-import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
