@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
-    private val resultFlow: MutableSharedFlow<List<ByteArray>> = MutableSharedFlow()
+    private val resultFlow: MutableSharedFlow<List<String>> = MutableSharedFlow()
 
     private val imageCount by lazy {
         if (intent.hasExtra("count")) intent.getIntExtra("count", 0) else 0
@@ -27,7 +27,7 @@ class CameraActivity : AppCompatActivity() {
 
     private val imagePicker = registerImagePicker {imageList ->
         lifecycleScope.launch {
-            resultFlow.emit(imageList.map { uriToByteArray(this@CameraActivity, it.uri)})
+            resultFlow.emit(imageList.map { it.uri.toString() })
         }
     }
 

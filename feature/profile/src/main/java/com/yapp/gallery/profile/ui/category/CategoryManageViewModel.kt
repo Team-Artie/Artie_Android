@@ -220,7 +220,7 @@ class CategoryManageViewModel @Inject constructor(
                 state.copy(
                     isLoading = false,
                     categoryList = reduce.categoryList,
-                    expandedList = List(reduce.categoryList.size) { false }
+                    expandedList = List(reduce.categoryList.size) { false },
                 )
             is CategoryManageReduce.CategoryPostFlowListLoaded ->
                 state.copy(

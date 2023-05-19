@@ -9,6 +9,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
@@ -35,11 +36,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -60,8 +61,10 @@ import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_gray500
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.util.onCheckPermissions
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -76,7 +79,10 @@ fun CameraRoute(
 ){
     val cameraState : CameraState by viewModel.viewState.collectAsStateWithLifecycle()
 
-    val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
+    val imageCapture: ImageCapture = remember { ImageCapture.Builder()
+        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+        .build()
+    }
 
     // 권한 체크 런처
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted ->
@@ -199,9 +205,11 @@ private fun CameraContent(
     previewView: PreviewView,
     onClickCapture: () -> Unit,
     onClickRotate: () -> Unit,
-    popBackStack: () -> Unit
+    popBackStack: () -> Unit,
+    scope: CoroutineScope = rememberCoroutineScope()
 ){
     val cameraClickable = remember { mutableStateOf(true) }
+    val alphaValue = remember { Animatable(initialValue = 1f) }
 
     LaunchedEffect(cameraClickable.value){
         delay(3000)
@@ -248,6 +256,14 @@ private fun CameraContent(
                 onClick = {
                     if (cameraClickable.value){
                         cameraClickable.value = false
+                        onClickCapture()
+
+                        scope.launch {
+                            alphaValue.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(durationMillis = 800)
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.constrainAs(captureBtn) {
@@ -288,37 +304,20 @@ private fun CameraContent(
             }
         }
 
-        if (!cameraClickable.value){
-            CameraShutterFrame(onAnimationEnd = onClickCapture)
-        }
+        CameraShutterFrame(alphaValue = alphaValue.value)
     }
 }
 
 @Composable
 private fun CameraShutterFrame(
-    onAnimationEnd : () -> Unit
+    alphaValue : Float
 ){
-    val alphaValue = remember { Animatable(initialValue = 1f) }
-
-    LaunchedEffect(Unit){
-        alphaValue.animateTo(
-            targetValue = 0f,
-            animationSpec = tween(durationMillis = 500)
-        )
-        alphaValue.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 500)
-        )
-    }
-
     val bgColor by animateColorAsState(
-        if (alphaValue.value > 0.5f) color_gray500.copy(alpha = 0.4f) else Color.Transparent
+        if ( alphaValue > 0.5f && alphaValue < 1f) color_gray500.copy(alpha = 0.4f) else Color.Transparent
     )
-    Box(
-        modifier = Modifier.fillMaxSize().background(bgColor)
-            .onGloballyPositioned {
-                onAnimationEnd()
-            },
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(bgColor)
     )
 }
 
@@ -337,7 +336,6 @@ fun CameraContentPreview(){
     }
 }
 
-// TODO : 결과 화면에서 선택 저장 가능하게 하기
 private fun processCapture(
     imageCapture: ImageCapture,
     executor: Executor,

@@ -18,17 +18,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -113,7 +109,6 @@ internal fun CategoryManageRoute(
         onExpandCategory = { position -> viewModel.sendEvent(CategoryManageEvent.OnExpandClick(position)) },
         onCheckEditable = { origin, edited -> viewModel.sendEvent(CategoryManageEvent.CheckEditable(origin, edited)) },
         onDeleteCategory = { category -> viewModel.sendEvent(CategoryManageEvent.OnDeleteClick(category)) },
-        onLoadError = { viewModel.sendEvent(CategoryManageEvent.OnExpandLoadError(it)) },
         snackState = snackState,
         scope = scope,
         popBackStack = popBackStack
@@ -131,7 +126,6 @@ private fun CategoryManageScreen(
     onExpandCategory : (Int) -> Unit,
     onCheckEditable : (String, String) -> Unit,
     onDeleteCategory : (CategoryItem) -> Unit,
-    onLoadError: (Int) -> Unit,
     snackState : SnackbarHostState,
     scope: CoroutineScope,
     popBackStack: () -> Unit,
@@ -193,7 +187,6 @@ private fun CategoryManageScreen(
                 onCheckEditable = onCheckEditable,
                 onDeleteCategory =  onDeleteCategory,
                 onCreateButtonClicked = { categoryCreateDialogShown.value = true },
-                onLoadError = onLoadError,
                 categoryList = categoryList,
                 scope = scope
             )
@@ -222,7 +215,6 @@ private fun CategoryListView(
     onCheckEditable : (String, String) -> Unit,
     onDeleteCategory : (CategoryItem) -> Unit,
     onCreateButtonClicked: () -> Unit,
-    onLoadError: (Int) -> Unit,
     categoryList: List<CategoryItem>,
     scope: CoroutineScope,
     listState: LazyListState = rememberLazyListState(),
@@ -231,11 +223,10 @@ private fun CategoryListView(
 
     var overscrollJob by remember { mutableStateOf<Job?>(null) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (categoryManageState.categoryList.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(36.dp))
-
-            LazyColumn(state = listState, modifier = Modifier.pointerInput(dragDropState) {
+    if (categoryManageState.categoryList.isNotEmpty()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.pointerInput(dragDropState) {
                 detectDragGesturesAfterLongPress(onDrag = { change, offset ->
                     change.consume()
                     dragDropState.onDrag(offset = offset)
@@ -260,50 +251,54 @@ private fun CategoryListView(
                         overscrollJob?.cancel()
                     })
             }) {
-                itemsIndexed(categoryList) { index, item ->
-                    // Draggable Item
-                    DraggableItem(dragDropState = dragDropState, index = index) { isDragging ->
-                        val elevation by animateDpAsState(if (isDragging) 10.dp else 0.dp)
-                        CategoryListTile(
-                            category = item,
-                            categoryState = categoryState,
-                            categoryPostFlow = categoryPostFlowList[index],
-                            onExpandCategory = onExpandCategory,
-                            onEditCategory = onEditCategory,
-                            onDeleteCategory = onDeleteCategory,
-                            onCheckEditable = onCheckEditable,
-                            isExpanded = categoryManageState.expandedList[index],
-                            elevation = elevation,
-                            index = index
-                        )
-                    }
-                    // Divider
-                    if (index != categoryList.size - 1) {
-                        Divider(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp),
-                            color = color_gray700,
-                            thickness = 0.4.dp
-                        )
-                    }
+            item { Spacer(modifier = Modifier.height(36.dp)) }
+
+            itemsIndexed(
+                items = categoryList,
+                key = { _, item -> item.id }
+            ) { index, item ->
+                // Draggable Item
+                DraggableItem(dragDropState = dragDropState, index = index) { isDragging ->
+                    val elevation by animateDpAsState(if (isDragging) 10.dp else 0.dp)
+                    CategoryListTile(
+                        category = item,
+                        categoryState = categoryState,
+                        categoryPostFlow = categoryPostFlowList[index],
+                        onExpandCategory = onExpandCategory,
+                        onEditCategory = onEditCategory,
+                        onDeleteCategory = onDeleteCategory,
+                        onCheckEditable = onCheckEditable,
+                        isExpanded = categoryManageState.expandedList[index],
+                        elevation = elevation,
+                        index = index
+                    )
+                }
+                // Divider
+                if (index != categoryList.size - 1) {
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        color = color_gray700,
+                        thickness = 0.4.dp
+                    )
                 }
             }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (categoryManageState.isLoading) {
-                    // 로딩 중
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(50.dp), color = color_mainBlue
-                    )
-                } else {
-                    // 카테고리 리스트가 빈 리스트인 경우
-                    CategoryEmptyView(onCreateButtonClicked = onCreateButtonClicked)
-                }
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (categoryManageState.isLoading) {
+                // 로딩 중
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp), color = color_mainBlue
+                )
+            } else {
+                // 카테고리 리스트가 빈 리스트인 경우
+                CategoryEmptyView(onCreateButtonClicked = onCreateButtonClicked)
             }
         }
     }
@@ -503,7 +498,7 @@ private fun CategoryPostPagingView(
                 LazyRow(
                     modifier = modifier
                 ){
-                    items(posts){post ->
+                    items(posts, key = { it.id}){post ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
