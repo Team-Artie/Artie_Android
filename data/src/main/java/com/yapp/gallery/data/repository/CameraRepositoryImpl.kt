@@ -4,7 +4,6 @@ import com.yapp.gallery.data.source.file.CameraFileDataSource
 import com.yapp.gallery.data.source.remote.camera.CameraRemoteDataSource
 import com.yapp.gallery.domain.repository.CameraRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.single
@@ -14,7 +13,7 @@ import javax.inject.Inject
 
 class CameraRepositoryImpl @Inject constructor(
     private val cameraRemoteDataSource: CameraRemoteDataSource,
-    private val cameraFileDataSource: CameraFileDataSource
+    private val cameraFileDataSource: CameraFileDataSource,
 ) : CameraRepository {
     override fun uploadImages(
         postId: Long, imageList: List<ByteArray>

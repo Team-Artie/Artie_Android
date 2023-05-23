@@ -1,4 +1,4 @@
-package com.yapp.gallery.data.room
+package com.yapp.gallery.data.room.post
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

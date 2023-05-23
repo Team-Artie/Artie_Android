@@ -12,6 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.OutputFileOptions
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -62,17 +64,20 @@ import com.yapp.gallery.common.theme.color_gray500
 import com.yapp.gallery.common.theme.color_popUpBottom
 import com.yapp.gallery.common.util.onCheckPermissions
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executor
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import androidx.camera.core.Preview as CameraPreview
 
 @Composable
 fun CameraRoute(
-    navigateToResult: (ByteArray) -> Unit,
+    navigateToResult: (Uri) -> Unit,
     popBackStack: () -> Unit,
     context: Activity,
     viewModel: CameraViewModel = hiltViewModel(),
@@ -83,6 +88,7 @@ fun CameraRoute(
         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
         .build()
     }
+    val outputFileOptions = OutputFileOptions.Builder(File(context.cacheDir, "temp.jpg")).build()
 
     // 권한 체크 런처
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted ->
@@ -120,6 +126,7 @@ fun CameraRoute(
                 is CameraSideEffect.ImageCapture -> {
                     processCapture(
                         executor = ContextCompat.getMainExecutor(context),
+                        outputFileOptions = outputFileOptions,
                         onImageCapture = navigateToResult,
                         imageCapture = imageCapture
                     )
@@ -172,7 +179,7 @@ private fun CameraScreen(
     var cameraSelector: CameraSelector
 
     LaunchedEffect(key1 = cameraState.lensFacing) {
-        val cameraProvider = context.getCameraProvider()
+        val cameraProvider = context.getCameraProvider().first()
 
         cameraSelector = CameraSelector.Builder()
             .requireLensFacing(cameraState.lensFacing)
@@ -339,26 +346,26 @@ fun CameraContentPreview(){
 private fun processCapture(
     imageCapture: ImageCapture,
     executor: Executor,
-    onImageCapture: (ByteArray) -> Unit
+    outputFileOptions: OutputFileOptions,
+    onImageCapture: (Uri) -> Unit
 ) {
-    imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
-        override fun onCaptureSuccess(image: ImageProxy) {
-            super.onCaptureSuccess(image)
-            val buffer = image.planes[0].buffer
-            buffer.position(0)
-            val bytes = ByteArray(buffer.capacity())
-            buffer.get(bytes)
-            onImageCapture(bytes)
-            image.close()
+    imageCapture.takePicture(outputFileOptions, executor, object : ImageCapture.OnImageSavedCallback {
+
+        override fun onImageSaved(result: ImageCapture.OutputFileResults) {
+            result.savedUri?.let(onImageCapture)
+        }
+
+        override fun onError(exception: ImageCaptureException) {
         }
     })
 }
 
-private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
-    suspendCoroutine { continuation ->
-        ProcessCameraProvider.getInstance(this).also { cameraProvider ->
+private fun Context.getCameraProvider(): Flow<ProcessCameraProvider> =
+    callbackFlow {
+        ProcessCameraProvider.getInstance(this@getCameraProvider).also { cameraProvider ->
             cameraProvider.addListener({
-                continuation.resume(cameraProvider.get())
-            }, ContextCompat.getMainExecutor(this))
+                trySend(cameraProvider.get())
+            }, ContextCompat.getMainExecutor(this@getCameraProvider))
         }
+        awaitClose()
     }

@@ -1,5 +1,6 @@
 package com.yapp.gallery.camera.ui.result
 
+import android.net.Uri
 import com.yapp.gallery.camera.model.ImageData
 import com.yapp.gallery.common.base.ViewModelContract
 
@@ -32,7 +33,7 @@ class ResultContract {
     }
 
     sealed class ResultReduce : ViewModelContract.Reduce{
-        data class SetLoadedData(val postId: Long, val imageData: ImageData?, val imageList: List<ByteArray>) : ResultReduce()
+        data class SetLoadedData(val postId: Long, val captureData: ImageData?, val imageList: List<ByteArray>) : ResultReduce()
         data class UpdateAuthorName(val name: String) : ResultReduce()
         data class UpdatePostName(val name: String) : ResultReduce()
         data class UpdateTempTag(val tag: String) : ResultReduce()

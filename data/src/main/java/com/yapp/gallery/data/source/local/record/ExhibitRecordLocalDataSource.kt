@@ -1,6 +1,6 @@
 package com.yapp.gallery.data.source.local.record
 
-import com.yapp.gallery.data.room.TempPost
+import com.yapp.gallery.data.room.post.TempPost
 import kotlinx.coroutines.flow.Flow
 
 interface ExhibitRecordLocalDataSource {

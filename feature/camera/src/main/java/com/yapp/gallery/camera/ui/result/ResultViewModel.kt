@@ -11,7 +11,7 @@ import com.yapp.gallery.camera.ui.result.ResultContract.ResultSideEffect
 import com.yapp.gallery.camera.ui.result.ResultContract.ResultState
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.domain.usecase.camera.RegisterPostUseCase
-import com.yapp.gallery.domain.usecase.camera.SaveImageUseCase
+import com.yapp.gallery.domain.usecase.camera.SaveGalleryImageUseCase
 import com.yapp.gallery.domain.usecase.camera.UploadImagesUseCase
 import com.yapp.gallery.domain.usecase.record.DeleteTempPostUseCase
 import dagger.assisted.Assisted
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -33,7 +34,7 @@ class ResultViewModel @AssistedInject constructor(
     private val uploadImagesUseCase: UploadImagesUseCase,
     private val registerPostUseCase: RegisterPostUseCase,
     private val deleteTempPostUseCase: DeleteTempPostUseCase,
-    private val saveImageUseCase: SaveImageUseCase
+    private val saveImageUseCase: SaveGalleryImageUseCase,
 ) : BaseStateViewModel<ResultState, ResultEvent, ResultReduce, ResultSideEffect>(ResultState()) {
 
     private val captureSaveFlow = MutableSharedFlow<Long>()
@@ -45,11 +46,15 @@ class ResultViewModel @AssistedInject constructor(
     }
 
     init {
-        updateState(ResultReduce.SetLoadedData(postId, ImageData(byteArray), imageList))
+        if (imageList.isNotEmpty()){
+            updateState(ResultReduce.SetLoadedData(postId, null, imageList))
+        } else {
+            updateState(ResultReduce.SetLoadedData(postId, ImageData(byteArray), emptyList()))
+        }
 
         captureSaveFlow.onEach {
             val enabled = it - lastClickedTime > 3000L
-            if (enabled){
+            if (enabled) {
                 lastClickedTime = it
                 saveCaptureToGallery()
             }
@@ -70,7 +75,7 @@ class ResultViewModel @AssistedInject constructor(
         viewModelScope.launch(exceptionHandler) {
             updateState(ResultReduce.UpdateRegisterState(ResultRegisterState.RegisterLoading))
             with(viewState.value){
-                val tempList = if (byteArray != null) listOf(byteArray) else imageList
+                val tempList = if (captureData?.byteArray != null) listOf(captureData.byteArray) else imageList
                 uploadImagesUseCase(postId, tempList)
                     .collectLatest {
                         registerPost(it)
@@ -92,7 +97,7 @@ class ResultViewModel @AssistedInject constructor(
     }
 
     private fun saveCaptureToGallery(){
-        saveImageUseCase(viewState.value.postId, viewState.value.captureData?.byteArray ?: return)
+        saveImageUseCase(viewState.value.postId, byteArray ?: return)
             .catch {
                 Timber.e("saveCaptureToGallery error : $it")
                 sendSideEffect(ResultSideEffect.ShowToast(it.message.toString()))
@@ -162,7 +167,7 @@ class ResultViewModel @AssistedInject constructor(
             is ResultReduce.SetLoadedData -> {
                 state.copy(
                     postId = postId,
-                    captureData = reduce.imageData,
+                    captureData = reduce.captureData,
                     imageList = reduce.imageList,
                 )
             }
