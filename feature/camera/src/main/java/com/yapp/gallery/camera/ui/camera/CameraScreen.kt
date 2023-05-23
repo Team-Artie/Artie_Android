@@ -1,15 +1,18 @@
 package com.yapp.gallery.camera.ui.camera
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.view.ScaleGestureDetector
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.OutputFileOptions
@@ -163,6 +166,7 @@ fun CameraRoute(
     }
 }
 
+@SuppressLint("ClickableViewAccessibility")
 @Composable
 private fun CameraScreen(
     cameraState: CameraState,
@@ -173,6 +177,7 @@ private fun CameraScreen(
     context: Activity
 ){
     val lifecycle = LocalLifecycleOwner.current
+    var camera : Camera? = null
     val preview = CameraPreview.Builder().build()
     val previewView: PreviewView = remember { PreviewView(context) }
 
@@ -187,7 +192,7 @@ private fun CameraScreen(
 
         cameraProvider.unbindAll()
 
-        cameraProvider.bindToLifecycle(
+        camera = cameraProvider.bindToLifecycle(
             lifecycle,
             cameraSelector,
             preview,
@@ -195,6 +200,22 @@ private fun CameraScreen(
         )
 
         preview.setSurfaceProvider(previewView.surfaceProvider)
+
+        val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val currentZoomRatio: Float = camera?.cameraInfo?.zoomState?.value?.zoomRatio ?: 1F
+                val delta = detector.scaleFactor
+                camera?.cameraControl?.setZoomRatio(currentZoomRatio * delta)
+                return true
+            }
+        }
+        val scaleGestureDetector = ScaleGestureDetector(context, listener)
+        
+        // pinch zoom 설정
+        previewView.setOnTouchListener{ _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            return@setOnTouchListener true
+        }
     }
 
     if (cameraState.permissionGranted){
