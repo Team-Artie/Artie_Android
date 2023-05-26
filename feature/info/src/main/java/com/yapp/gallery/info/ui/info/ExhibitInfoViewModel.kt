@@ -113,6 +113,9 @@ class ExhibitInfoViewModel @Inject constructor(
                             }
                         }
                     }
+                    "NAVIGATE_TO_HOME" -> {
+                        sendSideEffect(ExhibitInfoSideEffect.PopBackStack)
+                    }
                     else -> {}
                 }
             }

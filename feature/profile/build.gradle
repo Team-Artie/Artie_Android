@@ -65,4 +65,7 @@ dependencies {
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
     kapt libs.bundles.hilt.compilers
+
+    testImplementation libs.coroutines.test
+    testImplementation libs.bundles.test
 }

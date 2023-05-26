@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.TestOnly
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -135,7 +136,6 @@ class CategoryManageViewModel @Inject constructor(
                 this.add(from, this.removeAt(to))
             }
             updateState(CategoryManageReduce.ChangeCategoryOrder(from, to, tempList))
-
 
             changeSequenceUseCase(tempList)
                 .catch {

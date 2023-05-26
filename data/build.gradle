@@ -60,4 +60,5 @@ dependencies {
     annotationProcessor libs.room.compiler
     kapt libs.room.compiler
     kapt libs.bundles.hilt.compilers
+    testImplementation libs.mockito
 }

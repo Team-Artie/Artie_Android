@@ -1,5 +1,6 @@
 package com.yapp.gallery.common.base
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
@@ -50,4 +51,9 @@ abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelCont
 
     abstract fun handleEvents(event: E)
     abstract fun reduceState(state: S, reduce: R) : S
+
+    @VisibleForTesting
+    fun reduceTest(reduce: R){
+        updateState(reduce)
+    }
 }

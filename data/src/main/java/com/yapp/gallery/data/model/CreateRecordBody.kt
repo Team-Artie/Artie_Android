@@ -4,5 +4,5 @@ data class CreateRecordBody(
     val name: String,
     val categoryId: Long,
     val postDate: String,
-    val attachdLink: String?
+    val attachedLink: String?
 )
