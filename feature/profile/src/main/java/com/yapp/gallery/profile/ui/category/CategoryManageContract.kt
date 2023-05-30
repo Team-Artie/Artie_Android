@@ -11,6 +11,7 @@ class CategoryManageContract {
     data class CategoryManageState(
         val isLoading: Boolean = true,
         val categoryList : List<CategoryItem> = emptyList(),
+        val originList : List<CategoryItem> = emptyList(),
         val categoryPostFlowList: List<Flow<PagingData<PostContent>>> = emptyList(),
         val expandedList : List<Boolean> = emptyList()
     ) : ViewModelContract.State
@@ -24,6 +25,7 @@ class CategoryManageContract {
         data class CheckAddable(val category: String) : CategoryManageEvent()
         data class OnReorderCategory(val from: Int, val to: Int) : CategoryManageEvent()
         data class OnExpandLoadError(val position: Int) : CategoryManageEvent()
+        object OnDispose : CategoryManageEvent()
     }
 
     sealed class CategoryManageReduce : ViewModelContract.Reduce {

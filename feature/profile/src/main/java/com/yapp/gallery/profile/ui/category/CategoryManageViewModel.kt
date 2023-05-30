@@ -16,6 +16,9 @@ import com.yapp.gallery.domain.usecase.record.GetCategoryListUseCase
 import com.yapp.gallery.profile.R
 import com.yapp.gallery.profile.ui.category.CategoryManageContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -126,9 +129,8 @@ class CategoryManageViewModel @Inject constructor(
 
     private fun reorderItem(from: Int, to: Int){
         // 달라진게 있으면 재정렬
-        if (from != to){
-            // Todo : 재정렬 로직 구현
-            val originList = viewState.value.categoryList
+        val indices = viewState.value.categoryList.indices
+        if (from != to && from in indices && to in indices){
             val tempList = viewState.value.categoryList.toMutableList().apply {
                 this[from].sequence = this[to].sequence.also {
                     this[to].sequence = this[from].sequence
@@ -137,17 +139,28 @@ class CategoryManageViewModel @Inject constructor(
             }
             updateState(CategoryManageReduce.ChangeCategoryOrder(from, to, tempList))
 
-            changeSequenceUseCase(tempList)
-                .catch {
-                    sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
-                    updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
-                }
-                .onEach { isSuccessful ->
-                    if (isSuccessful.not()){
-                        updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
-                        sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
+//            changeSequenceUseCase(tempList)
+//                .catch {
+//                    sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
+//                    updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
+//                }
+//                .onEach { isSuccessful ->
+//                    if (isSuccessful.not()){
+//                        updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
+//                        sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
+//                    }
+//                }.launchIn(viewModelScope)
+        }
+    }
+
+    private fun changeSequence(){
+        if (currentState.categoryList != currentState.originList){
+            CoroutineScope(Dispatchers.IO).launch {
+                changeSequenceUseCase(currentState.categoryList)
+                    .collect{
+                        this.cancel()
                     }
-                }.launchIn(viewModelScope)
+            }
         }
     }
 
@@ -208,6 +221,9 @@ class CategoryManageViewModel @Inject constructor(
             is CategoryManageEvent.OnExpandLoadError -> {
 //                pagingLoadError(event.position)
             }
+            is CategoryManageEvent.OnDispose -> {
+                changeSequence()
+            }
         }
     }
 
@@ -220,6 +236,7 @@ class CategoryManageViewModel @Inject constructor(
                 state.copy(
                     isLoading = false,
                     categoryList = reduce.categoryList,
+                    originList = reduce.categoryList,
                     expandedList = List(reduce.categoryList.size) { false },
                 )
             is CategoryManageReduce.CategoryPostFlowListLoaded ->

@@ -1,7 +1,7 @@
 package com.yapp.gallery.profile.ui.category
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -62,6 +62,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+
 @Composable
 internal fun CategoryManageRoute(
     popBackStack: () -> Unit,
@@ -89,8 +90,13 @@ internal fun CategoryManageRoute(
         }
     }
 
-    // 카테고리 생성 다이얼로그
+    DisposableEffect(Unit){
+        onDispose {
+            viewModel.sendEvent(CategoryManageEvent.OnDispose)
+        }
+    }
 
+    // 카테고리 생성 다이얼로그
     if (categoryCreateDialogShown.value) {
         CategoryCreateDialog(onCreateCategory = { viewModel.sendEvent(CategoryManageEvent.OnAddClick(it)) },
             onDismissRequest = { categoryCreateDialogShown.value = false },
@@ -180,7 +186,6 @@ private fun CategoryManageScreen(
             CategoryListView(
                 categoryManageState = categoryManageState,
                 categoryState = categoryState,
-                categoryPostFlowList = categoryManageState.categoryPostFlowList,
                 onReorder = { from, to -> onReorder(from, to) },
                 onExpandCategory = onExpandCategory,
                 onEditCategory = onEditCategory,
@@ -207,7 +212,6 @@ private fun CategoryManageScreen(
 @Composable
 private fun CategoryListView(
     categoryManageState: CategoryManageState,
-    categoryPostFlowList: List<Flow<PagingData<PostContent>>>,
     categoryState: BaseState<Boolean>,
     onReorder : (Int, Int) -> Unit,
     onEditCategory : (CategoryItem, String) -> Unit,
@@ -223,10 +227,10 @@ private fun CategoryListView(
 
     var overscrollJob by remember { mutableStateOf<Job?>(null) }
 
-    if (categoryManageState.categoryList.isNotEmpty()) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.pointerInput(dragDropState) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (categoryManageState.categoryList.isNotEmpty()) {
+            LazyColumn(state = listState,
+                modifier = Modifier.pointerInput(dragDropState) {
                 detectDragGesturesAfterLongPress(onDrag = { change, offset ->
                     change.consume()
                     dragDropState.onDrag(offset = offset)
@@ -236,7 +240,7 @@ private fun CategoryListView(
                     dragDropState.checkForOverScroll().takeIf { it != 0f }?.let {
                         overscrollJob = scope.launch {
                             dragDropState.state.animateScrollBy(
-                                it * 2f, tween(easing = FastOutLinearInEasing)
+                                it * 2f, tween(easing = LinearOutSlowInEasing)
                             )
                         }
                     } ?: run { overscrollJob?.cancel() }
@@ -249,61 +253,56 @@ private fun CategoryListView(
                     onDragCancel = {
                         dragDropState.onDragInterrupted()
                         overscrollJob?.cancel()
-                    })
-            }) {
-            item { Spacer(modifier = Modifier.height(36.dp)) }
-
-            itemsIndexed(
-                items = categoryList,
-                key = { _, item -> item.id }
-            ) { index, item ->
-                // Draggable Item
-                DraggableItem(dragDropState = dragDropState, index = index) { isDragging ->
-                    val elevation by animateDpAsState(if (isDragging) 10.dp else 0.dp)
-                    CategoryListTile(
-                        category = item,
-                        categoryState = categoryState,
-                        categoryPostFlow = categoryPostFlowList[index],
-                        onExpandCategory = onExpandCategory,
-                        onEditCategory = onEditCategory,
-                        onDeleteCategory = onDeleteCategory,
-                        onCheckEditable = onCheckEditable,
-                        isExpanded = categoryManageState.expandedList[index],
-                        elevation = elevation,
-                        index = index
-                    )
-                }
-                // Divider
-                if (index != categoryList.size - 1) {
-                    Divider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        color = color_gray700,
-                        thickness = 0.4.dp
-                    )
+                    }) }
+            ) {
+                itemsIndexed(categoryList) { index, item ->
+                    // Draggable Item
+                    DraggableItem(dragDropState = dragDropState, index = index) { isDragging ->
+                        val elevation by animateDpAsState(if (isDragging) 10.dp else 0.dp)
+                        CategoryListTile(
+                            category = item,
+                            categoryState = categoryState,
+                            categoryPostFlow = categoryManageState.categoryPostFlowList[index],
+                            onExpandCategory = onExpandCategory,
+                            onEditCategory = onEditCategory,
+                            onDeleteCategory = onDeleteCategory,
+                            onCheckEditable = onCheckEditable,
+                            elevation = elevation,
+                            index = index,
+                            isExpanded = categoryManageState.expandedList[index]
+                        )
+                    }
+                    // Divider
+                    if (index != categoryList.size - 1) {
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            color = color_gray700,
+                            thickness = 0.4.dp
+                        )
+                    }
                 }
             }
-        }
-    } else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (categoryManageState.isLoading) {
-                // 로딩 중
-                CircularProgressIndicator(
-                    modifier = Modifier.size(50.dp), color = color_mainBlue
-                )
-            } else {
-                // 카테고리 리스트가 빈 리스트인 경우
-                CategoryEmptyView(onCreateButtonClicked = onCreateButtonClicked)
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (categoryManageState.isLoading) {
+                    // 로딩 중
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(50.dp), color = color_mainBlue
+                    )
+                } else {
+                    // 카테고리 리스트가 빈 리스트인 경우
+                    CategoryEmptyView(onCreateButtonClicked = onCreateButtonClicked)
+                }
             }
         }
     }
 }
-
 @Composable
 private fun CategoryListTile(
     category: CategoryItem,
@@ -324,8 +323,8 @@ private fun CategoryListTile(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(ambientColor = color_popUpBottom, elevation = elevation)
-            .animateContentSize(animationSpec = tween())
             .clickable(onClick = { onExpandCategory(index) })
+            .animateContentSize(animationSpec = tween())
             .background(color = color_background)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
