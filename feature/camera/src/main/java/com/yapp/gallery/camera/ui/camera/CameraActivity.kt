@@ -13,21 +13,21 @@ import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.navigation.CameraNavHost
 import com.yapp.gallery.camera.util.uriToByteArray
 import com.yapp.gallery.common.theme.ArtieTheme
-import com.yapp.gallery.navigation.info.ExhibitInfoNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
-    @Inject lateinit var infoNavigator: ExhibitInfoNavigator
+    private val resultFlow: MutableSharedFlow<List<String>> = MutableSharedFlow()
 
-    private val resultFlow: MutableSharedFlow<List<ByteArray>> = MutableSharedFlow()
+    private val imageCount by lazy {
+        if (intent.hasExtra("count")) intent.getIntExtra("count", 0) else 0
+    }
 
     private val imagePicker = registerImagePicker {imageList ->
         lifecycleScope.launch {
-            resultFlow.emit(imageList.map { uriToByteArray(this@CameraActivity, it.uri)})
+            resultFlow.emit(imageList.map { it.uri.toString() })
         }
     }
 
@@ -44,18 +44,19 @@ class CameraActivity : AppCompatActivity() {
                     imagePicker.launch(
                         ImagePickerConfig(
                             isMultipleMode = true,
-                            maxSize = MAX_IMAGE_COUNT,
+                            maxSize = MAX_IMAGE_COUNT - imageCount,
                             doneTitle = "완료",
-                            limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT}장까지 선택 가능해요!"
+                            limitMessage = "사진은 최대 ${MAX_IMAGE_COUNT - imageCount}장까지 선택 가능해요!"
                         )
                     )
-                }, infoNavigator = infoNavigator)
+                })
             }
         }
     }
 
     companion object{
-        private const val MAX_IMAGE_COUNT = 10
+        // Todo : 최대 장수 변경 할건지?!
+        private const val MAX_IMAGE_COUNT = 5
     }
 }
 

@@ -8,7 +8,6 @@ import com.yapp.gallery.common.base.BaseStateViewModel
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-
 ) : BaseStateViewModel<CameraState, CameraEvent, CameraReduce, CameraSideEffect>(CameraState()) {
 
     override fun handleEvents(event: CameraEvent) {
@@ -30,6 +29,13 @@ class CameraViewModel @Inject constructor(
             }
         }
     }
+
+//    private fun saveTempImage(byteArray: ByteArray){
+//        saveTempImageUseCase(byteArray)
+//            .onErrorComplete()
+//            .onEach { sendSideEffect(CameraSideEffect.NavigateToResult) }
+//            .launchIn(viewModelScope)
+//    }
 
     override fun reduceState(state: CameraState, reduce: CameraReduce): CameraState {
         return when(reduce){

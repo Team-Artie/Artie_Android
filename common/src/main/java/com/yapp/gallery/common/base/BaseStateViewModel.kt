@@ -1,5 +1,6 @@
 package com.yapp.gallery.common.base
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
@@ -12,7 +13,7 @@ abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelCont
     private val _viewState = MutableStateFlow(initialState)
     val viewState: StateFlow<S> = _viewState.asStateFlow()
 
-    private val currentState : S get() = _viewState.value
+    protected val currentState : S get() = _viewState.value
 
     private val _events = MutableSharedFlow<E>()
     private val _reduce = MutableSharedFlow<R>()
@@ -50,4 +51,9 @@ abstract class BaseStateViewModel<S : ViewModelContract.State, E : ViewModelCont
 
     abstract fun handleEvents(event: E)
     abstract fun reduceState(state: S, reduce: R) : S
+
+    @VisibleForTesting
+    fun reduceTest(reduce: R){
+        updateState(reduce)
+    }
 }

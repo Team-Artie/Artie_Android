@@ -13,7 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.yapp.gallery.profile.ui.category.CategoryManageRoute
 import com.yapp.gallery.profile.ui.legacy.LegacyScreen
-import com.yapp.gallery.profile.ui.nickname.NicknameScreen
+import com.yapp.gallery.profile.ui.nickname.NicknameRoute
 import com.yapp.gallery.profile.ui.notice.NoticeDetailScreen
 import com.yapp.gallery.profile.ui.notice.NoticeScreen
 import com.yapp.gallery.profile.ui.profile.ProfileScreen
@@ -52,9 +52,9 @@ fun ProfileNavHost(
                 }
             )
         ){
-            NicknameScreen(
+            NicknameRoute(
                 popBackStack = { popBackStack(context, navHostController)},
-                nicknameUpdate = { setNicknameArgument(context, navHostController, it) }
+                updateNickname = { updateNickname(navHostController, it)}
             )
         }
         composable("notice"){
@@ -136,8 +136,7 @@ private fun navigateToWebPage(
     }
 }
 
-private fun setNicknameArgument(
-    context: Activity,
+private fun updateNickname(
     navHostController: NavHostController,
     editedNickname: String
 ){
@@ -145,5 +144,4 @@ private fun setNicknameArgument(
         "editedName",
         editedNickname
     )
-    popBackStack(context, navHostController)
 }

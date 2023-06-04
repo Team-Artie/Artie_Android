@@ -27,7 +27,7 @@ fun ConfirmDialog(
     subTitle: String? = null,
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
-    important: Boolean = false
+    important: Boolean = false,
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,

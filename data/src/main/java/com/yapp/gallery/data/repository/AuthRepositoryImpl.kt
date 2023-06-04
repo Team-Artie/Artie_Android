@@ -1,15 +1,18 @@
 package com.yapp.gallery.data.repository
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
 import com.yapp.gallery.data.source.prefs.AuthPrefsDataSource
 import com.yapp.gallery.data.utils.isTokenExpired
 import com.yapp.gallery.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
+    private val auth: FirebaseAuth,
     private val authPrefsDataSource: AuthPrefsDataSource,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : AuthRepository{
@@ -54,14 +57,22 @@ class AuthRepositoryImpl @Inject constructor(
 
     // 유효한 토큰 가져오기
     // 토큰 만료된 경우 자동으로 리프레시 토큰 가져옴
-    override fun getValidToken(): Flow<String> {
-        return authPrefsDataSource.getIdTokenExpiredTime().map {
-            if (it.isEmpty() || isTokenExpired(it)) {
-                getRefreshedToken()
-            } else {
-                getIdToken()
-            }
-        }.flowOn(dispatcher)
+    override fun getValidToken(): Flow<String> = callbackFlow {
+        auth.currentUser?.getIdToken(false)?.addOnSuccessListener {
+            trySend(it.token ?: return@addOnSuccessListener)
+        }?.addOnFailureListener {
+            Log.e("AuthRepositoryImpl", "getValidToken: ${it.message}")
+        }
+
+        awaitClose()
     }
+//        return authPrefsDataSource.getIdTokenExpiredTime().map {
+//            if (it.isEmpty() || isTokenExpired(it)) {
+//                getRefreshedToken()
+//            } else {
+//                getIdToken()
+//            }
+//        }.flowOn(dispatcher)
+
 
 }

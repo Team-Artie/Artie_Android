@@ -45,10 +45,12 @@ android {
 dependencies {
     implementation project(":common")
     implementation project(":domain")
+    implementation project(":navigation:login")
+    implementation project(":navigation:record")
     implementation project(":navigation:home")
-    implementation project(":navigation:camera")
     implementation project(":navigation:info")
     implementation project(":navigation:profile")
+    implementation project(":navigation:camera")
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
@@ -62,10 +64,7 @@ dependencies {
     implementation libs.firebase.auth.ktx
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
-    implementation libs.accompanist.flowLayout
-    implementation libs.numberPicker
 
-    implementation libs.imagePicker
     implementation libs.androidx.webview
 
     kapt libs.bundles.hilt.compilers

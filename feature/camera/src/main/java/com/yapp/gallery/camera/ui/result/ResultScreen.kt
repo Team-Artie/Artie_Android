@@ -45,6 +45,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -59,6 +60,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,7 +71,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.yapp.gallery.camera.R
 import com.yapp.gallery.camera.provider.ResultViewModelFactoryProvider
 import com.yapp.gallery.camera.ui.result.ResultContract.*
@@ -90,14 +95,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 
 // 카메라에서 사진 촬영 후 결과 화면
 // 갤러리에서 사진 선택 후 결과 화면
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ResultRoute(
-    popBackStack: (Boolean) -> Unit,
     byteArray: ByteArray?,
+    popBackStack: (Boolean) -> Unit,
     imageList: List<ByteArray>,
     context: Activity,
     navigateToInfo: (Long) -> Unit,
@@ -119,9 +125,20 @@ fun ResultRoute(
                     Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
                 is ResultSideEffect.NavigateToInfo -> {
-                    // Todo : Info 화면으로 이동으로 변경
                     Toast.makeText(context, "작품이 등록되었습니다.", Toast.LENGTH_SHORT).show()
                     navigateToInfo(it.postId)
+                }
+            }
+        }
+    }
+
+    DisposableEffect(Unit){
+        onDispose {
+            byteArray?.let {
+                context.cacheDir.listFiles { file ->
+                    file.name.startsWith("temp.jpg")
+                }?.forEach { file ->
+                    file.deleteOnExit()
                 }
             }
         }
@@ -142,6 +159,7 @@ fun ResultRoute(
         resultState = resultState,
         scaffoldState = scaffoldBottomSheetState,
         onClickRegister = { viewModel.sendEvent(ResultEvent.OnClickRegister) },
+        onCaptureSave = { viewModel.sendEvent(ResultEvent.OnClickCaptureSave) },
         setAuthorName = { viewModel.sendEvent(ResultEvent.SetAuthorName(it)) },
         setPostName = { viewModel.sendEvent(ResultEvent.SetPostName(it)) },
         setTempTag = { viewModel.sendEvent(ResultEvent.SetTempTag(it)) },
@@ -161,6 +179,7 @@ private fun ResultScreen(
     resultState: ResultState,
     scaffoldState: BottomSheetScaffoldState,
     onClickRegister: () -> Unit,
+    onCaptureSave: () -> Unit,
     setAuthorName: (String) -> Unit,
     setPostName: (String) -> Unit,
     setTempTag: (String) -> Unit,
@@ -215,10 +234,11 @@ private fun ResultScreen(
                     )
                 }
             }
-            else if (resultState.captureData != null){
-                Image(
-                    painter = rememberAsyncImagePainter(resultState.captureData.byteArray),
-                    contentDescription = "image",
+            else {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(resultState.captureData?.byteArray).crossfade(true)
+                        .diskCachePolicy(CachePolicy.ENABLED).build(),
+                    contentDescription ="image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -270,19 +290,37 @@ private fun ResultScreen(
                     .background(color_popUpBottom)
                     .fillMaxWidth()
             ) {
-                IconButton(
+                Row(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 47.dp, start = 16.dp, bottom = 14.dp)
-                        .size(24.dp),
-                    onClick = popBackStack
+                        .fillMaxWidth()
+                        .padding(top = 36.dp, start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+                    IconButton(
+                        modifier = Modifier
+                            .padding(vertical = 12.dp)
+                            .size(24.dp) ,
+                        onClick = popBackStack
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    if (resultState.captureData != null && resultState.imageList.isEmpty()){
+                        TextButton(onClick = onCaptureSave,
+                        ) {
+                            Text("저장", style = MaterialTheme.typography.h4.copy(
+                                fontWeight = FontWeight.Medium, color = color_white))
+                        }
+                    }
                 }
+
+
+
 
                 if (resultState.imageList.size > 1) {
                     Text(text = "${pagerState.currentPage + 1} / ${resultState.imageList.size}",
@@ -540,6 +578,7 @@ private fun ResultScreenPreview(){
             enterTag = {},
             onDeleteTag = {},
             onClickRegister = {},
+            onCaptureSave = {},
             onRegister = {},
             onSkip = {},
         )

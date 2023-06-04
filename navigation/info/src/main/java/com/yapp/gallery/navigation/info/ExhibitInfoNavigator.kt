@@ -1,9 +1,10 @@
 package com.yapp.gallery.navigation.info
 
-import android.content.Context
-import android.content.Intent
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import com.yapp.gallery.core.Navigator
 
-interface ExhibitInfoNavigator : Navigator {
-    fun navigateToInfo(context: Context, exhibitId: Long, idToken: String?) : Intent
+interface ExhibitInfoNavigator {
+    fun provideGraph(navGraphBuilder: NavGraphBuilder, navController: NavHostController,
+        navigateToCamera : (Long) -> Unit, navigateToGallery : (Long, Int) -> Unit)
 }

@@ -1,5 +1,7 @@
 package com.yapp.gallery.data.di
 
+import com.yapp.gallery.data.source.file.CameraFileDataSource
+import com.yapp.gallery.data.source.file.CameraFileDataSourceImpl
 import com.yapp.gallery.data.source.local.record.ExhibitRecordLocalDataSource
 import com.yapp.gallery.data.source.local.record.ExhibitRecordLocalDataSourceImpl
 import com.yapp.gallery.data.source.prefs.AuthPrefsDataSource
@@ -73,4 +75,10 @@ internal abstract class DataSourceModule {
     abstract fun bindCameraRemoteDataSource(
         dataSource: CameraRemoteDataSourceImpl
     ) : CameraRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindCameraFileDataSource(
+        dataSource: CameraFileDataSourceImpl
+    ) : CameraFileDataSource
 }

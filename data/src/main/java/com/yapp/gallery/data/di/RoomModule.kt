@@ -1,10 +1,9 @@
 package com.yapp.gallery.data.di
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
-import com.yapp.gallery.data.room.TempPostDao
-import com.yapp.gallery.data.room.TempPostDatabase
+import com.yapp.gallery.data.room.post.TempPostDao
+import com.yapp.gallery.data.room.post.TempPostDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

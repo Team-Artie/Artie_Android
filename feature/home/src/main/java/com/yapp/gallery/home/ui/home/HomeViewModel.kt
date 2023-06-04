@@ -1,33 +1,36 @@
 package com.yapp.gallery.home.ui.home
 
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.common.provider.ConnectionProvider
 import com.yapp.gallery.domain.usecase.auth.GetValidTokenUseCase
 import com.yapp.gallery.home.ui.home.HomeContract.*
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
+import javax.inject.Inject
 
-class HomeViewModel @AssistedInject constructor(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
     private val getValidTokenUseCase: GetValidTokenUseCase,
     private val connectionProvider: ConnectionProvider,
-    @Assisted private val accessToken: String?
 ) : BaseStateViewModel<HomeState, HomeEvent, HomeReduce, HomeSideEffect>(HomeState()) {
 
-    @AssistedFactory
-    interface HomeFactory{
-        fun create(accessToken: String?) : HomeViewModel
-    }
-
     init {
-        initLoad()
+        auth.currentUser?.let {
+            updateState(HomeReduce.UpdateAfterLogin(true))
+            initLoad()
+        } ?: run {
+            viewModelScope.launch {
+                delay(1000)
+                sendSideEffect(HomeSideEffect.NavigateToLogin)
+            }
+        }
     }
 
     private fun initLoad(){
@@ -43,19 +46,25 @@ class HomeViewModel @AssistedInject constructor(
     }
 
     private fun loadWithValidToken(){
-        accessToken?.let {
-            updateState(HomeReduce.Connected(it))
-            Timber.e("accessToken Received: $it")
-        } ?: run {
-            getValidTokenUseCase()
-                .catch {
-                    updateState(HomeReduce.Disconnected)
-                }
-                .onEach {
-                    updateState(HomeReduce.Connected(it))
-                }
-                .launchIn(viewModelScope)
-        }
+//        auth.currentUser?.run {
+//            auth.addIdTokenListener(FirebaseAuth.IdTokenListener {
+//                getIdToken(false).addOnSuccessListener {
+//                    Timber.tag("token").e("token: ${it.token}")
+//                    if (viewState.value.idToken != it.token) {
+//                        sendSideEffect(HomeSideEffect.LoadWebView(it.token ?: return@addOnSuccessListener))
+//                    }
+//                    updateState(HomeReduce.Connected(it.token ?: return@addOnSuccessListener)) }
+//                }
+//            )
+//        }
+        getValidTokenUseCase()
+            .catch {
+                updateState(HomeReduce.Disconnected)
+            }
+            .onEach {
+                updateState(HomeReduce.Connected(it))
+            }
+            .launchIn(viewModelScope)
     }
 
 
@@ -66,8 +75,15 @@ class HomeViewModel @AssistedInject constructor(
             "NAVIGATE_TO_EXHIBITION_DETAIL" -> {
                 payload?.let { p ->
                     val exhibitId = JSONObject(p).getLong("id")
-                    val idToken = viewState.value.idToken
-                    sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
+                    viewModelScope.launch{
+                        // 토큰 조회 실패 시 기존 토큰으로 보냄
+                        // 토큰 조회 성공 시 조회한 토큰으로 보냄
+                        getValidTokenUseCase().firstOrNull()?.let { idToken ->
+                            sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, idToken))
+                        } ?: run {
+                            sendSideEffect(HomeSideEffect.NavigateToInfo(exhibitId, viewState.value.idToken))
+                        }
+                    }
                 }
             }
         }
@@ -76,8 +92,11 @@ class HomeViewModel @AssistedInject constructor(
 
     override fun handleEvents(event: HomeEvent) {
         when(event){
-            is HomeEvent.OnLoadAgain ->{
+            is HomeEvent.CheckToken -> {
                 loadWithValidToken()
+            }
+            is HomeEvent.OnLoadAgain ->{
+//                loadWithValidToken()
             }
             is HomeEvent.OnWebViewClick -> {
                 handleWebViewBridge(event.action, event.payload)
@@ -87,10 +106,14 @@ class HomeViewModel @AssistedInject constructor(
 
     override fun reduceState(state: HomeState, reduce: HomeReduce): HomeState {
         return when(reduce){
+            is HomeReduce.UpdateAfterLogin ->
+                state.copy(
+                    afterLogin = reduce.afterLogin
+                )
             is HomeReduce.Connected ->
                 state.copy(
                     idToken = reduce.idToken,
-                    connected = true
+                    connected = true,
                 )
             is HomeReduce.Disconnected ->
                 state.copy(
@@ -98,16 +121,4 @@ class HomeViewModel @AssistedInject constructor(
                 )
         }
     }
-
-    companion object{
-        fun provideFactory(
-            assistedFactory: HomeFactory,
-            accessToken: String?
-        ) : ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return assistedFactory.create(accessToken) as T
-            }
-        }
-    }
-
 }

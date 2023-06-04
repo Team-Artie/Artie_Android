@@ -1,6 +1,7 @@
 package com.yapp.gallery.home.ui.home
 
 import android.app.Activity
+import android.os.Bundle
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -9,12 +10,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,35 +26,49 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.WebViewUtils
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
-import com.yapp.gallery.home.provider.HomeViewModelFactoryProvider
-import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun HomeRoute(
+    navigateToLogin: () -> Unit,
     navigateToRecord: () -> Unit,
     navigateToProfile: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
     navigateToTest: (String?) -> Unit,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    viewModel: HomeViewModel = hiltViewModel(),
     context: Activity
 ){
-    val viewModel = homeViewModel(context = context, accessToken = context.intent.getStringExtra("accessToken"))
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
+        viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
+    })
 
-    val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
+    val webViewState = rememberSaveable() { Bundle() }
+
+    LaunchedEffect(Unit){
+        webViewState.getBundle("webViewState")?.let {
+            webView.restoreState(it)
+        }
+    }
 
     LaunchedEffect(viewModel.sideEffect){
         viewModel.sideEffect.collectLatest {
             when(it){
+                is HomeSideEffect.NavigateToLogin -> navigateToLogin()
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
                 is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId, it.idToken)
@@ -58,9 +76,8 @@ fun HomeRoute(
         }
     }
 
-    val webView by rememberWebView(onBridgeCalled = { action, payload ->
-        viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
-    })
+    val homeState : HomeState by viewModel.viewState.collectAsStateWithLifecycle()
+
 
     var backKeyPressedTime = 0L
     BackHandler(enabled = true) {
@@ -77,13 +94,35 @@ fun HomeRoute(
         }
     }
 
+    DisposableEffect(Unit){
+        onDispose {
+            val bundle = Bundle()
+            webView.saveState(bundle)
+            webViewState.putBundle("webViewState", bundle)
+        }
+    }
+    
+//    DisposableEffect(lifecycleOwner){
+//        val observer = LifecycleEventObserver { _, event ->
+//            if (event == Lifecycle.Event.ON_RESUME) {
+//                viewModel.sendEvent(HomeEvent.CheckToken)
+//            }
+//        }
+//        lifecycleOwner.lifecycle.addObserver(observer)
+//
+//        onDispose {
+//            lifecycleOwner.lifecycle.removeObserver(observer)
+//        }
+//    }
+
     HomeScreen(
         homeState = homeState,
         webView = webView,
         onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
         navigateToTest = {
-            navigateToTest(context.intent.getStringExtra("accessToken"))
-        }
+            navigateToTest(homeState.idToken)
+        },
+        hasBundle = webViewState.getBundle("webViewState") != null
     )
 }
 
@@ -92,11 +131,15 @@ private fun HomeScreen(
     homeState : HomeState,
     webView : WebView,
     onReload : () -> Unit,
-    navigateToTest: () -> Unit
+    navigateToTest: () -> Unit,
+    hasBundle : Boolean = false
 ){
     val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
 
     Scaffold(
+        modifier = Modifier
+            .navigationBarsPadding()
+            .statusBarsPadding(),
         floatingActionButton = {
             if (BuildConfig.DEBUG){
                 Button(onClick = navigateToTest) {
@@ -115,17 +158,19 @@ private fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (homeState.connected.not()){
-                HomeDisconnectedScreen(onReload)
-            } else {
+
+            if (homeState.connected) {
                 AndroidView(
                     factory = { webView },
                     update = {
-                        homeState.idToken?.let { token ->
-                            it.loadUrl(baseUrl, mapOf("Authorization" to token))
+                        if (hasBundle.not() && homeState.idToken != null){
+                            WebViewUtils.cookieManager.setCookie(baseUrl, "accessToken=${homeState.idToken}")
+                            it.loadUrl(baseUrl)
                         }
                     }
                 )
+            } else {
+                HomeDisconnectedScreen(onReload)
             }
         }
     }
@@ -177,14 +222,4 @@ private fun HomeDisconnectedScreen(
             )
         )
     }
-}
-
-@Composable
-fun homeViewModel(context: Activity, accessToken: String?) : HomeViewModel {
-    val factory = EntryPointAccessors.fromActivity(
-        context,
-        HomeViewModelFactoryProvider::class.java
-    ).homeViewModelFactory()
-
-    return viewModel(factory = HomeViewModel.provideFactory(factory, accessToken))
 }

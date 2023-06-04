@@ -9,4 +9,7 @@
     <string name="exhibit_edit_update_btn">전시정보 수정하기</string>
 
     <string name="exhibit_info_section">exhibition/</string>
+
+    <string name="info_network_error">네트워크에 연결되지 않았습니다.\n네트워크 상태를 확인해주세요.</string>
+    <string name="info_network_reload_btn">다시 접속하기</string>
 </resources>

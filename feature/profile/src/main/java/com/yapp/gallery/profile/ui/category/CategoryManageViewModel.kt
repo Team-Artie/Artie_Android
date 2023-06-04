@@ -16,9 +16,13 @@ import com.yapp.gallery.domain.usecase.record.GetCategoryListUseCase
 import com.yapp.gallery.profile.R
 import com.yapp.gallery.profile.ui.category.CategoryManageContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.TestOnly
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,27 +34,12 @@ class CategoryManageViewModel @Inject constructor(
     private val createCategoryUseCase: CreateCategoryUseCase,
     private val changeSequenceUseCase: EditCategorySequenceUseCase,
     private val getCategoryPostUseCase: GetCategoryPostUseCase
-) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageReduce, CategoryManageSideEffect>(CategoryManageState.Initial) {
-    // Todo : 상태값 정리
-    // 카테고리 리스트 상태
-    private var _categoryList = mutableStateListOf<CategoryItem>()
-    val categoryList : List<CategoryItem>
-        get() = _categoryList
-
-    // 카테고리 각각 상태
-    private var _categoryPostStateList = mutableStateListOf<CategoryPostState>()
-    val categoryPostStateList : List<CategoryPostState>
-        get() = _categoryPostStateList
-
+) : BaseStateViewModel<CategoryManageState, CategoryManageEvent, CategoryManageReduce, CategoryManageSideEffect>(CategoryManageState()) {
     // 카테고리 자체 상태
     private var _categoryState = MutableStateFlow<BaseState<Boolean>>(BaseState.None)
     val categoryState : StateFlow<BaseState<Boolean>>
         get() = _categoryState
 
-
-    // 오류 발생한 경우
-    private var _errorChannel = Channel<UiText>()
-    val errors = _errorChannel.receiveAsFlow()
 
     init {
         getCategoryList()
@@ -59,22 +48,21 @@ class CategoryManageViewModel @Inject constructor(
     private fun getCategoryList(){
         getCategoryListUseCase()
             .catch {
+                sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_load_error)))
                 updateState(CategoryManageReduce.CategoryListLoadError(it.message.toString()))
             }
             .onEach {
-                _categoryList.addAll(it)
                 // 각 카테고리 상태 추가
-                it.forEach { category ->
-                    _categoryPostStateList.add(
-                        CategoryPostState.Initial(getCategoryPostUseCase(category.id).cachedIn(viewModelScope))
-                    )
-                }
                 updateState(CategoryManageReduce.CategoryListLoaded(it))
+                val flowList = it.map { category ->
+                    getCategoryPostUseCase(category.id).cachedIn(viewModelScope)
+                }
+                updateState(CategoryManageReduce.CategoryPostFlowListLoaded(flowList))
             }
             .launchIn(viewModelScope)
     }
     private fun checkCategory(category: String){
-        if (_categoryList.find { it.name == category } != null){
+        if (viewState.value.categoryList.find { it.name == category } != null){
             _categoryState.value = BaseState.Error("이미 존재하는 카테고리입니다.")
         } else if (category.length > 20)
             _categoryState.value = BaseState.Error("카테고리는 20자 이하이어야 합니다.")
@@ -87,32 +75,26 @@ class CategoryManageViewModel @Inject constructor(
             editCategoryUseCase(category.id, editedName)
                 .catch {
                     Timber.tag("category error").e(it.message.toString())
-                    _errorChannel.send(UiText.StringResource(R.string.category_edit_error))
+                    sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_edit_error)))
                 }
                 .collectLatest {
                     Timber.tag("카테고리 편집").e(it.toString())
                     if (it)
-                        _categoryList[_categoryList.indexOf(category)] = CategoryItem(
-                            category.id, editedName, category.sequence, category.postNum
-                        )
-                    else
-                        _errorChannel.send(UiText.StringResource(R.string.category_edit_error))
+                        updateState(CategoryManageReduce.UpdateCategoryItem(category, editedName))
+                    else sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_edit_error)))
                 }
         }
     }
     private fun deleteCategory(category : CategoryItem){
         deleteCategoryUseCase(category.id)
             .catch {
-                _errorChannel.send(UiText.StringResource(R.string.category_delete_erorr))
+                sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_delete_erorr)))
             }
             .onEach {
                 if (it){
-                    _categoryList.remove(category)
-                    _categoryPostStateList.removeAt(category.sequence - 1)
-                    if (_categoryList.isEmpty())
-                        updateState(CategoryManageReduce.CategoryListEmpty)
+                    updateState(CategoryManageReduce.DeleteCategoryItem(category))
                 } else
-                    _errorChannel.send(UiText.StringResource(R.string.category_delete_erorr))
+                    sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_delete_erorr)))
             }
             .launchIn(viewModelScope)
     }
@@ -120,14 +102,16 @@ class CategoryManageViewModel @Inject constructor(
     private fun createCategory(categoryName: String){
         createCategoryUseCase(categoryName)
             .catch {
-                _errorChannel.send(UiText.StringResource(R.string.category_add_error))
+                sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_add_error)))
             }
             .onEach {
-                _categoryList.add(CategoryItem(it, categoryName, categoryList.size, 0).also { c ->
-                    _categoryPostStateList.add(CategoryPostState.Initial(getCategoryPostUseCase(c.id).cachedIn(viewModelScope)))
-                })
-                if (_categoryList.size == 1)
-                    updateState(CategoryManageReduce.CategoryListLoaded(_categoryList))
+                // Todo : 카테고리 추가시 카테고리 아이템 추가
+                updateState(
+                    CategoryManageReduce.AddCategoryItem(
+                        CategoryItem(it, categoryName, viewState.value.categoryList.size, 0),
+                        getCategoryPostUseCase(it).cachedIn(viewModelScope)
+                    )
+                )
             }
             .launchIn(viewModelScope)
     }
@@ -135,7 +119,7 @@ class CategoryManageViewModel @Inject constructor(
     private fun checkEditable(originCategory: String, category: String) {
         if (category == originCategory)
             _categoryState.value = BaseState.None
-        else if (_categoryList.find { it.name == category } != null)
+        else if (viewState.value.categoryList.find { it.name == category } != null)
             _categoryState.value = BaseState.Error("이미 존재하는 카테고리입니다.")
         else if (category.length > 20)
             _categoryState.value = BaseState.Error("카테고리는 20자 이하이어야 합니다.")
@@ -145,59 +129,70 @@ class CategoryManageViewModel @Inject constructor(
 
     private fun reorderItem(from: Int, to: Int){
         // 달라진게 있으면 재정렬
-        if (from != to){
-            _categoryList.add(to, _categoryList.removeAt(from))
-            _categoryPostStateList.add(to, _categoryPostStateList.removeAt(from))
-
-            changeSequenceUseCase(_categoryList)
-                .catch {
-                    _errorChannel.send(UiText.DynamicString(it.message.toString()))
-                    _categoryList.add(from, _categoryList.removeAt(to))
+        val indices = viewState.value.categoryList.indices
+        if (from != to && from in indices && to in indices){
+            val tempList = viewState.value.categoryList.toMutableList().apply {
+                this[from].sequence = this[to].sequence.also {
+                    this[to].sequence = this[from].sequence
                 }
-                .onEach { isSuccessful ->
-                    if (isSuccessful){
-                        _categoryList[from].sequence = _categoryList[to].sequence.also {
-                            _categoryList[to].sequence = _categoryList[from].sequence
-                        }
-                    }
-                    else{
-                        _categoryList.add(from, _categoryList.removeAt(to))
-                        _errorChannel.send(UiText.StringResource(R.string.category_swap_error))
+                this.add(from, this.removeAt(to))
+            }
+            updateState(CategoryManageReduce.ChangeCategoryOrder(from, to, tempList))
 
-                    }
-                }.launchIn(viewModelScope)
+//            changeSequenceUseCase(tempList)
+//                .catch {
+//                    sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
+//                    updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
+//                }
+//                .onEach { isSuccessful ->
+//                    if (isSuccessful.not()){
+//                        updateState(CategoryManageReduce.ChangeCategoryOrder(to, from, originList))
+//                        sendSideEffect(CategoryManageSideEffect.ShowSnackbar(UiText.StringResource(R.string.category_swap_error)))
+//                    }
+//                }.launchIn(viewModelScope)
         }
     }
 
-    // 카테고리 별 세부 전시 조회
-    private fun expandCategory(index: Int){
-        when (_categoryPostStateList[index]){
-            is CategoryPostState.Initial -> {
-                _categoryPostStateList[index] = CategoryPostState.Expanded(
-                    (_categoryPostStateList[index] as CategoryPostState.Initial).postFlow
-                )
-            }
-            // 단순 확장 Or not
-            else ->{
-                val postDetail = if (_categoryPostStateList[index] is CategoryPostState.Expanded)
-                    (_categoryPostStateList[index] as CategoryPostState.Expanded).postFlow
-                else (_categoryPostStateList[index] as CategoryPostState.UnExpanded).postFlow
-
-                _categoryPostStateList[index] = if (_categoryPostStateList[index] is CategoryPostState.Expanded)
-                    CategoryPostState.UnExpanded(postDetail)
-                else CategoryPostState.Expanded(postDetail)
+    private fun changeSequence(){
+        if (currentState.categoryList != currentState.originList){
+            CoroutineScope(Dispatchers.IO).launch {
+                changeSequenceUseCase(currentState.categoryList)
+                    .collect{
+                        this.cancel()
+                    }
             }
         }
     }
 
-    private fun pagingLoadError(index: Int){
-        viewModelScope.launch {
-            _errorChannel.send(UiText.StringResource(R.string.network_error))
-//            _categoryPostStateList[index] = CategoryPostState.UnExpanded(
-//                (_categoryPostStateList[index] as CategoryPostState.Expanded).postFlow
-//            )
-        }
-    }
+//    // 카테고리 별 세부 전시 조회
+//    private fun expandCategory(index: Int){
+//        when (_categoryPostStateList[index]){
+//            is CategoryPostState.Initial -> {
+//                _categoryPostStateList[index] = CategoryPostState.Expanded(
+//                    (_categoryPostStateList[index] as CategoryPostState.Initial).postFlow
+//                )
+//            }
+//            // 단순 확장 Or not
+//            else ->{
+//                val postDetail = if (_categoryPostStateList[index] is CategoryPostState.Expanded)
+//                    (_categoryPostStateList[index] as CategoryPostState.Expanded).postFlow
+//                else (_categoryPostStateList[index] as CategoryPostState.UnExpanded).postFlow
+//
+//                _categoryPostStateList[index] = if (_categoryPostStateList[index] is CategoryPostState.Expanded)
+//                    CategoryPostState.UnExpanded(postDetail)
+//                else CategoryPostState.Expanded(postDetail)
+//            }
+//        }
+//    }
+
+//    private fun pagingLoadError(index: Int){
+//        viewModelScope.launch {
+//            _errorChannel.send(UiText.StringResource(R.string.network_error))
+////            _categoryPostStateList[index] = CategoryPostState.UnExpanded(
+////                (_categoryPostStateList[index] as CategoryPostState.Expanded).postFlow
+////            )
+//        }
+//    }
 
 
     override fun handleEvents(event: CategoryManageEvent) {
@@ -212,7 +207,7 @@ class CategoryManageViewModel @Inject constructor(
                 deleteCategory(event.categoryItem)
             }
             is CategoryManageEvent.OnExpandClick -> {
-                expandCategory(event.index)
+                updateState(CategoryManageReduce.UpdateCategoryExpanded(event.index))
             }
             is CategoryManageEvent.OnReorderCategory -> {
                 reorderItem(event.from, event.to)
@@ -224,7 +219,10 @@ class CategoryManageViewModel @Inject constructor(
                 checkEditable(event.origin, event.edited)
             }
             is CategoryManageEvent.OnExpandLoadError -> {
-                pagingLoadError(event.position)
+//                pagingLoadError(event.position)
+            }
+            is CategoryManageEvent.OnDispose -> {
+                changeSequence()
             }
         }
     }
@@ -235,13 +233,63 @@ class CategoryManageViewModel @Inject constructor(
     ): CategoryManageState {
         return when (reduce) {
             is CategoryManageReduce.CategoryListLoaded ->
-                CategoryManageState.Success(reduce.categoryList)
-
-            is CategoryManageReduce.CategoryListEmpty ->
-                CategoryManageState.Empty
+                state.copy(
+                    isLoading = false,
+                    categoryList = reduce.categoryList,
+                    originList = reduce.categoryList,
+                    expandedList = List(reduce.categoryList.size) { false },
+                )
+            is CategoryManageReduce.CategoryPostFlowListLoaded ->
+                state.copy(
+                    categoryPostFlowList = reduce.categoryPostFlowList
+                )
+            is CategoryManageReduce.UpdateCategoryItem ->
+                state.copy(
+                    categoryList = state.categoryList.toMutableList().apply {
+                        this[this.indexOf(reduce.categoryItem)] = reduce.categoryItem.copy(name = reduce.edited) }
+                )
 
             is CategoryManageReduce.CategoryListLoadError ->
-                CategoryManageState.Failure(reduce.msg)
+                state.copy(
+                    isLoading = false,
+                )
+
+            is CategoryManageReduce.AddCategoryItem -> {
+                state.copy(
+                    categoryList = state.categoryList.toMutableList().apply { add(reduce.categoryItem) },
+                    categoryPostFlowList = state.categoryPostFlowList.toMutableList().apply { add(reduce.flow) },
+                    expandedList = state.expandedList.toMutableList().apply { add(false) }
+                )
+            }
+
+            is CategoryManageReduce.DeleteCategoryItem -> {
+                val position = state.categoryList.indexOf(reduce.categoryItem)
+                state.copy(
+                    categoryList = state.categoryList.toMutableList().apply { removeAt(position) },
+                    categoryPostFlowList = state.categoryPostFlowList.toMutableList().apply { removeAt(position) },
+                    expandedList = state.expandedList.toMutableList().apply { removeAt(position) }
+                )
+            }
+
+            is CategoryManageReduce.UpdateCategoryExpanded -> {
+                state.copy(
+                    expandedList = state.expandedList.toMutableList().apply {
+                        this[reduce.index] = !this[reduce.index]
+                    }
+                )
+            }
+
+            is CategoryManageReduce.ChangeCategoryOrder ->{
+                state.copy(
+                    categoryList = reduce.updatedList,
+                    categoryPostFlowList = state.categoryPostFlowList.toMutableList().apply {
+                        this.add(reduce.from, this.removeAt(reduce.to))
+                    },
+                    expandedList = state.expandedList.toMutableList().apply {
+                        this.add(reduce.from, this.removeAt(reduce.to))
+                    }
+                )
+            }
         }
     }
 }

@@ -167,7 +167,7 @@ class LoginActivity : ComponentActivity() {
 
     private fun navigateToHome() {
         finishAffinity()
-        startActivity(homeNavigator.navigate(this))
+        startActivity(homeNavigator.navigate(this).putExtra("fromLogin", true))
     }
 
 

@@ -13,8 +13,8 @@ class ProfileRepositoryImpl @Inject constructor(
         return profileRemoteDataSource.loadUserData()
     }
 
-    override fun changeNickname(userId: Long, editedName: String): Flow<Boolean> {
-        return profileRemoteDataSource.changeNickname(userId, editedName)
+    override fun changeNickname(editedName: String): Flow<Boolean> {
+        return profileRemoteDataSource.changeNickname(editedName)
     }
 
     override fun signOut(): Flow<Boolean> {

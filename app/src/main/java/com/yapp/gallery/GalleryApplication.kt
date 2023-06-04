@@ -3,6 +3,7 @@ package com.yapp.gallery
 import android.app.Application
 import android.util.Log
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.util.Utility
 import com.navercorp.nid.NaverIdLoginSDK
@@ -16,6 +17,7 @@ class GalleryApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         FirebaseApp.initializeApp(applicationContext)
+        FirebaseAuth.getInstance().currentUser?.getIdToken(false)
 
         // 카카오 SDK init
         KakaoSdk.init(this, KAKAO_NATIVE_APP_KEY)

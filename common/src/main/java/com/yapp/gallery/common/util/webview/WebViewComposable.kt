@@ -7,8 +7,6 @@ import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import com.yapp.gallery.common.util.WebViewUtils
-import com.yapp.gallery.common.util.webview.NavigateJsObject
 import timber.log.Timber
 
 class WebViewProvider(
@@ -28,8 +26,14 @@ class WebViewProvider(
             settings.run {
                 setBackgroundColor(0)
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                WebViewUtils.cookieManager.setAcceptCookie(true)
-                WebViewUtils.cookieManager.setAcceptThirdPartyCookies(this@apply, true)
+                clearCache(false)
+                clearHistory()
+                WebViewUtils.cookieManager.acceptThirdPartyCookies(this@apply)
+                WebViewUtils.cookieManager.apply {
+                    setAcceptCookie(true)
+                    removeSessionCookies(null)
+                    removeAllCookies(null)
+                }
                 javaScriptEnabled = true
                 overScrollMode = WebView.OVER_SCROLL_NEVER
                 javaScriptCanOpenWindowsAutomatically = true
