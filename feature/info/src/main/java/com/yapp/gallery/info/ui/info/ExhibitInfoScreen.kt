@@ -19,6 +19,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.WebViewUtils
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.info.R
@@ -111,7 +112,11 @@ private fun ExhibitInfoScreen(
                     factory = { webView },
                     update = {
                         if (infoState is ExhibitInfoState.Connected){
-                            it.loadUrl(baseUrl + exhibitId, mapOf("Authorization" to infoState.idToken))
+                            WebViewUtils.cookieManager.setCookie(
+                                baseUrl + exhibitId, "accessToken=${infoState.idToken}"
+                            )
+
+                            it.loadUrl(baseUrl + exhibitId)
                         }
                     }
                 )

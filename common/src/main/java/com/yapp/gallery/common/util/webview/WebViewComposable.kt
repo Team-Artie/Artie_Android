@@ -26,8 +26,14 @@ class WebViewProvider(
             settings.run {
                 setBackgroundColor(0)
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                WebViewUtils.cookieManager.setAcceptCookie(true)
-                WebViewUtils.cookieManager.setAcceptThirdPartyCookies(this@apply, true)
+                clearCache(false)
+                clearHistory()
+                WebViewUtils.cookieManager.acceptThirdPartyCookies(this@apply)
+                WebViewUtils.cookieManager.apply {
+                    setAcceptCookie(true)
+                    removeSessionCookies(null)
+                    removeAllCookies(null)
+                }
                 javaScriptEnabled = true
                 overScrollMode = WebView.OVER_SCROLL_NEVER
                 javaScriptCanOpenWindowsAutomatically = true

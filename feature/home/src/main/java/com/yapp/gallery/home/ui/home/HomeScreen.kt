@@ -35,6 +35,7 @@ import com.yapp.gallery.common.theme.ArtieTheme
 import com.yapp.gallery.common.theme.color_black
 import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
+import com.yapp.gallery.common.util.webview.WebViewUtils
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
@@ -163,7 +164,8 @@ private fun HomeScreen(
                     factory = { webView },
                     update = {
                         if (hasBundle.not() && homeState.idToken != null){
-                            it.loadUrl(baseUrl, mapOf("Authorization" to homeState.idToken))
+                            WebViewUtils.cookieManager.setCookie(baseUrl, "accessToken=${homeState.idToken}")
+                            it.loadUrl(baseUrl)
                         }
                     }
                 )
