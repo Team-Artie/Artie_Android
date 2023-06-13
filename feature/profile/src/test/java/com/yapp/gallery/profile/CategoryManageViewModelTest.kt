@@ -11,7 +11,6 @@ import com.yapp.gallery.profile.ui.category.CategoryManageContract
 import com.yapp.gallery.profile.ui.category.CategoryManageViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestDispatcher

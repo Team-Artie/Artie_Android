@@ -20,8 +20,9 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.yapp.gallery.common.theme.ArtieTheme
+import com.yapp.gallery.login.ui.LoginContract.LoginEvent
+import com.yapp.gallery.login.ui.LoginContract.LoginSideEffect
 import com.yapp.gallery.navigation.home.HomeNavigator
-import com.yapp.gallery.login.ui.LoginContract.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber

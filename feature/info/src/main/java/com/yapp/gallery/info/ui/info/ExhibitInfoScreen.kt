@@ -39,6 +39,22 @@ fun ExhibitInfoRoute(
 ){
     val infoState : ExhibitInfoState by viewModel.viewState.collectAsStateWithLifecycle()
 
+    // 웹뷰 정의
+    val webView by rememberWebView(onBridgeCalled = { action, payload ->
+        viewModel.sendEvent(ExhibitInfoEvent.OnWebViewClick(action, payload))
+    }, options = {
+        setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+                if (this.canGoBack()) {
+                    this.goBack()
+                } else {
+                    popBackStack()
+                }
+            }
+            return@setOnKeyListener true
+        }
+    })
+
     LaunchedEffect(viewModel.sideEffect){
         viewModel.sideEffect.collectLatest {
             when(it){
@@ -57,25 +73,15 @@ fun ExhibitInfoRoute(
                 is ExhibitInfoSideEffect.ShowWebPage -> {
                     navigateToWebPage(it.url)
                 }
+                is ExhibitInfoSideEffect.SendRefreshToken -> {
+                    WebViewUtils.cookieManager.setCookie(
+                        webView.url, "accessToken=${it.idToken}"
+                    )
+                    webView.reload()
+                }
             }
         }
     }
-
-    // 웹뷰 정의
-    val webView by rememberWebView(onBridgeCalled = { action, payload ->
-        viewModel.sendEvent(ExhibitInfoEvent.OnWebViewClick(action, payload))
-    }, options = {
-        setOnKeyListener { _, keyCode, event ->
-            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-                if (this.canGoBack()) {
-                    this.goBack()
-                } else {
-                    popBackStack()
-                }
-            }
-            return@setOnKeyListener true
-        }
-    })
 
     ExhibitInfoScreen(
         exhibitId = exhibitId,

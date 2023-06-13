@@ -4,7 +4,6 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.yapp.gallery.data.di.DispatcherModule.IoDispatcher
 import com.yapp.gallery.data.source.prefs.AuthPrefsDataSource
-import com.yapp.gallery.data.utils.isTokenExpired
 import com.yapp.gallery.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose

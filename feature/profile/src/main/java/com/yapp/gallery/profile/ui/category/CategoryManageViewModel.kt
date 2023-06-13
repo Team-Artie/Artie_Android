@@ -1,6 +1,5 @@
 package com.yapp.gallery.profile.ui.category
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.yapp.gallery.common.base.BaseStateViewModel
@@ -14,15 +13,21 @@ import com.yapp.gallery.domain.usecase.category.GetCategoryPostUseCase
 import com.yapp.gallery.domain.usecase.record.CreateCategoryUseCase
 import com.yapp.gallery.domain.usecase.record.GetCategoryListUseCase
 import com.yapp.gallery.profile.R
-import com.yapp.gallery.profile.ui.category.CategoryManageContract.*
+import com.yapp.gallery.profile.ui.category.CategoryManageContract.CategoryManageEvent
+import com.yapp.gallery.profile.ui.category.CategoryManageContract.CategoryManageReduce
+import com.yapp.gallery.profile.ui.category.CategoryManageContract.CategoryManageSideEffect
+import com.yapp.gallery.profile.ui.category.CategoryManageContract.CategoryManageState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.jetbrains.annotations.TestOnly
 import timber.log.Timber
 import javax.inject.Inject
 

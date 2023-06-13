@@ -25,5 +25,6 @@ class ExhibitInfoContract {
         data class NavigateToGallery(val exhibitId: Long, val count: Int = 0) : ExhibitInfoSideEffect()
         object PopBackStack : ExhibitInfoSideEffect()
         data class ShowWebPage(val url: String) : ExhibitInfoSideEffect()
+        data class SendRefreshToken(val idToken: String) : ExhibitInfoSideEffect()
     }
 }

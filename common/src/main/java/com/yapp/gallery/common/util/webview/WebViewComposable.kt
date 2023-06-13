@@ -31,8 +31,6 @@ class WebViewProvider(
                 WebViewUtils.cookieManager.acceptThirdPartyCookies(this@apply)
                 WebViewUtils.cookieManager.apply {
                     setAcceptCookie(true)
-                    removeSessionCookies(null)
-                    removeAllCookies(null)
                 }
                 javaScriptEnabled = true
                 overScrollMode = WebView.OVER_SCROLL_NEVER

@@ -5,7 +5,8 @@ import com.yapp.gallery.common.base.ViewModelContract
 class HomeContract {
     data class HomeState(
         val afterLogin: Boolean = false,
-        val idToken: String? = null,
+        val previousToken: String? = null,
+        val currentToken: String? = null,
         val connected: Boolean = true,
     ) : ViewModelContract.State
 
@@ -26,5 +27,7 @@ class HomeContract {
         object NavigateToRecord : HomeSideEffect()
         object NavigateToProfile : HomeSideEffect()
         data class NavigateToInfo(val postId: Long, val idToken: String?) : HomeSideEffect()
+
+        data class SendRefreshToken(val idToken: String) : HomeSideEffect()
     }
 }

@@ -1,6 +1,5 @@
 package com.yapp.gallery.data.source.prefs
 
-import com.yapp.gallery.data.model.IdTokenInfo
 import kotlinx.coroutines.flow.Flow
 
 interface AuthPrefsDataSource {

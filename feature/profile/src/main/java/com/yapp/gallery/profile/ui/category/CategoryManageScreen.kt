@@ -255,6 +255,8 @@ private fun CategoryListView(
                         overscrollJob?.cancel()
                     }) }
             ) {
+                item { Spacer(modifier = Modifier.height(32.dp)) }
+                
                 itemsIndexed(categoryList) { index, item ->
                     // Draggable Item
                     DraggableItem(dragDropState = dragDropState, index = index) { isDragging ->

@@ -3,7 +3,6 @@ package com.yapp.gallery.common.util
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 

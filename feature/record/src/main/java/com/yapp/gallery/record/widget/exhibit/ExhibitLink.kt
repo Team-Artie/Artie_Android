@@ -24,10 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.yapp.gallery.record.R
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.theme.color_gray700
 import com.yapp.gallery.common.theme.color_white
+import com.yapp.gallery.record.R
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

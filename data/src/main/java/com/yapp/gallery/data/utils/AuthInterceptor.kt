@@ -3,7 +3,7 @@ package com.yapp.gallery.data.utils
 import android.util.Log
 import com.yapp.gallery.domain.usecase.auth.GetIdTokenUseCase
 import com.yapp.gallery.domain.usecase.auth.GetRefreshedTokenUseCase
-import kotlinx.coroutines.*
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject

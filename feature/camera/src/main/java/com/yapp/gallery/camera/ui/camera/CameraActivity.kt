@@ -11,7 +11,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.nguyenhoanglam.imagepicker.model.ImagePickerConfig
 import com.nguyenhoanglam.imagepicker.ui.imagepicker.registerImagePicker
 import com.yapp.gallery.camera.navigation.CameraNavHost
-import com.yapp.gallery.camera.util.uriToByteArray
 import com.yapp.gallery.common.theme.ArtieTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow

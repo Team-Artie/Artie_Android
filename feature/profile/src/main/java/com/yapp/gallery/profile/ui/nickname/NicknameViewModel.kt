@@ -2,11 +2,15 @@ package com.yapp.gallery.profile.ui.nickname
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.yapp.gallery.profile.ui.nickname.NicknameContract.*
 import com.yapp.gallery.common.base.BaseStateViewModel
 import com.yapp.gallery.domain.usecase.profile.UpdateNicknameUseCase
+import com.yapp.gallery.profile.ui.nickname.NicknameContract.NicknameEvent
+import com.yapp.gallery.profile.ui.nickname.NicknameContract.NicknameReduce
+import com.yapp.gallery.profile.ui.nickname.NicknameContract.NicknameSideEffect
+import com.yapp.gallery.profile.ui.nickname.NicknameContract.NicknameState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel

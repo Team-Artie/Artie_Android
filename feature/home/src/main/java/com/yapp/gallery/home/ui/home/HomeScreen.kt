@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,19 +26,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yapp.gallery.common.theme.ArtieTheme
-import com.yapp.gallery.common.theme.color_black
-import com.yapp.gallery.home.ui.home.HomeContract.*
 import com.yapp.gallery.common.theme.color_gray600
 import com.yapp.gallery.common.util.webview.WebViewUtils
 import com.yapp.gallery.common.util.webview.getWebViewBaseUrl
 import com.yapp.gallery.common.util.webview.rememberWebView
 import com.yapp.gallery.home.BuildConfig
 import com.yapp.gallery.home.R
+import com.yapp.gallery.home.ui.home.HomeContract.*
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -49,9 +44,8 @@ fun HomeRoute(
     navigateToProfile: () -> Unit,
     navigateToInfo: (Long, String?) -> Unit,
     navigateToTest: (String?) -> Unit,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: HomeViewModel = hiltViewModel(),
-    context: Activity
+    context: Activity,
 ){
     val webView by rememberWebView(onBridgeCalled = { action, payload ->
         viewModel.sendEvent(HomeEvent.OnWebViewClick(action, payload))
@@ -72,6 +66,24 @@ fun HomeRoute(
                 is HomeSideEffect.NavigateToRecord -> navigateToRecord()
                 is HomeSideEffect.NavigateToProfile -> navigateToProfile()
                 is HomeSideEffect.NavigateToInfo -> navigateToInfo(it.postId, it.idToken)
+                is HomeSideEffect.SendRefreshToken -> {
+//                    val jsonObject = JSONObject()
+//
+//                    val payloadObject = JSONObject()
+//                    payloadObject.put("accessToken", it.idToken)
+//
+//                    val sendRefreshTokenObject = JSONObject()
+//                    sendRefreshTokenObject.put("payload", payloadObject)
+//
+//                    jsonObject.put("SEND_REFRESH_TOKEN", sendRefreshTokenObject)
+//
+//                    Timber.e(jsonObject.toString())
+
+                    WebViewUtils.cookieManager.setCookie(webView.url, "accessToken=${it.idToken}")
+
+                    webView.reload()
+//                    webView.loadUrl("javascript:window.postMessage(${jsonObject})")
+                }
             }
         }
     }
@@ -120,7 +132,7 @@ fun HomeRoute(
         webView = webView,
         onReload = { viewModel.sendEvent(HomeEvent.OnLoadAgain) },
         navigateToTest = {
-            navigateToTest(homeState.idToken)
+            navigateToTest(homeState.currentToken)
         },
         hasBundle = webViewState.getBundle("webViewState") != null
     )
@@ -128,11 +140,11 @@ fun HomeRoute(
 
 @Composable
 private fun HomeScreen(
-    homeState : HomeState,
-    webView : WebView,
-    onReload : () -> Unit,
+    homeState: HomeState,
+    webView: WebView,
+    onReload: () -> Unit,
     navigateToTest: () -> Unit,
-    hasBundle : Boolean = false
+    hasBundle: Boolean = false,
 ){
     val baseUrl = getWebViewBaseUrl() + stringResource(id = R.string.home_section)
 
@@ -141,13 +153,13 @@ private fun HomeScreen(
             .navigationBarsPadding()
             .statusBarsPadding(),
         floatingActionButton = {
-            if (BuildConfig.DEBUG){
-                Button(onClick = navigateToTest) {
-                    Text(text = "테스트 화면으로 이동", style = MaterialTheme.typography.h3.copy(
-                        color = color_black, fontWeight = FontWeight.SemiBold
-                    ))
-                }
-            }
+//            if (BuildConfig.DEBUG){
+//                Button(onClick = navigateToTest) {
+//                    Text(text = "테스트 화면으로 이동", style = MaterialTheme.typography.h3.copy(
+//                        color = color_black, fontWeight = FontWeight.SemiBold
+//                    ))
+//                }
+//            }
         },
         floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues ->
@@ -163,8 +175,8 @@ private fun HomeScreen(
                 AndroidView(
                     factory = { webView },
                     update = {
-                        if (hasBundle.not() && homeState.idToken != null){
-                            WebViewUtils.cookieManager.setCookie(baseUrl, "accessToken=${homeState.idToken}")
+                        if (hasBundle.not() && homeState.currentToken != null && homeState.previousToken == null){
+                            WebViewUtils.cookieManager.setCookie(baseUrl, "accessToken=${homeState.currentToken}")
                             it.loadUrl(baseUrl)
                         }
                     }
@@ -194,7 +206,7 @@ private fun HomeScreenPreview(){
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun HomeDisconnectedScreen(
-    onReload : () -> Unit
+    onReload: () -> Unit,
 ){
     Text(
         text = stringResource(id = R.string.home_network_error),

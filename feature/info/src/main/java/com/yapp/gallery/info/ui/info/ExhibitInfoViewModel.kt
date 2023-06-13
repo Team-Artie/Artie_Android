@@ -12,8 +12,10 @@ import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoSideEffect
 import com.yapp.gallery.info.ui.info.ExhibitInfoContract.ExhibitInfoState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
 import javax.inject.Inject
@@ -115,6 +117,13 @@ class ExhibitInfoViewModel @Inject constructor(
                     }
                     "NAVIGATE_TO_HOME" -> {
                         sendSideEffect(ExhibitInfoSideEffect.PopBackStack)
+                    }
+                    "REQUEST_REFRESH_TOKEN" -> {
+                        viewModelScope.launch {
+                            getValidTokenUseCase().firstOrNull()?.let {
+                                sendSideEffect(ExhibitInfoSideEffect.SendRefreshToken(it))
+                            }
+                        }
                     }
                     else -> {}
                 }

@@ -1,6 +1,5 @@
 package com.yapp.gallery.camera.ui.camera
 
-import android.net.Uri
 import androidx.camera.core.CameraSelector
 import com.yapp.gallery.common.base.ViewModelContract
 

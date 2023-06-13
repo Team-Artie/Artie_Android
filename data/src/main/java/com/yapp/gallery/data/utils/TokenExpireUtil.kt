@@ -1,7 +1,5 @@
 package com.yapp.gallery.data.utils
 
-import android.util.Log
-
 
 internal fun getTokenExpiredTime() : String {
     // 한시간 뒤 밀리 초

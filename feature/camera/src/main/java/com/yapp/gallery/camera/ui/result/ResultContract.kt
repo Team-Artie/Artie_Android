@@ -1,6 +1,5 @@
 package com.yapp.gallery.camera.ui.result
 
-import android.net.Uri
 import com.yapp.gallery.camera.model.ImageData
 import com.yapp.gallery.common.base.ViewModelContract
 

@@ -1,7 +1,6 @@
 package com.yapp.gallery.profile.ui.signout
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

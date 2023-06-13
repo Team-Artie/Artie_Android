@@ -12,9 +12,15 @@ import com.yapp.gallery.domain.usecase.auth.GetLoginTypeUseCase
 import com.yapp.gallery.domain.usecase.profile.GetUserUseCase
 import com.yapp.gallery.domain.usecase.record.DeleteBothUseCase
 import com.yapp.gallery.profile.R
-import com.yapp.gallery.profile.ui.profile.ProfileContract.*
+import com.yapp.gallery.profile.ui.profile.ProfileContract.ProfileEvent
+import com.yapp.gallery.profile.ui.profile.ProfileContract.ProfileReduce
+import com.yapp.gallery.profile.ui.profile.ProfileContract.ProfileSideEffect
+import com.yapp.gallery.profile.ui.profile.ProfileContract.ProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject

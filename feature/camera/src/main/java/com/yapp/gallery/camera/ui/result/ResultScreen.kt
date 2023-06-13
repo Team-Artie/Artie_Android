@@ -95,7 +95,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 
 // 카메라에서 사진 촬영 후 결과 화면
 // 갤러리에서 사진 선택 후 결과 화면
