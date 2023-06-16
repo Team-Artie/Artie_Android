@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -15,8 +16,8 @@ android {
         minSdk 26
 
         targetSdk 33
-        versionCode 4
-        versionName "1.1.0"
+        versionCode 5
+        versionName "1.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -71,11 +72,13 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
+    implementation platform(libs.firebase.bom)
     implementation libs.bundles.auth
     implementation libs.bundles.compose
     implementation libs.bundles.hilt.deps
     implementation libs.androidx.core.splashscreen
     implementation libs.timber
+    implementation libs.firebase.crashlytics
     kapt libs.bundles.hilt.compilers
 }
 

@@ -57,6 +57,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
+    implementation platform(libs.firebase.bom)
     implementation libs.bundles.compose
     implementation libs.bundles.auth
     implementation libs.bundles.hilt.deps
